@@ -25,6 +25,13 @@
     <None Include="vcpkg_scripts\local_install.ps1" />
     <None Include="vcpkg_scripts\local_remove.ps1" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="inc\SSS\GLFW.hpp" />
+    <ClInclude Include="inc\SSS\GLFW\includes.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\GLFW.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{BB4BA2CA-32FE-4E5C-8830-112AFD36FA41}</ProjectGuid>
@@ -93,7 +100,7 @@
     <LinkIncremental>false</LinkIncremental>
     <IntDir>.\obj\$(Configuration)\</IntDir>
     <OutDir>$(Configuration)\</OutDir>
-    <TargetName>sss-untitled</TargetName>
+    <TargetName>sss-glfw</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>

@@ -26,4 +26,17 @@
       <Filter>vcpkg_scripts</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\GLFW.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="inc\SSS\GLFW.hpp">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\SSS\GLFW\includes.hpp">
+      <Filter>inc</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
