@@ -9,3 +9,6 @@
 #include <SSS/Text-Rendering.hpp>
 
 // STL
+
+#define __SSS_GLFW_BEGIN __SSS_BEGIN namespace GLFW {
+#define __SSS_GLFW_END __SSS_END }

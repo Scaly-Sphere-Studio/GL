@@ -27,10 +27,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\SSS\GLFW.hpp" />
-    <ClInclude Include="inc\SSS\GLFW\includes.hpp" />
+    <ClInclude Include="inc\SSS\GLFW\Init.hpp" />
+    <ClInclude Include="inc\SSS\GLFW\Window.hpp" />
+    <ClInclude Include="inc\SSS\GLFW\_includes.hpp" />
+    <ClInclude Include="inc\SSS\GLFW\_pointers.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\GLFW.cpp" />
+    <ClCompile Include="src\Window.cpp" />
+    <ClCompile Include="src\Init.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -88,13 +92,13 @@
     <LinkIncremental>true</LinkIncremental>
     <IntDir>.\obj\$(Configuration)\</IntDir>
     <OutDir>$(Configuration)\</OutDir>
-    <TargetName>sss-untitled</TargetName>
+    <TargetName>sss-glfw</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IntDir>.\obj\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>$(Platform)\$(Configuration)\</OutDir>
-    <TargetName>sss-untitled</TargetName>
+    <TargetName>sss-glfw</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -106,7 +110,7 @@
     <LinkIncremental>false</LinkIncremental>
     <IntDir>.\obj\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>$(Platform)\$(Configuration)\</OutDir>
-    <TargetName>sss-untitled</TargetName>
+    <TargetName>sss-glfw</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

@@ -27,7 +27,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\GLFW.cpp">
+    <ClCompile Include="src\Init.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Window.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -35,7 +38,16 @@
     <ClInclude Include="inc\SSS\GLFW.hpp">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GLFW\includes.hpp">
+    <ClInclude Include="inc\SSS\GLFW\_includes.hpp">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\SSS\GLFW\Init.hpp">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\SSS\GLFW\Window.hpp">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\SSS\GLFW\_pointers.hpp">
       <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>
