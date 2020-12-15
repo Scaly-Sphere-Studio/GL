@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SSS/GLFW/_includes.hpp"
+#include "SSS/GLFW/_callbacks.hpp"
 
 __SSS_GLFW_BEGIN
 

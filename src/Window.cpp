@@ -8,32 +8,25 @@ __SSS_GLFW_BEGIN
 bool Window::LOG::constructor{ true };
 bool Window::LOG::destructor{ true };
 bool Window::LOG::fps{ true };
+bool Window::LOG::dpi_update{ true };
 
-// Static members
+// Window instances
 std::map<GLFWwindow const*, Window::Weak> Window::_instances{};
-
-    // --- Callbacks ---
-
-__INTERNAL_BEGIN
-
-// Resizes the internal width and height of correspondig Window instance
-void window_resize_callback(GLFWwindow* ptr, int w, int h)
-{
-    Window::Shared window = Window::get(ptr);
-    window->_w = w;
-    window->_h = h;
-}
-
-__INTERNAL_END
+// Connected monitors
+std::vector<_internal::Monitor> Window::_monitors{};
 
     // --- Constructor & destructor ---
 
 // Constructor, creates a window and makes its context current
 Window::Window(int w, int h, std::string const& title) try
-    : _w(w), _h(h)
 {
+    // Retrieve video size of primary monitor
+    GLFWvidmode const* mode = glfwGetVideoMode(_monitors[0].ptr);
+    _w = w < mode->width ? w : mode->width;
+    _h = h < mode->height ? h : mode->height;
+
     // Hints
-    glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+    //glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 
     // Create window
     _window.reset(glfwCreateWindow(w, h, title.c_str(), nullptr, nullptr));
@@ -53,11 +46,17 @@ Window::Window(int w, int h, std::string const& title) try
         char const* msg = reinterpret_cast<char const*>(glewGetErrorString(glew_ret));
         throw_exc(msg);
     }
-
-    // Set window callbacks
-    setCallback(glfwSetWindowSizeCallback, _internal::window_resize_callback);
+    // Set viewport
+    glViewport(0, 0, _w, _h);
+    // Set main monitor
+    _setMainMonitor(_monitors[0]);
     // Set VSYNC to false by default
     setVSYNC(false);
+    // Center window
+    glfwSetWindowPos(_window.get(), (mode->width - _w) / 2, (mode->height - _h) / 2);
+    // Set window callbacks
+    setCallback(glfwSetWindowSizeCallback, _internal::window_resize_callback);
+    setCallback(glfwSetWindowPosCallback, _internal::window_pos_callback);
 
     if (LOG::constructor) {
         __LOG_CONSTRUCTOR
@@ -119,34 +118,32 @@ void Window::setVSYNC(bool state)
 }
 
 // Enables or disables fullscreen mode on given screen
+// -> screen_id of -1 (default) takes the monitor the window is on
 void Window::setFullscreen(bool state, int screen_id)
 {
-    int monitor_count;
-    GLFWmonitor** monitors = glfwGetMonitors(&monitor_count);
     GLFWmonitor* currentMonitor = glfwGetWindowMonitor(_window.get());
     
     if (state) {
         // Ensure given ID is in range
-        if (screen_id >= monitor_count) {
+        if (screen_id >= static_cast<int>(_monitors.size())) {
             __LOG_METHOD_WRN("screen_id out of range.");
             return;
         }
+        // Select monitor
+        _internal::Monitor const& monitor =
+            screen_id < 0 ? _main_monitor : _monitors[screen_id];
         // Ensure window isn't already fullscreen on given ID
-        if (currentMonitor == monitors[screen_id]) {
+        if (currentMonitor == monitor.ptr) {
             __LOG_METHOD_WRN("window is already fullscreen on given screen");
             return;
         }
         // Store current size & pos, if currently in windowed mode
         if (currentMonitor == nullptr) {
-            _windowed_w = _w;
-            _windowed_h = _h;
             glfwGetWindowPos(_window.get(), &_windowed_x, &_windowed_y);
         }
-        // Get monitor's size
-        GLFWvidmode const* mode = glfwGetVideoMode(monitors[screen_id]);
         // Set window in fullscreen
-        glfwSetWindowMonitor(_window.get(), monitors[screen_id],
-            0, 0, mode->width, mode->height, GLFW_DONT_CARE);
+        glfwSetWindowMonitor(_window.get(), monitor.ptr,
+            0, 0, _w, _h, GLFW_DONT_CARE);
     }
     else {
         // Ensure the window isn't arealdy windowed
@@ -156,7 +153,7 @@ void Window::setFullscreen(bool state, int screen_id)
         }
         // Set window in windowed mode with old values
         glfwSetWindowMonitor(_window.get(), nullptr,
-            _windowed_x, _windowed_y, _windowed_w, _windowed_h, GLFW_DONT_CARE);
+            _windowed_x, _windowed_y, _w, _h, GLFW_DONT_CARE);
     }
 }
 
@@ -173,9 +170,28 @@ void Window::render()
         }
     }
     // Clear back buffer
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // Poll events
     glfwPollEvents();
+}
+
+void Window::_setMainMonitor(_internal::Monitor const& monitor)
+{
+    _main_monitor = monitor;
+
+    // Retrieve screen resolution (in pixels)
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor.ptr);
+
+    // Horizontal DPI
+    int const hdpi = std::lround(static_cast<float>(mode->width) / monitor.w);
+    // Vertical DPI
+    int const vdpi = std::lround(static_cast<float>(mode->height) / monitor.h);
+
+    // Set TR's DPIs
+    TR::Font::setDPI(FT_UInt(hdpi), FT_UInt(vdpi));
+    if (LOG::dpi_update) {
+        __LOG_MSG(context_msg("Text rendering DPI set", toString(hdpi)) + "x" + toString(vdpi));
+    }
 }
 
 __SSS_GLFW_END

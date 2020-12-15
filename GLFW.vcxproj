@@ -28,13 +28,17 @@
   <ItemGroup>
     <ClInclude Include="inc\SSS\GLFW.hpp" />
     <ClInclude Include="inc\SSS\GLFW\Init.hpp" />
+    <ClInclude Include="inc\SSS\GLFW\Shaders.hpp" />
     <ClInclude Include="inc\SSS\GLFW\Window.hpp" />
     <ClInclude Include="inc\SSS\GLFW\_includes.hpp" />
     <ClInclude Include="inc\SSS\GLFW\_pointers.hpp" />
+    <ClInclude Include="inc\SSS\GLFW\_callbacks.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Shaders.cpp" />
     <ClCompile Include="src\Window.cpp" />
     <ClCompile Include="src\Init.cpp" />
+    <ClCompile Include="src\_callbacks.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
