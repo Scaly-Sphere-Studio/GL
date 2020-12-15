@@ -39,17 +39,15 @@ static void compileShader(GLuint shader_id, std::string const& shader_code)
 	}
 }
 
-GLuint loadShaders(std::string const& vertex_fp, std::string const& fragment_fp)
+static GLuint loadShaders(std::string const& vertex_fp, std::string const& fragment_fp)
 {
+	// Read the shader files
+	std::string const vertex_shader_code = readShaderFile(vertex_fp);
+	std::string const fragment_shader_code = readShaderFile(fragment_fp);
 	// Create the shaders
 	GLuint vertex_shader_id = glCreateShader(GL_VERTEX_SHADER);
 	GLuint fragment_shader_id = glCreateShader(GL_FRAGMENT_SHADER);
-
-	// Read the shader codes
-	std::string const vertex_shader_code = readShaderFile(vertex_fp);
-	std::string const fragment_shader_code = readShaderFile(fragment_fp);
-
-	// Compile shaders
+	// Compile the shaders
 	compileShader(vertex_shader_id, vertex_shader_code);
 	compileShader(fragment_shader_id, fragment_shader_code);
 
@@ -58,7 +56,6 @@ GLuint loadShaders(std::string const& vertex_fp, std::string const& fragment_fp)
 	glAttachShader(program_id, vertex_shader_id);
 	glAttachShader(program_id, fragment_shader_id);
 	glLinkProgram(program_id);
-
 	// Throw if failed
 	GLint res;
 	glGetProgramiv(program_id, GL_LINK_STATUS, &res);
@@ -72,13 +69,31 @@ GLuint loadShaders(std::string const& vertex_fp, std::string const& fragment_fp)
 		throw_exc(__FUNC_MSG(context_msg("Could not link program", &msg[0])));
 	}
 
+	// Free shaders
 	glDetachShader(program_id, vertex_shader_id);
 	glDetachShader(program_id, fragment_shader_id);
-
 	glDeleteShader(vertex_shader_id);
 	glDeleteShader(fragment_shader_id);
 
+	// Return newly created & linked program
 	return program_id;
+}
+
+Program::Program(std::string const& vertex_fp, std::string const& fragment_fp) try
+	: _id(loadShaders(vertex_fp, fragment_fp))
+{
+}
+__CATCH_AND_RETHROW_METHOD_EXC
+
+Program::~Program()
+{
+	glDeleteProgram(_id);
+}
+
+// Return the location of a uniform variable for this program
+GLuint Program::getUniformLocation(std::string const& name)
+{
+	return glGetUniformLocation(_id, name.c_str());
 }
 
 __SSS_GL_END
