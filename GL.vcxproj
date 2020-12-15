@@ -26,13 +26,13 @@
     <None Include="vcpkg_scripts\local_remove.ps1" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="inc\SSS\GLFW.hpp" />
-    <ClInclude Include="inc\SSS\GLFW\Init.hpp" />
-    <ClInclude Include="inc\SSS\GLFW\Shaders.hpp" />
-    <ClInclude Include="inc\SSS\GLFW\Window.hpp" />
-    <ClInclude Include="inc\SSS\GLFW\_includes.hpp" />
-    <ClInclude Include="inc\SSS\GLFW\_pointers.hpp" />
-    <ClInclude Include="inc\SSS\GLFW\_callbacks.hpp" />
+    <ClInclude Include="inc\SSS\GL.hpp" />
+    <ClInclude Include="inc\SSS\GL\Init.hpp" />
+    <ClInclude Include="inc\SSS\GL\Shaders.hpp" />
+    <ClInclude Include="inc\SSS\GL\Window.hpp" />
+    <ClInclude Include="inc\SSS\GL\_callbacks.hpp" />
+    <ClInclude Include="inc\SSS\GL\_includes.hpp" />
+    <ClInclude Include="inc\SSS\GL\_pointers.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Shaders.cpp" />
@@ -46,6 +46,7 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Debug</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>GL</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

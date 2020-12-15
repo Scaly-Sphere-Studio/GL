@@ -12,5 +12,5 @@
 #include <fstream>
 #include <algorithm>
 
-#define __SSS_GLFW_BEGIN __SSS_BEGIN namespace GLFW {
-#define __SSS_GLFW_END __SSS_END }
+#define __SSS_GL_BEGIN __SSS_BEGIN namespace GL {
+#define __SSS_GL_END __SSS_END }

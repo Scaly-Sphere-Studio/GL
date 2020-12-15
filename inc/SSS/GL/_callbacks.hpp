@@ -1,8 +1,8 @@
 #pragma once
 
-#include "SSS/GLFW/_includes.hpp"
+#include "SSS/GL/_includes.hpp"
 
-__SSS_GLFW_BEGIN
+__SSS_GL_BEGIN
 __INTERNAL_BEGIN
 
 // Resizes the internal width and height of correspondig Window instance
@@ -14,4 +14,4 @@ void window_pos_callback(GLFWwindow* ptr, int x, int y);
 void monitor_callback(GLFWmonitor* ptr, int event);
 
 __INTERNAL_END
-__SSS_GLFW_END
+__SSS_GL_END

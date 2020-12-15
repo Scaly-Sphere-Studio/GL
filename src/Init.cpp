@@ -1,6 +1,6 @@
-#include "SSS/GLFW/Init.hpp"
+#include "SSS/GL/Init.hpp"
 
-__SSS_GLFW_BEGIN
+__SSS_GL_BEGIN
 
 // On the first call : inits GLFW and sets TR's screen DPI.
 // All further calls are ignored.
@@ -33,4 +33,4 @@ Init::~Init()
 };
 __INTERNAL_END
 
-__SSS_GLFW_END
+__SSS_GL_END

@@ -1,7 +1,7 @@
-#include "SSS/GLFW/_callbacks.hpp"
-#include "SSS/GLFW/Window.hpp"
+#include "SSS/GL/_callbacks.hpp"
+#include "SSS/GL/Window.hpp"
 
-__SSS_GLFW_BEGIN
+__SSS_GL_BEGIN
 __INTERNAL_BEGIN
 
 // Resizes the internal width and height of correspondig Window instance
@@ -72,4 +72,4 @@ void monitor_callback(GLFWmonitor* ptr, int event) try
 __CATCH_AND_RETHROW_FUNC_EXC
 
 __INTERNAL_END
-__SSS_GLFW_END
+__SSS_GL_END

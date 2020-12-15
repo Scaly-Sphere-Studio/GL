@@ -41,25 +41,25 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="inc\SSS\GLFW.hpp">
+    <ClInclude Include="inc\SSS\GL\Window.hpp">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GLFW\_includes.hpp">
+    <ClInclude Include="inc\SSS\GL\_callbacks.hpp">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GLFW\Init.hpp">
+    <ClInclude Include="inc\SSS\GL\_includes.hpp">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GLFW\Window.hpp">
+    <ClInclude Include="inc\SSS\GL\_pointers.hpp">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GLFW\_pointers.hpp">
+    <ClInclude Include="inc\SSS\GL\Init.hpp">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GLFW\_callbacks.hpp">
+    <ClInclude Include="inc\SSS\GL\Shaders.hpp">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GLFW\Shaders.hpp">
+    <ClInclude Include="inc\SSS\GL.hpp">
       <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>

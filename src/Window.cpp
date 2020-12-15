@@ -1,6 +1,6 @@
-#include "SSS/GLFW/Window.hpp"
+#include "SSS/GL/Window.hpp"
 
-__SSS_GLFW_BEGIN
+__SSS_GL_BEGIN
 
     // --- Static initializations ---
 
@@ -194,4 +194,4 @@ void Window::_setMainMonitor(_internal::Monitor const& monitor)
     }
 }
 
-__SSS_GLFW_END
+__SSS_GL_END

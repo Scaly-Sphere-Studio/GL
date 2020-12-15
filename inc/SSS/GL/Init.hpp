@@ -1,9 +1,9 @@
 #pragma once
 
-#include "SSS/GLFW/_includes.hpp"
-#include "SSS/GLFW/_callbacks.hpp"
+#include "SSS/GL/_includes.hpp"
+#include "SSS/GL/_callbacks.hpp"
 
-__SSS_GLFW_BEGIN
+__SSS_GL_BEGIN
 
 // On the first call : inits GLFW and sets TR's screen DPI.
 // All further calls are ignored.
@@ -21,4 +21,4 @@ public:
 };
 __INTERNAL_END
 
-__SSS_GLFW_END
+__SSS_GL_END

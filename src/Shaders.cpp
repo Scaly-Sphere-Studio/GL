@@ -1,6 +1,6 @@
-#include "SSS/GLFW/Shaders.hpp"
+#include "SSS/GL/Shaders.hpp"
 
-__SSS_GLFW_BEGIN
+__SSS_GL_BEGIN
 
 static std::string readShaderFile(std::string const& filepath)
 {
@@ -81,4 +81,4 @@ GLuint loadShaders(std::string const& vertex_fp, std::string const& fragment_fp)
 	return program_id;
 }
 
-__SSS_GLFW_END
+__SSS_GL_END

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "SSS/GLFW/_includes.hpp"
-#include "SSS/GLFW/_pointers.hpp"
-#include "SSS/GLFW/_callbacks.hpp"
+#include "SSS/GL/_includes.hpp"
+#include "SSS/GL/_pointers.hpp"
+#include "SSS/GL/_callbacks.hpp"
 
-__SSS_GLFW_BEGIN
+__SSS_GL_BEGIN
 
 __INTERNAL_BEGIN
 struct Monitor {
@@ -109,4 +109,4 @@ private:
     void _setMainMonitor(_internal::Monitor const& monitor);
 };
 
-__SSS_GLFW_END
+__SSS_GL_END

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "SSS/GLFW/_includes.hpp"
+#include "SSS/GL/_includes.hpp"
 
-__SSS_GLFW_BEGIN
+__SSS_GL_BEGIN
 
 GLuint loadShaders(std::string const& vertex_fp, std::string const& fragment_fp);
 
-__SSS_GLFW_END
+__SSS_GL_END
