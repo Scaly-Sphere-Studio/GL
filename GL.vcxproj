@@ -97,25 +97,25 @@
     <LinkIncremental>true</LinkIncremental>
     <IntDir>.\obj\$(Configuration)\</IntDir>
     <OutDir>$(Configuration)\</OutDir>
-    <TargetName>sss-glfw</TargetName>
+    <TargetName>sss-gl</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IntDir>.\obj\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>$(Platform)\$(Configuration)\</OutDir>
-    <TargetName>sss-glfw</TargetName>
+    <TargetName>sss-gl</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IntDir>.\obj\$(Configuration)\</IntDir>
     <OutDir>$(Configuration)\</OutDir>
-    <TargetName>sss-glfw</TargetName>
+    <TargetName>sss-gl</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IntDir>.\obj\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>$(Platform)\$(Configuration)\</OutDir>
-    <TargetName>sss-glfw</TargetName>
+    <TargetName>sss-gl</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
