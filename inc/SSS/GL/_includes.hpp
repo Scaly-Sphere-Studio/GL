@@ -1,8 +1,10 @@
 #pragma once
 
-// GLEW & GLFW
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+// OpenGL headers
+#include <GL/glew.h>    // glew
+#include <GLFW/glfw3.h> // glfw
+#include <glm/glm.hpp>  // glm
+#include <glm/ext.hpp>  // glm
 
 // SSS libs
 #include <SSS/Commons.hpp>

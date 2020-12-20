@@ -39,6 +39,12 @@
     <ClCompile Include="src\_callbacks.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\_pointers.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Plane.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\SSS\GL\Window.hpp">
@@ -60,6 +66,9 @@
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="inc\SSS\GL.hpp">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\SSS\GL\Plane.hpp">
       <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>

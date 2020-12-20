@@ -6,6 +6,9 @@ __SSS_GL_BEGIN
 
 class Program {
 public:
+    // Aliases
+    using Ptr = std::unique_ptr<Program>;
+
     // Constructor : loads shaders and links them to a program
     Program(std::string const& vertex_fp, std::string const& fragment_fp);
     ~Program();
