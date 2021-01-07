@@ -1,4 +1,4 @@
 Source: sss-gl
-Version: 0.3.1
+Version: 0.3.2
 Description: GLFW abstraction in C++
 Build-Depends: glfw3, glew, glm, sss-commons, sss-text-rendering

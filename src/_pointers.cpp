@@ -74,12 +74,13 @@ void IBO::edit(GLsizeiptr size, const void* data, GLenum usage)
 }
 
 Texture::Texture(GLenum given_target) try
-    : _internal::AbstractObject([]()->GLuint {
-        GLuint id;
-        glGenTextures(1, &id);
-        return id;
-    }()),
-    target(given_target)
+    : _internal::AbstractObject(
+        []()->GLuint {
+            GLuint id;
+            glGenTextures(1, &id);
+            return id;
+        }()
+    ), target(given_target)
 {
 }
 __CATCH_AND_RETHROW_METHOD_EXC

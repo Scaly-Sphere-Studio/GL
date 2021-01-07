@@ -19,6 +19,7 @@ __INTERNAL_END
 
 struct VAO : _internal::AbstractObject {
     using Ptr = std::unique_ptr<VAO>;
+    using Shared = std::shared_ptr<VAO>;
     VAO();
     ~VAO();
     virtual void bind() const;
@@ -26,6 +27,7 @@ struct VAO : _internal::AbstractObject {
 
 struct VBO : _internal::AbstractObject {
     using Ptr = std::unique_ptr<VBO>;
+    using Shared = std::shared_ptr<VBO>;
     VBO();
     ~VBO();
     virtual void bind() const;
@@ -34,6 +36,7 @@ struct VBO : _internal::AbstractObject {
 
 struct IBO : _internal::AbstractObject {
     using Ptr = std::unique_ptr<IBO>;
+    using Shared = std::shared_ptr<IBO>;
     IBO();
     ~IBO();
     virtual void bind() const;
@@ -42,6 +45,7 @@ struct IBO : _internal::AbstractObject {
 
 struct Texture : _internal::AbstractObject {
     using Ptr = std::unique_ptr<Texture>;
+    using Shared = std::shared_ptr<Texture>;
     Texture(GLenum given_target);
     ~Texture();
     virtual void bind() const;

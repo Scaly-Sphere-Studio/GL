@@ -8,13 +8,55 @@
 __SSS_GL_BEGIN
 
 // Init static members
-VAO::Ptr Plane::_vao{nullptr};
-VBO::Ptr Plane::_vbo{nullptr};
-IBO::Ptr Plane::_ibo{nullptr};
+VAO::Shared Plane::_static_vao{ nullptr };
+VBO::Shared Plane::_static_vbo{ nullptr };
+IBO::Shared Plane::_static_ibo{ nullptr };
+
+void Plane::_init_statics() try
+{
+    if (_static_vao && _static_vbo && _static_ibo) {
+        return;
+    }
+
+    _static_vao.reset(new VAO);
+    _static_vbo.reset(new VBO);
+    _static_ibo.reset(new IBO);
+
+    _static_vao->bind();
+    _static_vbo->bind();
+    _static_ibo->bind();
+
+    constexpr float vertices[] = {
+        // positions          // texture coords (1 - y)
+        -0.5f,  0.5f, 0.0f,   0.0f, 1.f - 1.0f,   // top left
+        -0.5f, -0.5f, 0.0f,   0.0f, 1.f - 0.0f,   // bottom left
+         0.5f, -0.5f, 0.0f,   1.0f, 1.f - 0.0f,   // bottom right
+         0.5f,  0.5f, 0.0f,   1.0f, 1.f - 1.0f    // top right
+    };
+    constexpr unsigned int indices[] = {
+        0, 1, 2,  // first triangle
+        0, 2, 3   // second triangle
+    };
+
+    _static_vbo->edit(sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    _static_ibo->edit(sizeof(indices), indices, GL_STATIC_DRAW);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+}
+__CATCH_AND_RETHROW_FUNC_EXC
 
 Plane::Plane() try
     : _texture(GL_TEXTURE_2D)
 {
+    // Init statics
+    _init_statics();
+    _vao = _static_vao;
+    _vbo = _static_vbo;
+    _ibo = _static_ibo;
+
     _texture.bind();
     _texture.parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     _texture.parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -36,17 +78,7 @@ Plane::Plane(std::string const& filepath) try
     // Give the image to the OpenGL texture
     _texture.edit(0, GL_RGBA, w, h, GL_RGBA, GL_UNSIGNED_BYTE, data.get());
     // Scale to keep texture ratio
-    glm::vec3 scaling(1);
-    if (w > h) {
-        float const ratio = (static_cast<float>(h) / static_cast<float>(w));
-        scaling[0] /= ratio;
-    }
-    else if (h > w) {
-        float const ratio = (static_cast<float>(w) / static_cast<float>(h));
-        scaling[1] /= ratio;
-    }
-    _og_scaling = glm::scale(glm::mat4(1), scaling);
-    resetTransformations(Transformation::Scaling);
+    _scaleToTextureRatio(w, h);
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
@@ -54,82 +86,37 @@ Plane::~Plane()
 {
 }
 
-void Plane::init() try
+void Plane::editTexture(const GLvoid* pixels, GLsizei width, GLsizei height,
+    GLenum format, GLint internalformat, GLenum type, GLint level)
 {
-    if (_vao && _vbo && _ibo) {
-        __LOG_FUNC_WRN("Plane already init.");
-        return;
-    }
-
-    stbi_set_flip_vertically_on_load(true);
-
-    _vao.reset(new VAO);
-    _vbo.reset(new VBO);
-    _ibo.reset(new IBO);
-
-    _vao->bind();
-    _vbo->bind();
-    _ibo->bind();
-
-    constexpr float vertices[] = {
-        // positions          // texture coords
-        -0.5f,  0.5f, 0.0f,   0.0f, 1.0f,   // top left
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f,   // bottom left
-         0.5f, -0.5f, 0.0f,   1.0f, 0.0f,   // bottom right
-         0.5f,  0.5f, 0.0f,   1.0f, 1.0f    // top right
-    };
-    constexpr unsigned int indices[] = {
-        0, 1, 2,  // first triangle
-        0, 2, 3   // second triangle
-    };
-
-    _vbo->edit(sizeof(vertices), vertices, GL_STATIC_DRAW);
-    _ibo->edit(sizeof(indices), indices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-}
-__CATCH_AND_RETHROW_FUNC_EXC
-
-void Plane::scale(glm::vec3 scaling)
-{
-    _scaling = glm::scale(_scaling, scaling);
-    _model = _translation * _rotation * _scaling;
-}
-
-void Plane::rotate(float radians, glm::vec3 axis)
-{
-    _rotation = glm::rotate(_rotation, radians, axis);
-    _model = _translation * _rotation * _scaling;
-}
-
-void Plane::translate(glm::vec3 translation)
-{
-    _translation = glm::translate(_translation, translation);
-    _model = _translation * _rotation * _scaling;
-}
-
-void Plane::resetTransformations(Transformation transformations)
-{
-    if ((transformations & Transformation::Scaling) != Transformation::None) {
-        _scaling = _og_scaling;
-    }
-    if ((transformations & Transformation::Rotation) != Transformation::None) {
-        _rotation = _og_rotation;
-    }
-    if ((transformations & Transformation::Translation) != Transformation::None) {
-        _translation = _og_translation;
-    }
-    _model = _translation * _rotation * _scaling;
+    _texture.edit(level, internalformat, width, height, format, type, pixels);
+    _scaleToTextureRatio(width, height);
 }
 
 void Plane::draw() const
 {
-    _vao->bind();
+    _static_vao->bind();
     _texture.bind();
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 }
+
+void Plane::_scaleToTextureRatio(int width, int height)
+{
+    // Scale to keep texture ratio
+    glm::vec3 scaling(1);
+    if (width > height) {
+        float const ratio = (static_cast<float>(height) / static_cast<float>(width));
+        scaling[0] /= ratio;
+    }
+    else if (height > width) {
+        float const ratio = (static_cast<float>(width) / static_cast<float>(height));
+        scaling[1] /= ratio;
+    }
+    glm::mat4 const new_scaling = glm::scale(glm::mat4(1), scaling);
+    if (_og_scaling != new_scaling) {
+        _og_scaling = new_scaling;
+        resetTransformations(Transformation::Scaling);
+    }
+}
+
 __SSS_GL_END

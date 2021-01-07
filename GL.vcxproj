@@ -28,6 +28,7 @@
   <ItemGroup>
     <ClInclude Include="inc\SSS\GL.hpp" />
     <ClInclude Include="inc\SSS\GL\Init.hpp" />
+    <ClInclude Include="inc\SSS\GL\Model.hpp" />
     <ClInclude Include="inc\SSS\GL\Shaders.hpp" />
     <ClInclude Include="inc\SSS\GL\Plane.hpp" />
     <ClInclude Include="inc\SSS\GL\Window.hpp" />
@@ -36,6 +37,7 @@
     <ClInclude Include="inc\SSS\GL\_pointers.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Model.cpp" />
     <ClCompile Include="src\_pointers.cpp" />
     <ClCompile Include="src\Shaders.cpp" />
     <ClCompile Include="src\Plane.cpp" />
