@@ -1,5 +1,6 @@
 #include "SSS/GL/_callbacks.hpp"
 #include "SSS/GL/Window.hpp"
+#include "SSS/GL/Plane.hpp"
 
 __SSS_GL_BEGIN
 __INTERNAL_BEGIN
@@ -11,6 +12,8 @@ void window_resize_callback(GLFWwindow* ptr, int w, int h) try
     window->_w = w;
     window->_h = h;
     glViewport(0, 0, w, h);
+    // Update scaling of Planes adapting to screen ratio
+    Plane::_updateScreenRatio();
 }
 __CATCH_AND_RETHROW_FUNC_EXC
 

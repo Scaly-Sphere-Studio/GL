@@ -86,6 +86,9 @@ public :
     // -> See internal callback window_pos_callback();
     inline GLFWmonitor* getMonitor() const noexcept { return _main_monitor.ptr; }
 
+    inline float getScreenRatio() const noexcept
+        { return static_cast<float>(_w) / static_cast<float>(_h); }
+
 private:
 // --- Private variables ---
 

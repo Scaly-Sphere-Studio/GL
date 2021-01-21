@@ -31,6 +31,7 @@ struct VBO : _internal::AbstractObject {
     VBO();
     ~VBO();
     virtual void bind() const;
+    virtual void unbind() const;
     void edit(GLsizeiptr size, const void* data, GLenum usage);
 };
 
@@ -40,6 +41,7 @@ struct IBO : _internal::AbstractObject {
     IBO();
     ~IBO();
     virtual void bind() const;
+    virtual void unbind() const;
     void edit(GLsizeiptr size, const void* data, GLenum usage);
 };
 
@@ -50,9 +52,11 @@ struct Texture : _internal::AbstractObject {
     ~Texture();
     virtual void bind() const;
     void parameteri(GLenum pname, GLint param);
-    void edit(GLint level, GLint internalformat, GLsizei width, GLsizei height,
-        GLenum format, GLenum type, const GLvoid* pixels);
+    void edit(const GLvoid* pixels, GLsizei width, GLsizei height,
+        GLenum format = GL_RGBA, GLint internalformat = GL_RGBA,
+        GLenum type = GL_UNSIGNED_BYTE, GLint level = 0);
     GLenum const target;
+    GLFWwindow const* context;
 };
 
 __SSS_GL_END

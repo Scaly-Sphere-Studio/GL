@@ -11,6 +11,7 @@ __SSS_GL_BEGIN
 VAO::Shared Plane::_static_vao{ nullptr };
 VBO::Shared Plane::_static_vbo{ nullptr };
 IBO::Shared Plane::_static_ibo{ nullptr };
+std::vector<Plane::Weak> Plane::_instances{};
 
 void Plane::_init_statics() try
 {
@@ -76,9 +77,9 @@ Plane::Plane(std::string const& filepath) try
         SSS::throw_exc(stbi_failure_reason());
     }
     // Give the image to the OpenGL texture
-    _texture.edit(0, GL_RGBA, w, h, GL_RGBA, GL_UNSIGNED_BYTE, data.get());
+    _texture.edit(data.get(), w, h);
     // Scale to keep texture ratio
-    _scaleToTextureRatio(w, h);
+    _updateTexScaling(w, h);
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
@@ -86,11 +87,27 @@ Plane::~Plane()
 {
 }
 
+// Creates a Plane model and returns a unique_ptr
+Plane::Shared Plane::create() try
+{
+    // Use new instead of std::make_shared to access private constructor
+    return Shared(_instances.emplace_back(Shared(new Plane())));
+}
+__CATCH_AND_RETHROW_FUNC_EXC
+
+// Creates a Plane model and returns a unique_ptr
+Plane::Shared Plane::create(std::string const& filepath) try
+{
+    // Use new instead of std::make_shared to access private constructor
+    return Shared(_instances.emplace_back(Shared(new Plane(filepath))));
+}
+__CATCH_AND_RETHROW_FUNC_EXC
+
 void Plane::editTexture(const GLvoid* pixels, GLsizei width, GLsizei height,
     GLenum format, GLint internalformat, GLenum type, GLint level)
 {
-    _texture.edit(level, internalformat, width, height, format, type, pixels);
-    _scaleToTextureRatio(width, height);
+    _texture.edit(pixels, width, height, format, internalformat, type, level);
+    _updateTexScaling(width, height);
 }
 
 void Plane::draw() const
@@ -100,23 +117,82 @@ void Plane::draw() const
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 }
 
-void Plane::_scaleToTextureRatio(int width, int height)
+// Updates the scaling to handle the new screen ratio
+void Plane::_updateScreenRatio()
 {
-    // Scale to keep texture ratio
+    for (Weak const& weak : _instances) {
+        Shared const plane = Shared(weak);
+        plane->_updateWinScaling();
+    }
+}
+
+void Plane::_updateTexScaling(int width, int height)
+{
+    if (_tex_w == width && height == _tex_h) {
+        return;
+    }
+    _tex_w = width;
+    _tex_h = height;
+
+    float const ratio = (static_cast<float>(_tex_w) / static_cast<float>(_tex_h));
     glm::vec3 scaling(1);
-    if (width > height) {
-        float const ratio = (static_cast<float>(height) / static_cast<float>(width));
-        scaling[0] /= ratio;
+    if (ratio < 1.f) {
+        scaling[0] = ratio;
     }
-    else if (height > width) {
-        float const ratio = (static_cast<float>(width) / static_cast<float>(height));
-        scaling[1] /= ratio;
+    else {
+        scaling[1] = 1 / ratio;
     }
-    glm::mat4 const new_scaling = glm::scale(glm::mat4(1), scaling);
-    if (_og_scaling != new_scaling) {
-        _og_scaling = new_scaling;
-        resetTransformations(Transformation::Scaling);
+
+    if (_tex_scaling != scaling) {
+        _tex_scaling = scaling;
+        _should_compute_mat4 = true;
+        _updateWinScaling();
     }
+}
+
+void Plane::_updateWinScaling()
+{
+    Window::Shared const win = Window::get(_texture.context);
+    if (!win) {
+        return;
+    }
+
+    float const ratio = (static_cast<float>(_tex_w) / static_cast<float>(_tex_h));
+    float const screen_ratio = win->getScreenRatio();
+    glm::vec3 scaling(1);
+    if (ratio < 1.f) {
+        if (screen_ratio < ratio) {
+            scaling[0] = 1 / ratio;
+            scaling[1] = screen_ratio / ratio;
+        }
+        else {
+            scaling[0] = 1 / screen_ratio;
+        }
+    }
+    else {
+        if (screen_ratio > ratio) {
+            scaling[1] = ratio;
+            scaling[0] = ratio / screen_ratio;
+        }
+        else {
+            scaling[1] = screen_ratio;
+        }
+    }
+    if (_win_scaling != scaling) {
+        _win_scaling = scaling;
+        _should_compute_mat4 = true;
+    }
+}
+
+glm::mat4 Plane::getModelMat4() noexcept
+{
+    if (_should_compute_mat4) {
+        glm::vec3 tmp = _tex_scaling * _win_scaling;
+        glm::mat4 scaling = glm::scale(_scaling, _tex_scaling * _win_scaling);
+        _model_mat4 = _translation * _rotation * scaling;
+        _should_compute_mat4 = false;
+    }
+    return _model_mat4;
 }
 
 __SSS_GL_END

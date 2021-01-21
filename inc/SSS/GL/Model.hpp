@@ -28,23 +28,19 @@ public:
 
     void resetTransformations(Transformation transformations);
 
-    inline glm::mat4 getModelMat4() const noexcept { return _model_mat4; }
+    glm::mat4 getModelMat4() noexcept;
 
 protected:
     VAO::Shared _vao;
     VBO::Shared _vbo;
     IBO::Shared _ibo;
 
-    glm::mat4 _og_scaling{ glm::scale(glm::mat4(1), glm::vec3(0)) };
-    glm::mat4 _scaling{ _og_scaling };
+    glm::mat4 _scaling;
+    glm::mat4 _rotation;
+    glm::mat4 _translation;
 
-    glm::mat4 _og_rotation{ glm::rotate(glm::mat4(1.), glm::radians(0.f), glm::vec3(0., 0., -1.)) };
-    glm::mat4 _rotation{ _og_rotation };
-
-    glm::mat4 _og_translation{ glm::translate(glm::mat4(1), glm::vec3(0)) };
-    glm::mat4 _translation{ _og_translation };
-
-    glm::mat4 _model_mat4{ _translation * _rotation * _scaling };
+    glm::mat4 _model_mat4;
+    bool _should_compute_mat4{ true };
 };
 
 __SSS_GL_END

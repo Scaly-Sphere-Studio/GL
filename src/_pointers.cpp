@@ -2,6 +2,8 @@
 
 __SSS_GL_BEGIN
 
+    // --- VAO ---
+
 VAO::VAO() try
     : _internal::AbstractObject([]()->GLuint {
         GLuint id;
@@ -21,6 +23,8 @@ void VAO::bind() const
 {
     glBindVertexArray(id);
 }
+
+    // --- VBO ---
 
 VBO::VBO() try
     : _internal::AbstractObject([]()->GLuint {
@@ -42,11 +46,18 @@ void VBO::bind() const
     glBindBuffer(GL_ARRAY_BUFFER, id);
 }
 
+void VBO::unbind() const
+{
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
 void VBO::edit(GLsizeiptr size, const void* data, GLenum usage)
 {
     bind();
     glBufferData(GL_ARRAY_BUFFER, size, data, usage);
 }
+
+    // --- IBO ---
 
 IBO::IBO() try
     : _internal::AbstractObject([]()->GLuint {
@@ -68,10 +79,17 @@ void IBO::bind() const
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
 }
 
+void IBO::unbind() const
+{
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
 void IBO::edit(GLsizeiptr size, const void* data, GLenum usage)
 {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, usage);
 }
+
+    // --- Texture ---
 
 Texture::Texture(GLenum given_target) try
     : _internal::AbstractObject(
@@ -80,7 +98,7 @@ Texture::Texture(GLenum given_target) try
             glGenTextures(1, &id);
             return id;
         }()
-    ), target(given_target)
+    ), target(given_target), context(glfwGetCurrentContext())
 {
 }
 __CATCH_AND_RETHROW_METHOD_EXC
@@ -100,8 +118,8 @@ void Texture::parameteri(GLenum pname, GLint param)
     glTexParameteri(target, pname, param);
 }
 
-void Texture::edit(GLint level, GLint internalformat, GLsizei width, GLsizei height,
-    GLenum format, GLenum type, const GLvoid* pixels)
+void Texture::edit(const GLvoid* pixels, GLsizei width, GLsizei height,
+    GLenum format, GLint internalformat, GLenum type, GLint level)
 {
     glTexImage2D(target, level, internalformat, width, height,
         0, format, type, pixels);
