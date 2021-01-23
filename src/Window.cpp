@@ -48,6 +48,9 @@ Window::Window(int w, int h, std::string const& title) try
     }
     // Set viewport
     glViewport(0, 0, _w, _h);
+    // Enable blending (transparency)
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     // Set main monitor
     _setMainMonitor(_monitors[0]);
     // Set VSYNC to false by default

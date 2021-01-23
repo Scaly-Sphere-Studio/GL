@@ -13,27 +13,27 @@ private:
     static IBO::Shared _static_ibo;
     static void _init_statics();
 
-    using Weak = std::weak_ptr<Plane>;
-    static std::vector<Weak> _instances;
-
     Plane();
     Plane(std::string const& filepath);
 
 public:
 
-    ~Plane();
+    virtual ~Plane() = default;
 
     using Shared = std::shared_ptr<Plane>;
-    // Creates a Plane model and returns a unique_ptr
+    // Creates a Plane model and returns a shared_ptr
     static Shared create();
-    // Creates a Plane model and returns a unique_ptr
+    // Creates a Plane model and returns a shared_ptr
     static Shared create(std::string const& filepath);
+
+    static void unload(Shared instance);
+    static void unloadAll();
     
     void editTexture(const GLvoid* pixels, GLsizei width, GLsizei height,
         GLenum format = GL_RGBA, GLint internalformat = GL_RGBA,
         GLenum type = GL_UNSIGNED_BYTE, GLint level = 0);
 
-    glm::mat4 getModelMat4() noexcept;
+    virtual glm::mat4 getModelMat4() noexcept;
     void draw() const;
 
 private:

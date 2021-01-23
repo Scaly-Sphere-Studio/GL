@@ -11,7 +11,6 @@ __SSS_GL_BEGIN
 VAO::Shared Plane::_static_vao{ nullptr };
 VBO::Shared Plane::_static_vbo{ nullptr };
 IBO::Shared Plane::_static_ibo{ nullptr };
-std::vector<Plane::Weak> Plane::_instances{};
 
 void Plane::_init_statics() try
 {
@@ -83,15 +82,11 @@ Plane::Plane(std::string const& filepath) try
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
-Plane::~Plane()
-{
-}
-
 // Creates a Plane model and returns a unique_ptr
 Plane::Shared Plane::create() try
 {
     // Use new instead of std::make_shared to access private constructor
-    return Shared(_instances.emplace_back(Shared(new Plane())));
+    return std::dynamic_pointer_cast<Plane>(_instances.emplace_back(Shared(new Plane())));
 }
 __CATCH_AND_RETHROW_FUNC_EXC
 
@@ -99,15 +94,40 @@ __CATCH_AND_RETHROW_FUNC_EXC
 Plane::Shared Plane::create(std::string const& filepath) try
 {
     // Use new instead of std::make_shared to access private constructor
-    return Shared(_instances.emplace_back(Shared(new Plane(filepath))));
+    return std::dynamic_pointer_cast<Plane>(_instances.emplace_back(Shared(new Plane(filepath))));
 }
 __CATCH_AND_RETHROW_FUNC_EXC
+
+void Plane::unload(Shared instance)
+{
+    Model::unload(instance);
+}
+
+void Plane::unloadAll()
+{
+    for (auto it = _instances.cbegin(); it != _instances.cend(); ++it) {
+        Shared is_plane(std::dynamic_pointer_cast<Plane>(*it));
+        if (is_plane) {
+            _instances.erase(it);
+        }
+    }
+}
 
 void Plane::editTexture(const GLvoid* pixels, GLsizei width, GLsizei height,
     GLenum format, GLint internalformat, GLenum type, GLint level)
 {
     _texture.edit(pixels, width, height, format, internalformat, type, level);
     _updateTexScaling(width, height);
+}
+
+glm::mat4 Plane::getModelMat4() noexcept
+{
+    if (_should_compute_mat4) {
+        glm::mat4 scaling = glm::scale(_scaling, _tex_scaling * _win_scaling);
+        _model_mat4 = _translation * _rotation * scaling;
+        _should_compute_mat4 = false;
+    }
+    return _model_mat4;
 }
 
 void Plane::draw() const
@@ -118,13 +138,16 @@ void Plane::draw() const
 }
 
 // Updates the scaling to handle the new screen ratio
-void Plane::_updateScreenRatio()
+void Plane::_updateScreenRatio() try
 {
-    for (Weak const& weak : _instances) {
-        Shared const plane = Shared(weak);
-        plane->_updateWinScaling();
+    for (Model::Shared const& model : _instances) {
+        Shared const plane = std::dynamic_pointer_cast<Plane>(model);
+        if (plane) {
+            plane->_updateWinScaling();
+        }
     }
 }
+__CATCH_AND_RETHROW_FUNC_EXC
 
 void Plane::_updateTexScaling(int width, int height)
 {
@@ -182,17 +205,6 @@ void Plane::_updateWinScaling()
         _win_scaling = scaling;
         _should_compute_mat4 = true;
     }
-}
-
-glm::mat4 Plane::getModelMat4() noexcept
-{
-    if (_should_compute_mat4) {
-        glm::vec3 tmp = _tex_scaling * _win_scaling;
-        glm::mat4 scaling = glm::scale(_scaling, _tex_scaling * _win_scaling);
-        _model_mat4 = _translation * _rotation * scaling;
-        _should_compute_mat4 = false;
-    }
-    return _model_mat4;
 }
 
 __SSS_GL_END
