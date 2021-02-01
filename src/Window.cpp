@@ -58,8 +58,10 @@ Window::Window(int w, int h, std::string const& title) try
     // Center window
     glfwSetWindowPos(_window.get(), (mode->width - _w) / 2, (mode->height - _h) / 2);
     // Set window callbacks
-    setCallback(glfwSetWindowSizeCallback, _internal::window_resize_callback);
-    setCallback(glfwSetWindowPosCallback, _internal::window_pos_callback);
+    glfwSetWindowSizeCallback(_window.get(), _internal::window_resize_callback);
+    glfwSetWindowPosCallback(_window.get(), _internal::window_pos_callback);
+    glfwSetMouseButtonCallback(_window.get(), _internal::mouse_button_callback);
+    glfwSetKeyCallback(_window.get(), _internal::key_callback);
 
     if (LOG::constructor) {
         __LOG_CONSTRUCTOR

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Model.hpp"
-#include "Window.hpp"
 
 __SSS_GL_BEGIN
 

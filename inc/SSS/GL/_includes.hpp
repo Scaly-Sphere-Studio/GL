@@ -11,6 +11,7 @@
 #include <SSS/Text-Rendering.hpp>
 
 // STL
+#include <array>
 #include <fstream>
 #include <algorithm>
 

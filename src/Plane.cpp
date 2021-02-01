@@ -1,4 +1,5 @@
 #include "SSS/GL/Plane.hpp"
+#include "SSS/GL/Window.hpp"
 
 // Init STB
 #define STB_IMAGE_IMPLEMENTATION

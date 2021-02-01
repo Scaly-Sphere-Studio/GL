@@ -14,6 +14,10 @@ void window_resize_callback(GLFWwindow* ptr, int w, int h) try
     glViewport(0, 0, w, h);
     // Update scaling of Planes adapting to screen ratio
     Plane::_updateScreenRatio();
+    // Call user defined callback, if needed
+    if (window->_resize_callback != nullptr) {
+        window->_resize_callback(ptr, w, h);
+    }
 }
 __CATCH_AND_RETHROW_FUNC_EXC
 
@@ -45,9 +49,39 @@ void window_pos_callback(GLFWwindow* ptr, int x, int y) try
             break;
         }
     }
+    // Call user defined callback, if needed
+    if (window->_pos_callback != nullptr) {
+        window->_pos_callback(ptr, x, y);
+    }
 }
 __CATCH_AND_RETHROW_FUNC_EXC
 
+// Used for clickable buttons and such
+void  mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) try
+{
+    Window::Shared window = Window::get(ptr);
+
+    // Call user defined callback, if needed
+    if (window->_mouse_button_callback != nullptr) {
+        window->_mouse_button_callback(ptr, button, action, mods);
+    }
+}
+__CATCH_AND_RETHROW_FUNC_EXC
+
+// Stores key inputs
+void key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods) try
+{
+    Window::Shared window = Window::get(ptr);
+
+    window->_key_inputs[key] = action != GLFW_RELEASE;
+    // Call user defined callback, if needed
+    if (window->_key_callback != nullptr) {
+        window->_key_callback(ptr, key, scancode, action, mods);
+    }
+}
+__CATCH_AND_RETHROW_FUNC_EXC
+
+// Updates connected monitors
 void monitor_callback(GLFWmonitor* ptr, int event) try
 {
     // Ignore arguments
