@@ -81,16 +81,16 @@ public :
     // Sets a corresponding callback
     template<typename _Func>
     void setCallback(_Func(*set)(GLFWwindow*, _Func), _Func callback) {
-        if (std::is_same<_Func, GLFWwindowsizefun>::value) {
+        if (typeid(set) == typeid(glfwSetWindowSizeCallback)) {
             _resize_callback = GLFWwindowsizefun(callback);
         }
-        else if (std::is_same<_Func, GLFWwindowposfun>::value) {
+        else if (typeid(set) == typeid(glfwSetWindowPosCallback)) {
             _pos_callback = GLFWwindowposfun(callback);
         }
-        else if (std::is_same<_Func, GLFWkeyfun>::value) {
+        else if (typeid(set) == typeid(glfwSetKeyCallback)) {
             _key_callback = GLFWkeyfun(callback);
         }
-        else if (std::is_same<_Func, GLFWmousebuttonfun>::value) {
+        else if (typeid(set) == typeid(glfwSetMouseButtonCallback)) {
             _mouse_button_callback = GLFWmousebuttonfun(callback);
         }
         else {
