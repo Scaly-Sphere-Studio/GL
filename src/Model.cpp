@@ -2,8 +2,6 @@
 
 __SSS_GL_BEGIN
 
-std::vector<Model::Shared> Model::_instances{};
-
 Model::Model() try
 {
     _vao.reset(new VAO);
@@ -13,33 +11,15 @@ Model::Model() try
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
-Model::Shared Model::create() try
-{
-    // Use new instead of std::make_shared to access private constructor
-    return Shared(_instances.emplace_back(Shared(new Model())));
-}
-__CATCH_AND_RETHROW_FUNC_EXC
-
-void Model::unload(Shared instance) try
-{
-    for (auto it = _instances.cbegin(); it != _instances.cend(); ++it) {
-        if (*it == instance) {
-            _instances.erase(it);
-            break;
-        }
-    }
-}
-__CATCH_AND_RETHROW_FUNC_EXC
-
-void Model::unloadAll() noexcept
-{
-    _instances.clear();
-}
-
 void Model::scale(glm::vec3 scaling)
 {
     _scaling = glm::scale(_scaling, scaling);
     _should_compute_mat4 = true;
+}
+
+void Model::scale(float scaling)
+{
+    scale(glm::vec3(scaling));
 }
 
 void Model::rotate(float radians, glm::vec3 axis)

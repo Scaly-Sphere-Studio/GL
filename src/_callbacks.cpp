@@ -1,6 +1,4 @@
-#include "SSS/GL/_callbacks.hpp"
 #include "SSS/GL/Window.hpp"
-#include "SSS/GL/Plane.hpp"
 
 __SSS_GL_BEGIN
 __INTERNAL_BEGIN
@@ -12,8 +10,15 @@ void window_resize_callback(GLFWwindow* ptr, int w, int h) try
     window->_w = w;
     window->_h = h;
     glViewport(0, 0, w, h);
+
     // Update scaling of Planes adapting to screen ratio
-    Plane::_updateScreenRatio();
+    for (Plane::Shared const& plane : window->_planes) {
+        plane->_updateWinScaling();
+    }
+    for (Button::Shared const& button: window->_buttons) {
+        button->_updateWinScaling();
+    }
+
     // Call user defined callback, if needed
     if (window->_resize_callback != nullptr) {
         window->_resize_callback(ptr, w, h);
@@ -60,6 +65,25 @@ __CATCH_AND_RETHROW_FUNC_EXC
 void  mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) try
 {
     Window::Shared window = Window::get(ptr);
+
+    // Check if a button was pressed
+    if (action == GLFW_PRESS) {
+        // Get mouse coordinates in -1; 1 range
+        double x, y;
+        glfwGetCursorPos(ptr, &x, &y);
+        x /= static_cast<double>(window->_w) / 2.0;
+        x -= 1.0;
+        y /= static_cast<double>(window->_h) / 2.0;
+        y -= 1.0;
+        y *= -1.0;
+    
+        //__LOG_MSG(x)
+        //__LOG_MSG(y)
+        for (Button::Shared const& button : window->_buttons) {
+            // Call button function
+            __LOG_MSG(button->_WasItPressed(x, y))
+        }
+    }
 
     // Call user defined callback, if needed
     if (window->_mouse_button_callback != nullptr) {

@@ -10,6 +10,7 @@ bool Window::LOG::destructor{ true };
 bool Window::LOG::fps{ true };
 bool Window::LOG::dpi_update{ true };
 
+
 // Window instances
 std::map<GLFWwindow const*, Window::Weak> Window::_instances{};
 // Connected monitors
@@ -94,6 +95,91 @@ Window::Shared Window::get(GLFWwindow const* ptr) try
     return _instances.at(ptr).lock();
 }
 __CATCH_AND_RETHROW_FUNC_EXC
+
+Window::Shared Window::getMain() try
+{
+    return get(glfwGetCurrentContext());
+}
+__CATCH_AND_RETHROW_FUNC_EXC
+
+    // --- Model methods ---
+
+Model::Shared Window::createModel()
+{
+    // Use new instead of std::make_shared to access private constructor
+    return Model::Shared(
+        _models.emplace_back(Model::Shared(new Model())));
+}
+
+Plane::Shared Window::createPlane()
+{
+    return Plane::Shared(
+        _planes.emplace_back(Plane::Shared(new Plane())));
+}
+
+Plane::Shared Window::createPlane(std::string filepath)
+{
+    return Plane::Shared(
+        _planes.emplace_back(Plane::Shared(new Plane(filepath))));
+}
+
+Button::Shared Window::createButton()
+{
+    return Button::Shared(
+        _buttons.emplace_back(Button::Shared(new Button())));
+}
+
+Button::Shared Window::createButton(std::string filepath)
+{
+    return Button::Shared(
+        _buttons.emplace_back(Button::Shared(new Button(filepath))));
+}
+
+void Window::unloadModel(Model::Shared model)
+{
+    for (auto it = _models.cbegin(); it != _models.cend(); ++it) {
+        if (*it == model) {
+            _models.erase(it);
+            break;
+        }
+    }
+}
+
+void Window::unloadPlane(Plane::Shared plane)
+{
+    for (auto it = _planes.cbegin(); it != _planes.cend(); ++it) {
+        if (*it == plane) {
+            _planes.erase(it);
+            break;
+        }
+    }
+}
+
+void Window::unloadButton(Button::Shared button)
+{
+    for (auto it = _buttons.cbegin(); it != _buttons.cend(); ++it) {
+        if (*it == button) {
+            _buttons.erase(it);
+            break;
+        }
+    }
+}
+
+void Window::unloadAllModels()
+{
+    _models.clear();
+}
+
+void Window::unloadAllPlanes()
+{
+    _planes.clear();
+}
+
+void Window::unloadAllButtons()
+{
+    _buttons.clear();
+}
+
 
     // --- Public methods ---
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "SSS/GL/_includes.hpp"
-#include "SSS/GL/_callbacks.hpp"
+#include "_includes.hpp"
+#include "_callbacks.hpp"
 
 __SSS_GL_BEGIN
 

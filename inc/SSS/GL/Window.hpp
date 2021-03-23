@@ -1,8 +1,11 @@
 #pragma once
 
-#include "SSS/GL/_includes.hpp"
-#include "SSS/GL/_pointers.hpp"
-#include "SSS/GL/_callbacks.hpp"
+#include "_includes.hpp"
+#include "_pointers.hpp"
+#include "_callbacks.hpp"
+#include "Model.hpp"
+#include "Plane.hpp"
+#include "Button.hpp"
 
 __SSS_GL_BEGIN
 
@@ -10,6 +13,7 @@ __INTERNAL_BEGIN
 struct Monitor {
     GLFWmonitor* ptr;   // GLFW pointer
     float w;    // Width, in inches
+    float h;    // Height, in inches
     float h;    // Height, in inches
 };
 __INTERNAL_END
@@ -63,6 +67,24 @@ public :
     // To be used in callbacks.
     // Returns an existing Window instance, via its GLFWwindow pointer
     static Shared get(GLFWwindow const* ptr);
+    // Returns last focused window
+    static Shared getMain();
+
+// --- Model methods ---
+
+    Model::Shared createModel();
+    Plane::Shared createPlane();
+    Plane::Shared createPlane(std::string filepath);
+    Button::Shared createButton();
+    Button::Shared createButton(std::string filepath);
+
+    void unloadModel(Model::Shared model);
+    void unloadPlane(Plane::Shared plane);
+    void unloadButton(Button::Shared button);
+
+    void unloadAllModels();
+    void unloadAllPlanes();
+    void unloadAllButtons();
 
 // --- Public methods ---
 
@@ -110,6 +132,10 @@ public :
 
 private:
 // --- Private variables ---
+
+    std::vector<Model::Shared> _models;
+    std::vector<Plane::Shared> _planes;
+    std::vector<Button::Shared> _buttons;
 
     // Window size
     int _w; // Width

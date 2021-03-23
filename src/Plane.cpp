@@ -83,37 +83,6 @@ Plane::Plane(std::string const& filepath) try
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
-// Creates a Plane model and returns a unique_ptr
-Plane::Shared Plane::create() try
-{
-    // Use new instead of std::make_shared to access private constructor
-    return std::dynamic_pointer_cast<Plane>(_instances.emplace_back(Shared(new Plane())));
-}
-__CATCH_AND_RETHROW_FUNC_EXC
-
-// Creates a Plane model and returns a unique_ptr
-Plane::Shared Plane::create(std::string const& filepath) try
-{
-    // Use new instead of std::make_shared to access private constructor
-    return std::dynamic_pointer_cast<Plane>(_instances.emplace_back(Shared(new Plane(filepath))));
-}
-__CATCH_AND_RETHROW_FUNC_EXC
-
-void Plane::unload(Shared instance)
-{
-    Model::unload(instance);
-}
-
-void Plane::unloadAll()
-{
-    for (auto it = _instances.cbegin(); it != _instances.cend(); ++it) {
-        Shared is_plane(std::dynamic_pointer_cast<Plane>(*it));
-        if (is_plane) {
-            _instances.erase(it);
-        }
-    }
-}
-
 void Plane::editTexture(const GLvoid* pixels, GLsizei width, GLsizei height,
     GLenum format, GLint internalformat, GLenum type, GLint level)
 {
@@ -137,18 +106,6 @@ void Plane::draw() const
     _texture.bind();
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 }
-
-// Updates the scaling to handle the new screen ratio
-void Plane::_updateScreenRatio() try
-{
-    for (Model::Shared const& model : _instances) {
-        Shared const plane = std::dynamic_pointer_cast<Plane>(model);
-        if (plane) {
-            plane->_updateWinScaling();
-        }
-    }
-}
-__CATCH_AND_RETHROW_FUNC_EXC
 
 void Plane::_updateTexScaling(int width, int height)
 {

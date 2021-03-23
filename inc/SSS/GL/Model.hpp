@@ -18,7 +18,7 @@ enum class Transformation {
 __ENABLE_BITMASK_OPERATORS(Transformation);
 
 class Model {
-    friend class Plane;
+    friend class Window;
 
 protected:
     Model();
@@ -28,12 +28,8 @@ public:
 
     using Shared = std::shared_ptr<Model>;
 
-    // Creates a Model model and returns a unique_ptr
-    static Shared create();
-    static void unload(Shared instance);
-    static void unloadAll() noexcept;
-
     void scale(glm::vec3 scaling);
+    void scale(float scaling);
     void rotate(float radians, glm::vec3 axis);
     void translate(glm::vec3 translation);
 
@@ -42,7 +38,6 @@ public:
     virtual glm::mat4 getModelMat4() noexcept;
 
 protected:
-    static std::vector<Shared> _instances;
 
     VAO::Shared _vao;
     VBO::Shared _vbo;

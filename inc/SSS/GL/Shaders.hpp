@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SSS/GL/_includes.hpp"
+#include "_includes.hpp"
 
 __SSS_GL_BEGIN
 

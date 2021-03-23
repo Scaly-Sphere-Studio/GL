@@ -1,7 +1,7 @@
 #pragma once
 
 #include <SSS/Commons/pointers.hpp>
-#include "SSS/GL/_includes.hpp"
+#include "_includes.hpp"
 
 __SSS_GL_BEGIN
 __INTERNAL_BEGIN
