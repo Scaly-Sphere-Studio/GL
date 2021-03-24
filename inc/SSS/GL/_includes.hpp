@@ -1,7 +1,7 @@
 #pragma once
 
 // OpenGL headers
-#include <GL/glew.h>    // glew
+#include <glad/glad.h>  // glad
 #include <GLFW/glfw3.h> // glfw
 #include <glm/glm.hpp>  // glm
 #include <glm/ext.hpp>  // glm

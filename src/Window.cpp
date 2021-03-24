@@ -40,13 +40,12 @@ Window::Window(int w, int h, std::string const& title) try
     // Make its context current
     glfwMakeContextCurrent(_window.get());
 
-    // Initialize GLEW
-    GLenum const glew_ret = glewInit();
-    // Throw if an error occured
-    if (glew_ret != GLEW_OK) {
-        char const* msg = reinterpret_cast<char const*>(glewGetErrorString(glew_ret));
-        throw_exc(msg);
+
+    // Init glad
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        SSS::throw_exc("Failed to initialize GLAD");
     }
+
     // Set viewport
     glViewport(0, 0, _w, _h);
     // Enable blending (transparency)
