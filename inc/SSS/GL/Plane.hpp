@@ -39,7 +39,8 @@ public:
     void draw() const;
 
 protected:
-    Texture _texture;
+    Texture::Ptr _texture;
+    std::vector<bool> _texture_alpha_map;
     GLsizei _tex_w{ 0 }, _tex_h{ 0 };
     glm::vec3 _tex_scaling{ 1 };
     glm::vec3 _win_scaling{ 1 };

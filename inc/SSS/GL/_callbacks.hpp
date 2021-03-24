@@ -11,6 +11,7 @@ void window_resize_callback(GLFWwindow* ptr, int w, int h);
 void window_pos_callback(GLFWwindow* ptr, int x, int y);
 // Used for clickable buttons and such
 void mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods);
+void mouse_position_callback(GLFWwindow* ptr, double x, double y);
 // Stores key inputs
 void key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods);
 

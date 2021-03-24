@@ -61,6 +61,7 @@ Window::Window(int w, int h, std::string const& title) try
     // Set window callbacks
     glfwSetWindowSizeCallback(_window.get(), _internal::window_resize_callback);
     glfwSetWindowPosCallback(_window.get(), _internal::window_pos_callback);
+    glfwSetCursorPosCallback(_window.get(), _internal::mouse_position_callback);
     glfwSetMouseButtonCallback(_window.get(), _internal::mouse_button_callback);
     glfwSetKeyCallback(_window.get(), _internal::key_callback);
 

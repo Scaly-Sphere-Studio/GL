@@ -14,7 +14,6 @@ struct Monitor {
     GLFWmonitor* ptr;   // GLFW pointer
     float w;    // Width, in inches
     float h;    // Height, in inches
-    float h;    // Height, in inches
 };
 __INTERNAL_END
 
@@ -24,6 +23,7 @@ class Window {
     
     friend void _internal::window_resize_callback(GLFWwindow* ptr, int w, int h);
     friend void _internal::window_pos_callback(GLFWwindow* ptr, int x, int y);
+    friend void _internal::mouse_position_callback(GLFWwindow* ptr, double x, double y);
     friend void _internal::mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods);
     friend void _internal::monitor_callback(GLFWmonitor* ptr, int event);
     friend void _internal::key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods);
@@ -112,6 +112,9 @@ public :
         else if (typeid(set) == typeid(glfwSetKeyCallback)) {
             _key_callback = GLFWkeyfun(callback);
         }
+        else if (typeid(set) == typeid(glfwSetCursorPosCallback)) {
+            _mouse_position_callback = GLFWcursorposfun(callback);
+        }
         else if (typeid(set) == typeid(glfwSetMouseButtonCallback)) {
             _mouse_button_callback = GLFWmousebuttonfun(callback);
         }
@@ -153,6 +156,7 @@ private:
     GLFWwindowsizefun   _resize_callback{ nullptr };
     GLFWwindowposfun    _pos_callback{ nullptr };
     GLFWkeyfun          _key_callback{ nullptr };
+    GLFWcursorposfun    _mouse_position_callback{ nullptr };
     GLFWmousebuttonfun  _mouse_button_callback{ nullptr };
 
     KeyInputs _key_inputs;

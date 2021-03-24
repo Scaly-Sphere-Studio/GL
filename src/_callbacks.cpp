@@ -11,7 +11,7 @@ void window_resize_callback(GLFWwindow* ptr, int w, int h) try
     window->_h = h;
     glViewport(0, 0, w, h);
 
-    // Update scaling of Planes adapting to screen ratio
+    // Update scaling of Planes & Buttons adapting to screen ratio
     for (Plane::Shared const& plane : window->_planes) {
         plane->_updateWinScaling();
     }
@@ -62,26 +62,36 @@ void window_pos_callback(GLFWwindow* ptr, int x, int y) try
 __CATCH_AND_RETHROW_FUNC_EXC
 
 // Used for clickable buttons and such
+void mouse_position_callback(GLFWwindow* ptr, double x, double y)
+{
+    Window::Shared window = Window::get(ptr);
+
+    // Get mouse coordinates in -1; 1 range
+    x = (x / static_cast<double>(window->_w) * 2.0) - 1.0;
+    y = ((y / static_cast<double>(window->_h) * 2.0) - 1.0) * -1.0;
+
+    // Update button hover status
+    for (Button::Shared const& button : window->_buttons) {
+        button->_updateHoverStatus(x, y);
+    }
+
+    // Call user defined callback, if needed
+    if (window->_mouse_position_callback != nullptr) {
+        window->_mouse_position_callback(ptr, x, y);
+    }
+}
+
+// Used for clickable buttons and such
 void  mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) try
 {
     Window::Shared window = Window::get(ptr);
 
-    // Check if a button was pressed
+    // Call button functions, if needed
     if (action == GLFW_PRESS) {
-        // Get mouse coordinates in -1; 1 range
-        double x, y;
-        glfwGetCursorPos(ptr, &x, &y);
-        x /= static_cast<double>(window->_w) / 2.0;
-        x -= 1.0;
-        y /= static_cast<double>(window->_h) / 2.0;
-        y -= 1.0;
-        y *= -1.0;
-    
-        //__LOG_MSG(x)
-        //__LOG_MSG(y)
         for (Button::Shared const& button : window->_buttons) {
-            // Call button function
-            __LOG_MSG(button->_WasItPressed(x, y))
+            if (button->IsHovered()) {
+                // TODO: call button function
+            }
         }
     }
 

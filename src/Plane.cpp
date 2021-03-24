@@ -50,7 +50,7 @@ void Plane::_init_statics() try
 __CATCH_AND_RETHROW_FUNC_EXC
 
 Plane::Plane() try
-    : _texture(GL_TEXTURE_2D)
+    : _texture(std::make_unique<Texture>(GL_TEXTURE_2D))
 {
     // Init statics
     _init_statics();
@@ -58,11 +58,11 @@ Plane::Plane() try
     _vbo = _static_vbo;
     _ibo = _static_ibo;
 
-    _texture.bind();
-    _texture.parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    _texture.parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    _texture.parameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    _texture.parameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    _texture->bind();
+    _texture->parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    _texture->parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    _texture->parameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    _texture->parameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
@@ -77,7 +77,12 @@ Plane::Plane(std::string const& filepath) try
         SSS::throw_exc(stbi_failure_reason());
     }
     // Give the image to the OpenGL texture
-    _texture.edit(data.get(), w, h);
+    _texture->edit(data.get(), w, h);
+    _texture_alpha_map.resize(w * h);
+    unsigned char* pixels = data.get();
+    for (size_t i = 0; i < _texture_alpha_map.size(); ++i) {
+        _texture_alpha_map[i] = pixels[i * 4 + 3] != 0;
+    }
     // Scale to keep texture ratio
     _updateTexScaling(w, h);
 }
@@ -86,8 +91,20 @@ __CATCH_AND_RETHROW_METHOD_EXC
 void Plane::editTexture(const GLvoid* pixels, GLsizei width, GLsizei height,
     GLenum format, GLint internalformat, GLenum type, GLint level)
 {
-    _texture.edit(pixels, width, height, format, internalformat, type, level);
+    _texture->edit(pixels, width, height, format, internalformat, type, level);
     _updateTexScaling(width, height);
+    
+    // Fill alpha map
+    if (format != GL_RGBA) {
+        __LOG_METHOD_WRN("Format isn't GL_RGBA, the alpha map won't be used.");
+        _texture_alpha_map.clear();
+        return;
+    }
+    unsigned char const* px = static_cast<unsigned char const*>(pixels);
+    _texture_alpha_map.resize(width * height);
+    for (size_t i = 0; i < _texture_alpha_map.size(); ++i) {
+        _texture_alpha_map[i] = px[i * 4 + 3] != 0;
+    }
 }
 
 glm::mat4 Plane::getModelMat4() noexcept
@@ -103,7 +120,7 @@ glm::mat4 Plane::getModelMat4() noexcept
 void Plane::draw() const
 {
     _static_vao->bind();
-    _texture.bind();
+    _texture->bind();
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 }
 
@@ -133,7 +150,7 @@ void Plane::_updateTexScaling(int width, int height)
 
 void Plane::_updateWinScaling()
 {
-    Window::Shared const win = Window::get(_texture.context);
+    Window::Shared const win = Window::get(_texture->context);
     if (!win) {
         return;
     }
