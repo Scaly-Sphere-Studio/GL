@@ -89,8 +89,8 @@ void  mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) t
     // Call button functions, if needed
     if (action == GLFW_PRESS) {
         for (Button::Shared const& button : window->_buttons) {
-            if (button->IsHovered()) {
-                // TODO: call button function
+            if (button->isHovered()) {
+                button->callFunction();
             }
         }
     }
