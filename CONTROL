@@ -1,4 +1,4 @@
 Source: sss-gl
-Version: 0.4.0
-Description: GLFW abstraction in C++
+Version: 0.5.0
+Description: OpenGL abstraction in C++, using GLFW, Glad, and GLM
 Build-Depends: glfw3, glad, glm, stb, sss-commons, sss-text-rendering
