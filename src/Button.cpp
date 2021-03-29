@@ -2,14 +2,8 @@
 
 __SSS_GL_BEGIN
 
-Button::Button() try
-    : Plane::Plane()
-{
-}
-__CATCH_AND_RETHROW_METHOD_EXC
-
-Button::Button(std::string const& filepath) try
-    : Plane::Plane(filepath)
+Button::Button(Texture2D::Shared texture, GLFWwindow const* context) try
+    : Plane::Plane(texture, context)
 {
 }
 __CATCH_AND_RETHROW_METHOD_EXC
@@ -49,7 +43,8 @@ void Button::_updateHoverStatus(double x, double y) try
     }
 
     // If the button is a PNG, check the alpha channel of the pixel being hovered.
-    if (!_texture_alpha_map.empty()) {
+    std::vector<bool> const& alpha_map = _texture->getAlphaMap();
+    if (!alpha_map.empty()) {
         float const x_range = v[0] - u[0],
             y_range = v[1] - u[1],
             x_diff = static_cast<float>(x) - u[0],
@@ -57,9 +52,9 @@ void Button::_updateHoverStatus(double x, double y) try
         int const x_pos = static_cast<int>(x_diff / x_range * static_cast<float>(_tex_w)),
             y_pos = _tex_h - static_cast<int>(y_diff / y_range * static_cast<float>(_tex_h));
         // Update status
-        int const pixel = y_pos * _tex_w + x_pos;
-        if (pixel >= 0 && pixel < _texture_alpha_map.size()) {
-            _is_hovered = _texture_alpha_map.at(pixel);
+        size_t const pixel = static_cast<size_t>(y_pos * _tex_w + x_pos);
+        if (pixel < alpha_map.size()) {
+            _is_hovered = alpha_map.at(pixel);
         }
     }
     else {

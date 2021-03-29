@@ -1,6 +1,45 @@
 #include "SSS/GL/_pointers.hpp"
 
 __SSS_GL_BEGIN
+__INTERNAL_BEGIN
+
+// --- Texture ---
+
+Texture::Texture(GLenum given_target) try
+    : _internal::AbstractObject(
+        []()->GLuint {
+            GLuint id;
+            glGenTextures(1, &id);
+            return id;
+        }()
+    ), target(given_target)
+{
+}
+__CATCH_AND_RETHROW_METHOD_EXC
+
+    Texture::~Texture()
+{
+    glDeleteTextures(1, &id);
+}
+
+void Texture::bind() const
+{
+    glBindTexture(target, id);
+}
+
+void Texture::parameteri(GLenum pname, GLint param)
+{
+    glTexParameteri(target, pname, param);
+}
+
+void Texture::edit(const GLvoid* pixels, GLsizei width, GLsizei height,
+    GLenum format, GLint internalformat, GLenum type, GLint level)
+{
+    glTexImage2D(target, level, internalformat, width, height,
+        0, format, type, pixels);
+}
+
+__INTERNAL_END
 
     // --- VAO ---
 
@@ -87,42 +126,6 @@ void IBO::unbind() const
 void IBO::edit(GLsizeiptr size, const void* data, GLenum usage)
 {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, usage);
-}
-
-    // --- Texture ---
-
-Texture::Texture(GLenum given_target) try
-    : _internal::AbstractObject(
-        []()->GLuint {
-            GLuint id;
-            glGenTextures(1, &id);
-            return id;
-        }()
-    ), target(given_target), context(glfwGetCurrentContext())
-{
-}
-__CATCH_AND_RETHROW_METHOD_EXC
-
-Texture::~Texture()
-{
-    glDeleteTextures(1, &id);
-}
-
-void Texture::bind() const
-{
-    glBindTexture(target, id);
-}
-
-void Texture::parameteri(GLenum pname, GLint param)
-{
-    glTexParameteri(target, pname, param);
-}
-
-void Texture::edit(const GLvoid* pixels, GLsizei width, GLsizei height,
-    GLenum format, GLint internalformat, GLenum type, GLint level)
-{
-    glTexImage2D(target, level, internalformat, width, height,
-        0, format, type, pixels);
 }
 
 __SSS_GL_END

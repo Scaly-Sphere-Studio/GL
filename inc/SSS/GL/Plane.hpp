@@ -2,6 +2,7 @@
 
 #include "_callbacks.hpp"
 #include "Model.hpp"
+#include "Texture2D.hpp"
 
 __SSS_GL_BEGIN
 
@@ -17,36 +18,25 @@ private:
 
 protected:
     Plane();
-    Plane(std::string const& filepath);
-
+    Plane(Texture2D::Shared texture, GLFWwindow const* context);
 public:
     virtual ~Plane() = default;
 
     using Shared = std::shared_ptr<Plane>;
-    // Creates a Plane model and returns a shared_ptr
-    static Shared create();
-    // Creates a Plane model and returns a shared_ptr
-    static Shared create(std::string const& filepath);
-
-    static void unload(Shared instance);
-    static void unloadAll();
     
-    void editTexture(const GLvoid* pixels, GLsizei width, GLsizei height,
-        GLenum format = GL_RGBA, GLint internalformat = GL_RGBA,
-        GLenum type = GL_UNSIGNED_BYTE, GLint level = 0);
+    void useTexture(Texture2D::Shared texture);
 
     virtual glm::mat4 getModelMat4() noexcept;
     void draw() const;
 
 protected:
-    Texture::Ptr _texture;
-    std::vector<bool> _texture_alpha_map;
+    Texture2D::Shared _texture;
     GLsizei _tex_w{ 0 }, _tex_h{ 0 };
     glm::vec3 _tex_scaling{ 1 };
     glm::vec3 _win_scaling{ 1 };
     
-    void _updateTexScaling(int width, int height);
-    void _updateWinScaling();
+    void _updateTexScaling();
+    void _updateWinScaling(GLFWwindow const* context);
 };
 
 __SSS_GL_END

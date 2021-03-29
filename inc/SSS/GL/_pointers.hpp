@@ -15,6 +15,19 @@ struct AbstractObject {
     GLuint const id;
 };
 
+struct Texture : AbstractObject {
+    using Ptr = std::unique_ptr<Texture>;
+    using Shared = std::shared_ptr<Texture>;
+    Texture(GLenum given_target);
+    ~Texture();
+    virtual void bind() const;
+    void parameteri(GLenum pname, GLint param);
+    void edit(const GLvoid* pixels, GLsizei width, GLsizei height,
+        GLenum format = GL_RGBA, GLint internalformat = GL_RGBA,
+        GLenum type = GL_UNSIGNED_BYTE, GLint level = 0);
+    GLenum const target;
+};
+
 __INTERNAL_END
 
 struct VAO : _internal::AbstractObject {
@@ -43,20 +56,6 @@ struct IBO : _internal::AbstractObject {
     virtual void bind() const;
     virtual void unbind() const;
     void edit(GLsizeiptr size, const void* data, GLenum usage);
-};
-
-struct Texture : _internal::AbstractObject {
-    using Ptr = std::unique_ptr<Texture>;
-    using Shared = std::shared_ptr<Texture>;
-    Texture(GLenum given_target);
-    ~Texture();
-    virtual void bind() const;
-    void parameteri(GLenum pname, GLint param);
-    void edit(const GLvoid* pixels, GLsizei width, GLsizei height,
-        GLenum format = GL_RGBA, GLint internalformat = GL_RGBA,
-        GLenum type = GL_UNSIGNED_BYTE, GLint level = 0);
-    GLenum const target;
-    GLFWwindow const* context;
 };
 
 __SSS_GL_END

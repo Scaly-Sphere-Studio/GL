@@ -38,8 +38,7 @@ Window::Window(int w, int h, std::string const& title) try
         throw_exc(msg);
     }
     // Make its context current
-    glfwMakeContextCurrent(_window.get());
-
+    use();
 
     // Init glad
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -117,10 +116,10 @@ Plane::Shared Window::createPlane()
         _planes.emplace_back(Plane::Shared(new Plane())));
 }
 
-Plane::Shared Window::createPlane(std::string filepath)
+Plane::Shared Window::createPlane(Texture2D::Shared texture)
 {
     return Plane::Shared(
-        _planes.emplace_back(Plane::Shared(new Plane(filepath))));
+        _planes.emplace_back(Plane::Shared(new Plane(texture, _window.get()))));
 }
 
 Button::Shared Window::createButton()
@@ -129,10 +128,10 @@ Button::Shared Window::createButton()
         _buttons.emplace_back(Button::Shared(new Button())));
 }
 
-Button::Shared Window::createButton(std::string filepath)
+Button::Shared Window::createButton(Texture2D::Shared texture)
 {
     return Button::Shared(
-        _buttons.emplace_back(Button::Shared(new Button(filepath))));
+        _buttons.emplace_back(Button::Shared(new Button(texture, _window.get()))));
 }
 
 void Window::unloadModel(Model::Shared model)
@@ -182,6 +181,30 @@ void Window::unloadAllButtons()
 
 
     // --- Public methods ---
+
+// Renders a frame & polls events.
+// Logs fps if specified in LOG structure.
+void Window::render()
+{
+    // Render back buffer
+    glfwSwapBuffers(_window.get());
+    // Update fps, log if needed
+    if (fps_timer.addFrame()) {
+        if (LOG::fps) {
+            __LOG_MSG(toString(fps_timer.get()) + "fps");
+        }
+    }
+    // Clear back buffer
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // Poll events
+    glfwPollEvents();
+}
+
+// Make the OpenGL context this one.
+void Window::use() const
+{
+    glfwMakeContextCurrent(_window.get());
+}
 
 // Wether the user requested to close the window.
 // NOTE: this simply is a call to glfwWindowShouldClose
@@ -246,24 +269,6 @@ void Window::setFullscreen(bool state, int screen_id)
         glfwSetWindowMonitor(_window.get(), nullptr,
             _windowed_x, _windowed_y, _w, _h, GLFW_DONT_CARE);
     }
-}
-
-// Renders a frame & polls events.
-// Logs fps if specified in LOG structure.
-void Window::render()
-{
-    // Render back buffer
-    glfwSwapBuffers(_window.get());
-    // Update fps, log if needed
-    if (fps_timer.addFrame()) {
-        if (LOG::fps) {
-            __LOG_MSG(toString(fps_timer.get()) + "fps");
-        }
-    }
-    // Clear back buffer
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // Poll events
-    glfwPollEvents();
 }
 
 void Window::_setMainMonitor(_internal::Monitor const& monitor)

@@ -74,9 +74,9 @@ public :
 
     Model::Shared createModel();
     Plane::Shared createPlane();
-    Plane::Shared createPlane(std::string filepath);
+    Plane::Shared createPlane(Texture2D::Shared texture);
     Button::Shared createButton();
-    Button::Shared createButton(std::string filepath);
+    Button::Shared createButton(Texture2D::Shared texture);
 
     void unloadModel(Model::Shared model);
     void unloadPlane(Plane::Shared plane);
@@ -91,6 +91,9 @@ public :
     // Renders a frame & polls events.
     // Logs fps if specified in LOG structure.
     void render();
+
+    // Make the OpenGL context this one.
+    void use() const;
 
     // Wether the user requested to close the window.
     // NOTE: this simply is a call to glfwWindowShouldClose

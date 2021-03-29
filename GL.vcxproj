@@ -32,6 +32,7 @@
     <ClInclude Include="inc\SSS\GL\Model.hpp" />
     <ClInclude Include="inc\SSS\GL\Shaders.hpp" />
     <ClInclude Include="inc\SSS\GL\Plane.hpp" />
+    <ClInclude Include="inc\SSS\GL\Texture2D.hpp" />
     <ClInclude Include="inc\SSS\GL\Window.hpp" />
     <ClInclude Include="inc\SSS\GL\_callbacks.hpp" />
     <ClInclude Include="inc\SSS\GL\_includes.hpp" />
@@ -46,6 +47,7 @@
     <ClCompile Include="src\Window.cpp" />
     <ClCompile Include="src\Init.cpp" />
     <ClCompile Include="src\_callbacks.cpp" />
+    <ClCompile Include="src\Texture2D.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

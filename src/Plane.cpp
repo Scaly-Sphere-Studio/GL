@@ -1,11 +1,6 @@
 #include "SSS/GL/Plane.hpp"
 #include "SSS/GL/Window.hpp"
 
-// Init STB
-#define STB_IMAGE_IMPLEMENTATION
-#define STBI_FAILURE_USERMSG
-#include <stb_image.h>
-
 __SSS_GL_BEGIN
 
 // Init static members
@@ -50,61 +45,27 @@ void Plane::_init_statics() try
 __CATCH_AND_RETHROW_FUNC_EXC
 
 Plane::Plane() try
-    : _texture(std::make_unique<Texture>(GL_TEXTURE_2D))
 {
     // Init statics
     _init_statics();
     _vao = _static_vao;
     _vbo = _static_vbo;
     _ibo = _static_ibo;
-
-    _texture->bind();
-    _texture->parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    _texture->parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    _texture->parameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    _texture->parameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
-Plane::Plane(std::string const& filepath) try
+Plane::Plane(Texture2D::Shared texture, GLFWwindow const* context) try
     : Plane()
 {
-    int w, h;
-    SSS::C_Ptr<unsigned char, void(*)(void*), stbi_image_free> data
-        = stbi_load(filepath.c_str(), &w, &h, nullptr, 4);
-    // Throw if error
-    if (!data) {
-        SSS::throw_exc(stbi_failure_reason());
-    }
-    // Give the image to the OpenGL texture
-    _texture->edit(data.get(), w, h);
-    _texture_alpha_map.resize(w * h);
-    unsigned char* pixels = data.get();
-    for (size_t i = 0; i < _texture_alpha_map.size(); ++i) {
-        _texture_alpha_map[i] = pixels[i * 4 + 3] != 0;
-    }
-    // Scale to keep texture ratio
-    _updateTexScaling(w, h);
+    useTexture(texture);
+    _updateWinScaling(context);
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
-void Plane::editTexture(const GLvoid* pixels, GLsizei width, GLsizei height,
-    GLenum format, GLint internalformat, GLenum type, GLint level)
+void Plane::useTexture(Texture2D::Shared texture)
 {
-    _texture->edit(pixels, width, height, format, internalformat, type, level);
-    _updateTexScaling(width, height);
-    
-    // Fill alpha map
-    if (format != GL_RGBA) {
-        __LOG_METHOD_WRN("Format isn't GL_RGBA, the alpha map won't be used.");
-        _texture_alpha_map.clear();
-        return;
-    }
-    unsigned char const* px = static_cast<unsigned char const*>(pixels);
-    _texture_alpha_map.resize(width * height);
-    for (size_t i = 0; i < _texture_alpha_map.size(); ++i) {
-        _texture_alpha_map[i] = px[i * 4 + 3] != 0;
-    }
+    _texture.swap(texture);
+    _updateTexScaling();
 }
 
 glm::mat4 Plane::getModelMat4() noexcept
@@ -124,15 +85,21 @@ void Plane::draw() const
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 }
 
-void Plane::_updateTexScaling(int width, int height)
+void Plane::_updateTexScaling()
 {
-    if (_tex_w == width && height == _tex_h) {
+    // Check if dimensions changed
+    int w, h;
+    _texture->getDimensions(w, h);
+    if (_tex_w == w && _tex_h == h) {
         return;
     }
-    _tex_w = width;
-    _tex_h = height;
+    // Update dimensions
+    _tex_w = w;
+    _tex_h = h;
 
+    // Get texture ratio
     float const ratio = (static_cast<float>(_tex_w) / static_cast<float>(_tex_h));
+    // Calculate according scaling
     glm::vec3 scaling(1);
     if (ratio < 1.f) {
         scaling[0] = ratio;
@@ -141,16 +108,16 @@ void Plane::_updateTexScaling(int width, int height)
         scaling[1] = 1 / ratio;
     }
 
+    // If scaling changed, indicate that the Model matrice should be computed
     if (_tex_scaling != scaling) {
         _tex_scaling = scaling;
         _should_compute_mat4 = true;
-        _updateWinScaling();
     }
 }
 
-void Plane::_updateWinScaling()
+void Plane::_updateWinScaling(GLFWwindow const* context)
 {
-    Window::Shared const win = Window::get(_texture->context);
+    Window::Shared const win = Window::get(context);
     if (!win) {
         return;
     }

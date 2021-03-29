@@ -51,6 +51,9 @@
     <ClCompile Include="src\Button.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Texture2D.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\SSS\GL\Window.hpp">
@@ -81,6 +84,9 @@
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="inc\SSS\GL\Button.hpp">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\SSS\GL\Texture2D.hpp">
       <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>

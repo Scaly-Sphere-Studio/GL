@@ -1,3 +1,4 @@
+#include "SSS/GL/_callbacks.hpp"
 #include "SSS/GL/Window.hpp"
 
 __SSS_GL_BEGIN
@@ -13,10 +14,10 @@ void window_resize_callback(GLFWwindow* ptr, int w, int h) try
 
     // Update scaling of Planes & Buttons adapting to screen ratio
     for (Plane::Shared const& plane : window->_planes) {
-        plane->_updateWinScaling();
+        plane->_updateWinScaling(ptr);
     }
     for (Button::Shared const& button: window->_buttons) {
-        button->_updateWinScaling();
+        button->_updateWinScaling(ptr);
     }
 
     // Call user defined callback, if needed

@@ -9,8 +9,8 @@ class Button : public Plane {
     friend class Window;
 
 protected:
-    Button();
-    Button(std::string const& filepath);
+    Button() = default;
+    Button(Texture2D::Shared texture, GLFWwindow const* context);
 
 public:
     virtual ~Button() = default;
@@ -32,7 +32,7 @@ public:
 
 private:
     // Function called when the button is clicked.
-    ButtonFunction _f;
+    ButtonFunction _f{ nullptr };
     // Mouse hovering state, always updated via the mouse position callback.
     bool _is_hovered{ false };
     // Updates _is_hovered via the mouse position callback.
