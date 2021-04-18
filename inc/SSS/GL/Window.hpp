@@ -27,6 +27,7 @@ class Window {
     friend void _internal::mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods);
     friend void _internal::monitor_callback(GLFWmonitor* ptr, int event);
     friend void _internal::key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods);
+    friend class Texture2D;
 
 public:
 // --- Log options ---
@@ -168,6 +169,8 @@ private:
     FPS_Timer fps_timer;
 
     void _setMainMonitor(_internal::Monitor const& monitor);
+
+    static void _textureWasEdited(Texture2D::Shared texture);
 };
 
 __SSS_GL_END
