@@ -179,11 +179,12 @@ void Window::unloadAllButtons()
     _buttons.clear();
 }
 
+
     // --- Public methods ---
 
 // Renders a frame & polls events.
 // Logs fps if specified in LOG structure.
-void Window::render() try
+void Window::render()
 {
     // Render back buffer
     glfwSwapBuffers(_window.get());
@@ -198,7 +199,6 @@ void Window::render() try
     // Poll events
     glfwPollEvents();
 }
-__CATCH_AND_RETHROW_METHOD_EXC
 
 // Make the OpenGL context this one.
 void Window::use() const
@@ -287,24 +287,6 @@ void Window::_setMainMonitor(_internal::Monitor const& monitor)
     TR::Font::setDPI(FT_UInt(hdpi), FT_UInt(vdpi));
     if (LOG::dpi_update) {
         __LOG_MSG(context_msg("Text rendering DPI set", toString(hdpi)) + "x" + toString(vdpi));
-    }
-}
-
-void Window::_textureWasEdited(Texture2D::Shared texture)
-{
-    for (auto it = _instances.cbegin(); it != _instances.cend(); ++it) {
-        if (it->second.expired()) {
-            continue;
-        }
-        Shared window = it->second.lock();
-        for (Plane::Shared& plane : window->_planes) {
-            if (plane->_texture == texture)
-                plane->_updateTexScaling();
-        }
-        for (Button::Shared& button : window->_buttons) {
-            if (button->_texture == texture)
-                button->_updateTexScaling();
-        }
     }
 }
 
