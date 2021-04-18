@@ -43,8 +43,11 @@ void Button::_updateHoverStatus(double x, double y) try
     }
 
     // If the button is a PNG, check the alpha channel of the pixel being hovered.
-    std::vector<bool> const& alpha_map = _texture->getAlphaMap();
-    if (!alpha_map.empty()) {
+    RGBA32::Pixels const& pixels = _texture->getPixels();
+    if (pixels.empty()) {
+        _is_hovered = true;
+    }
+    else {
         float const x_range = v[0] - u[0],
             y_range = v[1] - u[1],
             x_diff = static_cast<float>(x) - u[0],
@@ -53,12 +56,9 @@ void Button::_updateHoverStatus(double x, double y) try
             y_pos = _tex_h - static_cast<int>(y_diff / y_range * static_cast<float>(_tex_h));
         // Update status
         size_t const pixel = static_cast<size_t>(y_pos * _tex_w + x_pos);
-        if (pixel < alpha_map.size()) {
-            _is_hovered = alpha_map.at(pixel);
+        if (pixel < pixels.size()) {
+            _is_hovered = pixels.at(pixel).bytes.a != 0;
         }
-    }
-    else {
-        _is_hovered = true;
     }
 }
 __CATCH_AND_RETHROW_METHOD_EXC
