@@ -26,6 +26,9 @@ Window::Window(int w, int h, std::string const& title) try
     _w = w < mode->width ? w : mode->width;
     _h = h < mode->height ? h : mode->height;
 
+    // Set projections
+    _setProjections();
+
     // Hints
     //glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 
@@ -119,7 +122,7 @@ Plane::Shared Window::createPlane()
 Plane::Shared Window::createPlane(Texture2D::Shared texture)
 {
     return Plane::Shared(
-        _planes.emplace_back(Plane::Shared(new Plane(texture, _window.get()))));
+        _planes.emplace_back(Plane::Shared(new Plane(texture))));
 }
 
 Button::Shared Window::createButton()
@@ -188,9 +191,9 @@ void Window::render() try
     // Render back buffer
     glfwSwapBuffers(_window.get());
     // Update fps, log if needed
-    if (fps_timer.addFrame()) {
+    if (_fps_timer.addFrame()) {
         if (LOG::fps) {
-            __LOG_MSG(toString(fps_timer.get()) + "fps");
+            __LOG_MSG(toString(_fps_timer.get()) + "fps");
         }
     }
     // Clear back buffer
@@ -288,6 +291,17 @@ void Window::_setMainMonitor(_internal::Monitor const& monitor)
     if (LOG::dpi_update) {
         __LOG_MSG(context_msg("Text rendering DPI set", toString(hdpi)) + "x" + toString(vdpi));
     }
+}
+
+void Window::_setProjections()
+{
+    float const ratio = getScreenRatio();
+    // Set perspective projection
+    _perspe_mat4 = glm::perspective(_fov, ratio, _z_near, _z_far);
+    // Set ortho projection
+    float x = ratio > 1.f ? ratio : 1.f;
+    float y = ratio > 1.f ? 1.f : 1.f / ratio;
+    _ortho_mat4 = glm::ortho(-x, x, -y, y, _z_near, _z_far);
 }
 
 void Window::_textureWasEdited(Texture2D::Shared texture)

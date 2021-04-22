@@ -1,10 +1,12 @@
 #include "SSS/GL/Button.hpp"
+#include "SSS/GL/Window.hpp"
 
 __SSS_GL_BEGIN
 
 Button::Button(Texture2D::Shared texture, GLFWwindow const* context) try
-    : Plane::Plane(texture, context)
+    : Plane::Plane(texture)
 {
+    _updateWinScaling(context);
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
@@ -27,6 +29,50 @@ void Button::callFunction() try
     _f();
 }
 __CATCH_AND_RETHROW_METHOD_EXC
+
+glm::mat4 Button::getModelMat4() noexcept
+{
+    if (_should_compute_mat4) {
+        glm::mat4 scaling = glm::scale(_scaling, _tex_scaling * _win_scaling);
+        _model_mat4 = _translation * _rotation * scaling;
+        _should_compute_mat4 = false;
+    }
+    return _model_mat4;
+}
+
+void Button::_updateWinScaling(GLFWwindow const* context)
+{
+    Window::Shared const win = Window::get(context);
+    if (!win) {
+        return;
+    }
+
+    float const ratio = (static_cast<float>(_tex_w) / static_cast<float>(_tex_h));
+    float const screen_ratio = win->getScreenRatio();
+    glm::vec3 scaling(1);
+    if (ratio < 1.f) {
+        if (screen_ratio < ratio) {
+            scaling[0] = 1 / ratio;
+            scaling[1] = screen_ratio / ratio;
+        }
+        else {
+            scaling[0] = 1 / screen_ratio;
+        }
+    }
+    else {
+        if (screen_ratio > ratio) {
+            scaling[1] = ratio;
+            scaling[0] = ratio / screen_ratio;
+        }
+        else {
+            scaling[1] = screen_ratio;
+        }
+    }
+    if (_win_scaling != scaling) {
+        _win_scaling = scaling;
+        _should_compute_mat4 = true;
+    }
+}
 
 // Updates _is_hovered via the mouse position callback.
 void Button::_updateHoverStatus(double x, double y) try

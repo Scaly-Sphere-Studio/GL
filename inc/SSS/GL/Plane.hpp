@@ -7,7 +7,6 @@
 __SSS_GL_BEGIN
 
 class Plane : public Model {
-    friend void _internal::window_resize_callback(GLFWwindow* ptr, int w, int h);
     friend class Window;
 
 private:
@@ -18,7 +17,7 @@ private:
 
 protected:
     Plane();
-    Plane(Texture2D::Shared texture, GLFWwindow const* context);
+    Plane(Texture2D::Shared texture);
 public:
     virtual ~Plane() = default;
 
@@ -33,10 +32,8 @@ protected:
     Texture2D::Shared _texture;
     GLsizei _tex_w{ 0 }, _tex_h{ 0 };
     glm::vec3 _tex_scaling{ 1 };
-    glm::vec3 _win_scaling{ 1 };
     
     void _updateTexScaling();
-    void _updateWinScaling(GLFWwindow const* context);
 };
 
 __SSS_GL_END

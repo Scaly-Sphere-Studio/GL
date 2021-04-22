@@ -2,20 +2,31 @@
 #include "SSS/GL/Window.hpp"
 
 __SSS_GL_BEGIN
+
+bool LOG::InternalCallbacks::window_resize{ false };
+bool LOG::InternalCallbacks::window_pos{ false };
+bool LOG::InternalCallbacks::mouse_position{ false };
+bool LOG::InternalCallbacks::mouse_button{ false };
+bool LOG::InternalCallbacks::key{ false };
+bool LOG::InternalCallbacks::monitor{ false };
+
 __INTERNAL_BEGIN
 
 // Resizes the internal width and height of correspondig Window instance
 void window_resize_callback(GLFWwindow* ptr, int w, int h) try
 {
+    if (LOG::InternalCallbacks::window_resize) {
+        __LOG_FUNC_MSG(toString(w) + 'x' + toString(h));
+    }
+
     Window::Shared window = Window::get(ptr);
     window->_w = w;
     window->_h = h;
+    window->_setProjections();
     glViewport(0, 0, w, h);
 
-    // Update scaling of Planes & Buttons adapting to screen ratio
-    for (Plane::Shared const& plane : window->_planes) {
-        plane->_updateWinScaling(ptr);
-    }
+
+    // Update scaling of Buttons adapting to screen ratio
     for (Button::Shared const& button: window->_buttons) {
         button->_updateWinScaling(ptr);
     }
@@ -30,6 +41,10 @@ __CATCH_AND_RETHROW_FUNC_EXC
 // Determines current monitor of the window
 void window_pos_callback(GLFWwindow* ptr, int x, int y) try
 {
+    if (LOG::InternalCallbacks::window_pos) {
+        __LOG_FUNC_MSG(toString(x) + 'x' + toString(y));
+    }
+
     Window::Shared window = Window::get(ptr);
 
     if (Window::_monitors.size() == 1) {
@@ -65,6 +80,10 @@ __CATCH_AND_RETHROW_FUNC_EXC
 // Used for clickable buttons and such
 void mouse_position_callback(GLFWwindow* ptr, double x, double y)
 {
+    if (LOG::InternalCallbacks::mouse_position) {
+        __LOG_FUNC_MSG(toString(x) + 'x' + toString(y));
+    }
+
     Window::Shared window = Window::get(ptr);
 
     // Get mouse coordinates in -1; 1 range
@@ -83,8 +102,15 @@ void mouse_position_callback(GLFWwindow* ptr, double x, double y)
 }
 
 // Used for clickable buttons and such
-void  mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) try
+void mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) try
 {
+    if (LOG::InternalCallbacks::mouse_button) {
+        __LOG_FUNC_MSG(context_msg("button", toString(button))
+            + "; " + context_msg("action", toString(action))
+            + "; " + context_msg("mods", toString(mods))
+        );
+    }
+
     Window::Shared window = Window::get(ptr);
 
     // Call button functions, if needed
@@ -106,9 +132,18 @@ __CATCH_AND_RETHROW_FUNC_EXC
 // Stores key inputs
 void key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods) try
 {
+    if (LOG::InternalCallbacks::key) {
+        __LOG_FUNC_MSG(context_msg("key", toString(key))
+            + "; " + context_msg("scancode", toString(scancode))
+            + "; " + context_msg("action", toString(action))
+            + "; " + context_msg("mods", toString(mods))
+        );
+    }
+
     Window::Shared window = Window::get(ptr);
 
     window->_key_inputs[key] = action != GLFW_RELEASE;
+
     // Call user defined callback, if needed
     if (window->_key_callback != nullptr) {
         window->_key_callback(ptr, key, scancode, action, mods);
@@ -119,6 +154,9 @@ __CATCH_AND_RETHROW_FUNC_EXC
 // Updates connected monitors
 void monitor_callback(GLFWmonitor* ptr, int event) try
 {
+    if (LOG::InternalCallbacks::monitor) {
+        __LOG_FUNC_MSG(context_msg("event", toString(event)));
+    }
     // Ignore arguments
     ptr; event;
     // Clear vector

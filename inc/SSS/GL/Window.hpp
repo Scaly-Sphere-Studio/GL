@@ -106,25 +106,34 @@ public :
     void setFullscreen(bool state, int screen_id = -1);
     // Sets a corresponding callback
     template<typename _Func>
-    void setCallback(_Func(*set)(GLFWwindow*, _Func), _Func callback) {
-        if (typeid(set) == typeid(glfwSetWindowSizeCallback)) {
+    void setCallback(_Func(*set)(GLFWwindow*, _Func), _Func callback)
+    {
+        void const* ptr(set);
+        if (ptr == (void*)(&glfwSetWindowSizeCallback)) {
             _resize_callback = GLFWwindowsizefun(callback);
         }
-        else if (typeid(set) == typeid(glfwSetWindowPosCallback)) {
+        else if (ptr == (void*)(&glfwSetWindowPosCallback)) {
             _pos_callback = GLFWwindowposfun(callback);
         }
-        else if (typeid(set) == typeid(glfwSetKeyCallback)) {
+        else if (ptr == (void*)(&glfwSetKeyCallback)) {
             _key_callback = GLFWkeyfun(callback);
         }
-        else if (typeid(set) == typeid(glfwSetCursorPosCallback)) {
+        else if (ptr == (void*)(&glfwSetCursorPosCallback)) {
             _mouse_position_callback = GLFWcursorposfun(callback);
         }
-        else if (typeid(set) == typeid(glfwSetMouseButtonCallback)) {
+        else if (ptr == (void*)(&glfwSetMouseButtonCallback)) {
             _mouse_button_callback = GLFWmousebuttonfun(callback);
         }
         else {
             set(_window.get(), callback);
         }
+    };
+
+    inline void setFOV(float radians) noexcept { _fov = radians; };
+    inline void setProjectionRange(float z_near, float z_far) noexcept
+    {
+        _z_near = z_near;
+        _z_far = z_far;
     };
 
     using KeyInputs = std::array<bool, GLFW_KEY_LAST + 1>;
@@ -133,6 +142,9 @@ public :
     // Returns the monitor on which the windowed is considered to be.
     // -> See internal callback window_pos_callback();
     inline GLFWmonitor* getMonitor() const noexcept { return _main_monitor.ptr; }
+
+    inline glm::mat4 getPerspective() const noexcept { return _perspe_mat4; }
+    inline glm::mat4 getOrtho() const noexcept { return _ortho_mat4; }
 
     inline float getScreenRatio() const noexcept
         { return static_cast<float>(_w) / static_cast<float>(_h); }
@@ -157,6 +169,13 @@ private:
     // Main monitor the window is on
     _internal::Monitor _main_monitor;
 
+    float _fov{ glm::radians(70.f) };
+    float _z_near{ 0.1f }, _z_far{ 100.f };
+    // Perspective projection, set by window dimensions and user given FOV
+    glm::mat4 _perspe_mat4;
+    // Ortho projection, set by window dimensions
+    glm::mat4 _ortho_mat4;
+
     GLFWwindowsizefun   _resize_callback{ nullptr };
     GLFWwindowposfun    _pos_callback{ nullptr };
     GLFWkeyfun          _key_callback{ nullptr };
@@ -166,9 +185,11 @@ private:
     KeyInputs _key_inputs;
 
     // FPS Timer
-    FPS_Timer fps_timer;
+    FPS_Timer _fps_timer;
 
     void _setMainMonitor(_internal::Monitor const& monitor);
+
+    void _setProjections();
 
     static void _textureWasEdited(Texture2D::Shared texture);
 };
