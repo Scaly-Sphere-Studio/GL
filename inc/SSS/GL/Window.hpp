@@ -1,8 +1,7 @@
 #pragma once
 
-#include "_includes.hpp"
-#include "_pointers.hpp"
-#include "_callbacks.hpp"
+#include "_internal/pointers.hpp"
+#include "_internal/callbacks.hpp"
 #include "Model.hpp"
 #include "Plane.hpp"
 #include "Button.hpp"
@@ -35,6 +34,7 @@ public:
     struct LOG {
         static bool constructor;
         static bool destructor;
+        static bool glfw_init;
         static bool fps;
         static bool dpi_update;
     };

@@ -1,8 +1,20 @@
 #pragma once
 
-#include "_includes.hpp"
+#include "includes.hpp"
 
 __SSS_GL_BEGIN
+
+namespace LOG {
+    struct internal_callbacks {
+        static bool window_resize;
+        static bool window_pos;
+        static bool mouse_position;
+        static bool mouse_button;
+        static bool key;
+        static bool monitor;
+    };
+};
+
 __INTERNAL_BEGIN
 
 // Resizes the internal width and height of correspondig Window instance

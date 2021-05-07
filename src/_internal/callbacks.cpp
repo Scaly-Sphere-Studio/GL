@@ -1,21 +1,23 @@
-#include "SSS/GL/_callbacks.hpp"
+#include "SSS/GL/_internal/callbacks.hpp"
 #include "SSS/GL/Window.hpp"
 
 __SSS_GL_BEGIN
 
-bool LOG::InternalCallbacks::window_resize{ false };
-bool LOG::InternalCallbacks::window_pos{ false };
-bool LOG::InternalCallbacks::mouse_position{ false };
-bool LOG::InternalCallbacks::mouse_button{ false };
-bool LOG::InternalCallbacks::key{ false };
-bool LOG::InternalCallbacks::monitor{ false };
+namespace LOG {
+    bool internal_callbacks::window_resize{ false };
+    bool internal_callbacks::window_pos{ false };
+    bool internal_callbacks::mouse_position{ false };
+    bool internal_callbacks::mouse_button{ false };
+    bool internal_callbacks::key{ false };
+    bool internal_callbacks::monitor{ false };
+}
 
 __INTERNAL_BEGIN
 
 // Resizes the internal width and height of correspondig Window instance
 void window_resize_callback(GLFWwindow* ptr, int w, int h) try
 {
-    if (LOG::InternalCallbacks::window_resize) {
+    if (LOG::internal_callbacks::window_resize) {
         __LOG_FUNC_MSG(toString(w) + 'x' + toString(h));
     }
 
@@ -41,7 +43,7 @@ __CATCH_AND_RETHROW_FUNC_EXC
 // Determines current monitor of the window
 void window_pos_callback(GLFWwindow* ptr, int x, int y) try
 {
-    if (LOG::InternalCallbacks::window_pos) {
+    if (LOG::internal_callbacks::window_pos) {
         __LOG_FUNC_MSG(toString(x) + 'x' + toString(y));
     }
 
@@ -80,7 +82,7 @@ __CATCH_AND_RETHROW_FUNC_EXC
 // Used for clickable buttons and such
 void mouse_position_callback(GLFWwindow* ptr, double x, double y)
 {
-    if (LOG::InternalCallbacks::mouse_position) {
+    if (LOG::internal_callbacks::mouse_position) {
         __LOG_FUNC_MSG(toString(x) + 'x' + toString(y));
     }
 
@@ -104,7 +106,7 @@ void mouse_position_callback(GLFWwindow* ptr, double x, double y)
 // Used for clickable buttons and such
 void mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) try
 {
-    if (LOG::InternalCallbacks::mouse_button) {
+    if (LOG::internal_callbacks::mouse_button) {
         __LOG_FUNC_MSG(context_msg("button", toString(button))
             + "; " + context_msg("action", toString(action))
             + "; " + context_msg("mods", toString(mods))
@@ -132,7 +134,7 @@ __CATCH_AND_RETHROW_FUNC_EXC
 // Stores key inputs
 void key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods) try
 {
-    if (LOG::InternalCallbacks::key) {
+    if (LOG::internal_callbacks::key) {
         __LOG_FUNC_MSG(context_msg("key", toString(key))
             + "; " + context_msg("scancode", toString(scancode))
             + "; " + context_msg("action", toString(action))
@@ -154,7 +156,7 @@ __CATCH_AND_RETHROW_FUNC_EXC
 // Updates connected monitors
 void monitor_callback(GLFWmonitor* ptr, int event) try
 {
-    if (LOG::InternalCallbacks::monitor) {
+    if (LOG::internal_callbacks::monitor) {
         __LOG_FUNC_MSG(context_msg("event", toString(event)));
     }
     // Ignore arguments

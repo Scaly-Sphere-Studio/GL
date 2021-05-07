@@ -1,13 +1,13 @@
 #pragma once
 
-#include "_pointers.hpp"
+#include "_internal/pointers.hpp"
 
 __SSS_GL_BEGIN
 
 class Texture2D : public std::enable_shared_from_this<Texture2D> {
     friend class Plane;
 
-private:
+protected:
     Texture2D();
 public:
     ~Texture2D();
@@ -26,7 +26,7 @@ public:
 
     static void pollThreads();
 
-private:
+protected:
     using Weak = std::weak_ptr<Texture2D>;
     static std::deque<Weak> _instances;
 
@@ -34,7 +34,7 @@ public:
     void useFile(std::string filepath);
     void edit(void const* pixels, int width, int height);
 
-    inline void bind() const {
+    virtual inline void bind() {
         _raw_texture.bind();
     };
     // Returns stored pixels.

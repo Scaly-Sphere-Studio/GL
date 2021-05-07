@@ -17,18 +17,3 @@
 
 #define __SSS_GL_BEGIN __SSS_BEGIN namespace GL {
 #define __SSS_GL_END __SSS_END }
-
-__SSS_GL_BEGIN
-
-struct LOG {
-    struct InternalCallbacks {
-        static bool window_resize;
-        static bool window_pos;
-        static bool mouse_position;
-        static bool mouse_button;
-        static bool key;
-        static bool monitor;
-    };
-};
-
-__SSS_GL_END
