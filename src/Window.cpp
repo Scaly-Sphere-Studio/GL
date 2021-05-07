@@ -1,4 +1,5 @@
 #include "SSS/GL/Window.hpp"
+#include "SSS/GL/_internal/callbacks.hpp"
 
 __SSS_GL_BEGIN
 
@@ -7,6 +8,7 @@ __SSS_GL_BEGIN
 // Default log options
 bool Window::LOG::constructor{ true };
 bool Window::LOG::destructor{ true };
+bool Window::LOG::glfw_init{ true };
 bool Window::LOG::fps{ true };
 bool Window::LOG::dpi_update{ true };
 
@@ -21,6 +23,17 @@ std::vector<_internal::Monitor> Window::_monitors{};
 // Constructor, creates a window and makes its context current
 Window::Window(int w, int h, std::string const& title) try
 {
+    // Init GLFW
+    if (_instances.empty()) {
+        // Init GLFW
+        glfwInit();
+        if (LOG::glfw_init) {
+            __LOG_OBJ_MSG("GLFW initialized.");
+        }
+        // Retrive monitors
+        _internal::monitor_callback(nullptr, 0);
+        glfwSetMonitorCallback(_internal::monitor_callback);
+    }
     // Retrieve video size of primary monitor
     GLFWvidmode const* mode = glfwGetVideoMode(_monitors[0].ptr);
     _w = w < mode->width ? w : mode->width;
@@ -75,6 +88,21 @@ __CATCH_AND_RETHROW_METHOD_EXC
 // Destructor
 Window::~Window()
 {
+    for (auto it = _instances.cbegin(); it != _instances.cend();) {
+        if (it->second.expired()) {
+            it = _instances.erase(it);
+        }
+        else {
+            ++it;
+        }
+    }
+    if (_instances.empty()) {
+        // Terminate GLFW
+        glfwTerminate();
+        if (LOG::glfw_init) {
+            __LOG_OBJ_MSG("GLFW terminated.");
+        }
+    }
     if (LOG::destructor) {
         __LOG_DESTRUCTOR
     }
@@ -193,7 +221,7 @@ void Window::render() try
     // Update fps, log if needed
     if (_fps_timer.addFrame()) {
         if (LOG::fps) {
-            __LOG_MSG(toString(_fps_timer.get()) + "fps");
+            __LOG_OBJ_MSG(toString(_fps_timer.get()) + "fps");
         }
     }
     // Clear back buffer

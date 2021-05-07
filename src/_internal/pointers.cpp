@@ -1,4 +1,4 @@
-#include "SSS/GL/_pointers.hpp"
+#include "SSS/GL/_internal/pointers.hpp"
 
 __SSS_GL_BEGIN
 __INTERNAL_BEGIN

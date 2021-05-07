@@ -12,6 +12,12 @@
     <Filter Include="vcpkg_scripts">
       <UniqueIdentifier>{2e9304bf-d336-4a17-b008-b6aeacc0770b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="inc\_internal">
+      <UniqueIdentifier>{f9ea9e25-94dc-4281-97ef-fe2c14826d64}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\_internal">
+      <UniqueIdentifier>{c05fe4e6-f0e6-425c-993e-97ffdd617387}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="InstallScripts.ps1" />
@@ -27,19 +33,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Init.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\Window.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\Shaders.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\_callbacks.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\_pointers.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\Plane.cpp">
@@ -54,21 +51,18 @@
     <ClCompile Include="src\Texture2D.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\_internal\callbacks.cpp">
+      <Filter>src\_internal</Filter>
+    </ClCompile>
+    <ClCompile Include="src\_internal\pointers.cpp">
+      <Filter>src\_internal</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Init.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\SSS\GL\Window.hpp">
-      <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\SSS\GL\_callbacks.hpp">
-      <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\SSS\GL\_includes.hpp">
-      <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\SSS\GL\_pointers.hpp">
-      <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\SSS\GL\Init.hpp">
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="inc\SSS\GL\Shaders.hpp">
@@ -87,6 +81,18 @@
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="inc\SSS\GL\Texture2D.hpp">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\SSS\GL\_internal\callbacks.hpp">
+      <Filter>inc\_internal</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\SSS\GL\_internal\pointers.hpp">
+      <Filter>inc\_internal</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\SSS\GL\_internal\includes.hpp">
+      <Filter>inc\_internal</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\SSS\GL\Init.hpp">
       <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>

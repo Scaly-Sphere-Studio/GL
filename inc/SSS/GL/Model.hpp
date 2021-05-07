@@ -1,9 +1,6 @@
 #pragma once
 
-#pragma once
-
-#include "_includes.hpp"
-#include "_pointers.hpp"
+#include "_internal/pointers.hpp"
 #include "Shaders.hpp"
 
 __SSS_GL_BEGIN

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "_callbacks.hpp"
+#include "_internal/callbacks.hpp"
 #include "Model.hpp"
 #include "Texture2D.hpp"
 
