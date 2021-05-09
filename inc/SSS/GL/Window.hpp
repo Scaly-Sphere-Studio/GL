@@ -75,9 +75,9 @@ public :
 
     Model::Shared createModel();
     Plane::Shared createPlane();
-    Plane::Shared createPlane(Texture2D::Shared texture);
+    Plane::Shared createPlane(TextureBase::Shared texture);
     Button::Shared createButton();
-    Button::Shared createButton(Texture2D::Shared texture);
+    Button::Shared createButton(TextureBase::Shared texture);
 
     void unloadModel(Model::Shared model);
     void unloadPlane(Plane::Shared plane);
@@ -191,7 +191,7 @@ private:
 
     void _setProjections();
 
-    static void _textureWasEdited(Texture2D::Shared texture);
+    static void _textureWasEdited(TextureBase::Shared texture);
 };
 
 __SSS_GL_END

@@ -3,7 +3,7 @@
 
 __SSS_GL_BEGIN
 
-Button::Button(Texture2D::Shared texture, GLFWwindow const* context) try
+Button::Button(TextureBase::Shared texture, GLFWwindow const* context) try
     : Plane::Plane(texture)
 {
     _updateWinScaling(context);

@@ -57,7 +57,7 @@
     <ClCompile Include="src\_internal\pointers.cpp">
       <Filter>src\_internal</Filter>
     </ClCompile>
-    <ClCompile Include="src\Init.cpp">
+    <ClCompile Include="src\TextTexture.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -92,7 +92,7 @@
     <ClInclude Include="inc\SSS\GL\_internal\includes.hpp">
       <Filter>inc\_internal</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL\Init.hpp">
+    <ClInclude Include="inc\SSS\GL\TextTexture.hpp">
       <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>

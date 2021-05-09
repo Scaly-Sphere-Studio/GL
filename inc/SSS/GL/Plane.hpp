@@ -17,19 +17,19 @@ private:
 
 protected:
     Plane();
-    Plane(Texture2D::Shared texture);
+    Plane(TextureBase::Shared texture);
 public:
     virtual ~Plane() = default;
 
     using Shared = std::shared_ptr<Plane>;
     
-    void useTexture(Texture2D::Shared texture);
+    void useTexture(TextureBase::Shared texture);
 
     virtual glm::mat4 getModelMat4() noexcept;
     void draw() const;
 
 protected:
-    Texture2D::Shared _texture;
+    TextureBase::Shared _texture;
     GLsizei _tex_w{ 0 }, _tex_h{ 0 };
     glm::vec3 _tex_scaling{ 1 };
     

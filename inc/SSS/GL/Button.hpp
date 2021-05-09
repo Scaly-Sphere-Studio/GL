@@ -11,7 +11,7 @@ class Button : public Plane {
 
 protected:
     Button() = default;
-    Button(Texture2D::Shared texture, GLFWwindow const* context);
+    Button(TextureBase::Shared texture, GLFWwindow const* context);
 
 public:
     virtual ~Button() = default;
