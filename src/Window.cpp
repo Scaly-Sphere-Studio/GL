@@ -147,7 +147,7 @@ Plane::Shared Window::createPlane()
         _planes.emplace_back(Plane::Shared(new Plane())));
 }
 
-Plane::Shared Window::createPlane(Texture2D::Shared texture)
+Plane::Shared Window::createPlane(TextureBase::Shared texture)
 {
     return Plane::Shared(
         _planes.emplace_back(Plane::Shared(new Plane(texture))));
@@ -159,7 +159,7 @@ Button::Shared Window::createButton()
         _buttons.emplace_back(Button::Shared(new Button())));
 }
 
-Button::Shared Window::createButton(Texture2D::Shared texture)
+Button::Shared Window::createButton(TextureBase::Shared texture)
 {
     return Button::Shared(
         _buttons.emplace_back(Button::Shared(new Button(texture, _window.get()))));
@@ -332,7 +332,7 @@ void Window::_setProjections()
     _ortho_mat4 = glm::ortho(-x, x, -y, y, _z_near, _z_far);
 }
 
-void Window::_textureWasEdited(Texture2D::Shared texture)
+void Window::_textureWasEdited(TextureBase::Shared texture)
 {
     for (auto it = _instances.cbegin(); it != _instances.cend(); ++it) {
         if (it->second.expired()) {

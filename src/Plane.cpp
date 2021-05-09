@@ -53,14 +53,14 @@ Plane::Plane() try
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
-Plane::Plane(Texture2D::Shared texture) try
+Plane::Plane(TextureBase::Shared texture) try
     : Plane()
 {
     useTexture(texture);
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
-void Plane::useTexture(Texture2D::Shared texture)
+void Plane::useTexture(TextureBase::Shared texture)
 {
     _texture.swap(texture);
     _updateTexScaling();

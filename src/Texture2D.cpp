@@ -15,6 +15,7 @@ bool Texture2D::LOG::destructor{ false };
 std::deque<Texture2D::Weak> Texture2D::_instances{};
 
 Texture2D::Texture2D() try
+    : TextureBase(GL_TEXTURE_2D)
 {
     _raw_texture.bind();
     _raw_texture.parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -75,7 +76,7 @@ void Texture2D::edit(void const* pixels, int width, int height) try
     // Clear previous pixel storage
     _pixels.clear();
     // Update texture scaling of all planes (they are stored in window instances)
-    Window::_textureWasEdited(shared_from_this());
+    Window::_textureWasEdited(std::static_pointer_cast<TextureBase>(shared_from_this()));
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
@@ -113,7 +114,7 @@ void Texture2D::pollThreads()
                 // Give the image to the OpenGL texture
                 texture->_raw_texture.edit(&texture->_pixels[0], texture->_w, texture->_h);
                 // Update texture scaling of all planes (they are stored in window instances)
-                Window::_textureWasEdited(texture);
+                Window::_textureWasEdited(std::static_pointer_cast<TextureBase>(texture));
                 // Set thread as handled.
                 texture->_loading_thread.setAsHandled();
             }
