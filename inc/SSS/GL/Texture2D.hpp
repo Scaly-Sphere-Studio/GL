@@ -12,10 +12,10 @@ protected:
 public:
     TextureBase() = delete;
     virtual void bind() { _raw_texture.bind(); };
-    inline void getDimensions(int& w, int& h) { w = _w; h = _h; };
-    inline RGBA32::Pixels const& getPixels() { return _pixels; };
+    inline void getDimensions(int& w, int& h) { w = _tex_w; h = _tex_h; };
+    inline RGBA32::Pixels const& getStoredPixels() { return _pixels; };
 protected:
-    int _w{ 0 }, _h{ 0 };
+    int _tex_w{ 0 }, _tex_h{ 0 };
     _internal::Texture _raw_texture;
     RGBA32::Pixels _pixels;
 };
