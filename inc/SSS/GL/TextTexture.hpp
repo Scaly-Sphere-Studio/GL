@@ -4,7 +4,10 @@
 
 __SSS_GL_BEGIN
 
-class TextTexture : public TextureBase, public std::enable_shared_from_this<TextTexture> {
+class TextTexture :
+    public TextureBase,
+    public TR::TextArea,
+    public std::enable_shared_from_this<TextTexture> {
 private:
     TextTexture(int width, int height);
 
@@ -16,15 +19,10 @@ public:
 
     virtual void bind();
 
-    void clear() noexcept;
-    void useBuffer(TR::Buffer::Shared buffer);
-    void scroll(int pixels) noexcept;
-    void setTypeWriter(bool activate) noexcept;
-    bool incrementCursor() noexcept;
+    bool scroll(int pixels) noexcept;
 
 private:
     bool _update_texture{ true };
-    TR::TextArea::Shared _text_area;
 };
 
 __SSS_GL_END

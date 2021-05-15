@@ -69,10 +69,10 @@ __CATCH_AND_RETHROW_METHOD_EXC
 void Texture2D::edit(void const* pixels, int width, int height) try
 {
     // Update size info
-    _w = width;
-    _h = height;
+    _tex_w = width;
+    _tex_h = height;
     // Give the image to the OpenGL texture
-    _raw_texture.edit(pixels, _w, _h);
+    _raw_texture.edit(pixels, _tex_w, _tex_h);
     // Clear previous pixel storage
     _pixels.clear();
     // Update texture scaling of all planes (they are stored in window instances)
@@ -83,15 +83,15 @@ __CATCH_AND_RETHROW_METHOD_EXC
 void Texture2D::_LoadingThread::_function(Texture2D::Weak texture, std::string filepath)
 {
     auto& _pixels = texture.lock()->_pixels;
-    auto& _w = texture.lock()->_w;
-    auto& _h = texture.lock()->_h;
+    auto& _tex_w = texture.lock()->_tex_w;
+    auto& _tex_h = texture.lock()->_tex_h;
 
     // Load image
     SSS::C_Ptr <uint32_t, void(*)(void*), stbi_image_free>
         raw_pixels((uint32_t*)(stbi_load(
             filepath.c_str(),   // Filepath to picture
-            &_w,                // Width, to query
-            &_h,                // Height, to query
+            &_tex_w,                // Width, to query
+            &_tex_h,                // Height, to query
             nullptr,            // Byte composition, to query if not requested
             4                   // Byte composition, to request
         )));
@@ -101,7 +101,7 @@ void Texture2D::_LoadingThread::_function(Texture2D::Weak texture, std::string f
     }
     // Fill vector
     if (_is_canceled) return;
-    _pixels = RGBA32::Pixels(raw_pixels.get(), raw_pixels.get() + (_w * _h));
+    _pixels = RGBA32::Pixels(raw_pixels.get(), raw_pixels.get() + (_tex_w * _tex_h));
 
 }
 
@@ -112,7 +112,7 @@ void Texture2D::pollThreads()
         if (texture) {
             if (texture->_loading_thread.isPending()) {
                 // Give the image to the OpenGL texture
-                texture->_raw_texture.edit(&texture->_pixels[0], texture->_w, texture->_h);
+                texture->_raw_texture.edit(&texture->_pixels[0], texture->_tex_w, texture->_tex_h);
                 // Update texture scaling of all planes (they are stored in window instances)
                 Window::_textureWasEdited(std::static_pointer_cast<TextureBase>(texture));
                 // Set thread as handled.

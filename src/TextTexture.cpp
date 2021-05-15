@@ -3,11 +3,10 @@
 __SSS_GL_BEGIN
 
 TextTexture::TextTexture(int width, int height)
-    : TextureBase(GL_TEXTURE_2D)
+    : TextureBase(GL_TEXTURE_2D), TR::TextArea(width, height)
 {
-    _w = width;
-    _h = height;
-    _text_area = TR::TextArea::create(width, height);
+    _tex_w = width;
+    _tex_h = height;
     _raw_texture.bind();
     _raw_texture.parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     _raw_texture.parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -21,41 +20,25 @@ TextTexture::~TextTexture()
 
 TextTexture::Shared TextTexture::create(int width, int height)
 {
-    return Shared(new TextTexture(width, height));
+    Shared shared(new TextTexture(width, height));
+    TR::TextArea::_instances.push_back(std::static_pointer_cast<TR::TextArea>(shared));
+    return shared;
 }
 
 void TextTexture::bind()
 {
-    if (_text_area->willDraw() || _update_texture) {
-        _raw_texture.edit(_text_area->getPixels(), _w, _h);
+    if (willDraw() || _update_texture) {
+        _raw_texture.edit(getPixels(), _tex_w, _tex_h);
         _update_texture = false;
     }
     _raw_texture.bind();
 }
 
-void TextTexture::clear() noexcept
+bool TextTexture::scroll(int pixels) noexcept
 {
-    _text_area->clear();
-}
-
-void TextTexture::useBuffer(TR::Buffer::Shared buffer)
-{
-    _text_area->useBuffer(buffer);
-}
-
-void TextTexture::scroll(int pixels) noexcept
-{
-    _update_texture = _text_area->scroll(pixels);
-}
-
-void TextTexture::setTypeWriter(bool activate) noexcept
-{
-    _text_area->setTypeWriter(activate);
-}
-
-bool TextTexture::incrementCursor() noexcept
-{
-    return _text_area->incrementCursor();
+    bool ret = TR::TextArea::scroll(pixels);
+    _update_texture = _update_texture || ret;
+    return ret;
 }
 
 __SSS_GL_END

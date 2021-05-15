@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Plane.hpp"
+#include "TextTexture.hpp"
 
 __SSS_GL_BEGIN
 
@@ -41,6 +42,8 @@ private:
     ButtonFunction _f{ nullptr };
     // Mouse hovering state, always updated via the mouse position callback.
     bool _is_hovered{ false };
+    int _relative_x{ 0 };
+    int _relative_y{ 0 };
 
     // Updates window scaling when window is resized.
     void _updateWinScaling(GLFWwindow const* context);
