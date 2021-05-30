@@ -27,7 +27,7 @@ TextTexture::Shared TextTexture::create(int width, int height)
 
 void TextTexture::bind()
 {
-    if (willDraw() || _update_texture) {
+    if (wasUpdated() || _update_texture) {
         _raw_texture.edit(getPixels(), _tex_w, _tex_h);
         _update_texture = false;
     }

@@ -35,6 +35,9 @@ void Texture::parameteri(GLenum pname, GLint param)
 void Texture::edit(const GLvoid* pixels, GLsizei width, GLsizei height,
     GLenum format, GLint internalformat, GLenum type, GLint level)
 {
+    if (pixels == nullptr) {
+        return;
+    }
     bind();
     glTexImage2D(target, level, internalformat, width, height,
         0, format, type, pixels);

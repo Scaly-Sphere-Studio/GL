@@ -22,7 +22,7 @@ public:
     bool scroll(int pixels) noexcept;
 
 private:
-    bool _update_texture{ true };
+    bool _update_texture{ false };
 };
 
 __SSS_GL_END
