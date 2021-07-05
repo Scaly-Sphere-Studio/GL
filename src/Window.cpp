@@ -305,20 +305,6 @@ void Window::setFullscreen(bool state, int screen_id)
 void Window::_setMainMonitor(_internal::Monitor const& monitor)
 {
     _main_monitor = monitor;
-
-    // Retrieve screen resolution (in pixels)
-    const GLFWvidmode* mode = glfwGetVideoMode(monitor.ptr);
-
-    // Horizontal DPI
-    int const hdpi = std::lround(static_cast<float>(mode->width) / monitor.w);
-    // Vertical DPI
-    int const vdpi = std::lround(static_cast<float>(mode->height) / monitor.h);
-
-    // Set TR's DPIs
-    TR::Font::setDPI(FT_UInt(hdpi), FT_UInt(vdpi));
-    if (LOG::dpi_update) {
-        __LOG_MSG(context_msg("Text rendering DPI set", toString(hdpi)) + "x" + toString(vdpi));
-    }
 }
 
 void Window::_setProjections()
