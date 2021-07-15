@@ -1,25 +1,15 @@
 #include "SSS/GL/Plane.hpp"
+#include "SSS/GL/Window.hpp"
 
 __SSS_GL_BEGIN
 
-// Init static members
-VAO::Shared Plane::_static_vao{ nullptr };
-VBO::Shared Plane::_static_vbo{ nullptr };
-IBO::Shared Plane::_static_ibo{ nullptr };
+std::vector<Plane::Weak> Plane::_instances{};
 
-void Plane::_init_statics() try
+void Plane::_init_statics(std::shared_ptr<Window> window) try
 {
-    if (_static_vao && _static_vbo && _static_ibo) {
-        return;
-    }
-
-    _static_vao.reset(new VAO);
-    _static_vbo.reset(new VBO);
-    _static_ibo.reset(new IBO);
-
-    _static_vao->bind();
-    _static_vbo->bind();
-    _static_ibo->bind();
+    _vao.reset(new VAO(window));
+    _vbo.reset(new VBO(window));
+    _ibo.reset(new IBO(window));
 
     constexpr float vertices[] = {
         // positions          // texture coords (1 - y)
@@ -33,32 +23,49 @@ void Plane::_init_statics() try
         0, 2, 3   // second triangle
     };
 
-    _static_vbo->edit(sizeof(vertices), vertices, GL_STATIC_DRAW);
+    _vao->bind();
+
+    _vbo->edit(sizeof(vertices), vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    _static_ibo->edit(sizeof(indices), indices, GL_STATIC_DRAW);
+    _ibo->edit(sizeof(indices), indices, GL_STATIC_DRAW);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 }
 __CATCH_AND_RETHROW_FUNC_EXC
 
-Plane::Plane() try
+Plane::Plane(std::shared_ptr<Window> window) try
+    : Model(window)
 {
     // Init statics
-    _init_statics();
-    _vao = _static_vao;
-    _vbo = _static_vbo;
-    _ibo = _static_ibo;
+    _init_statics(window);
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
-Plane::Plane(TextureBase::Shared texture) try
-    : Plane()
+Plane::Plane(std::shared_ptr<Window> window, TextureBase::Shared texture) try
+    : Plane(window)
 {
     useTexture(texture);
 }
 __CATCH_AND_RETHROW_METHOD_EXC
+
+Plane::~Plane()
+{
+    cleanWeakPtrVector(_instances);
+}
+
+Plane::Shared Plane::create(std::shared_ptr<Window> window)
+{
+    // Use new instead of std::make_shared to access private constructor
+    return (Shared)_instances.emplace_back(Plane::Shared(new Plane(window)));
+}
+
+Plane::Shared Plane::create(std::shared_ptr<Window> window, TextureBase::Shared texture)
+{
+    // Use new instead of std::make_shared to access private constructor
+    return (Shared)_instances.emplace_back(Plane::Shared(new Plane(window, texture)));
+}
 
 void Plane::useTexture(TextureBase::Shared texture)
 {
@@ -76,12 +83,15 @@ glm::mat4 Plane::getModelMat4() noexcept
     return _model_mat4;
 }
 
-void Plane::draw() const
+void Plane::draw() const try
 {
-    _static_vao->bind();
+    throwIfExpired();
+    _vao->bind();
     _texture->bind();
+    _window.lock()->use();
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 }
+__CATCH_AND_RETHROW_METHOD_EXC
 
 void Plane::_updateTexScaling()
 {

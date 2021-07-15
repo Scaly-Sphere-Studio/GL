@@ -1,15 +1,30 @@
 #include "SSS/GL/Model.hpp"
+#include "SSS/GL/Window.hpp"
 
 __SSS_GL_BEGIN
 
-Model::Model() try
+std::vector<Model::Weak> Model::_instances{};
+
+Model::Model(std::shared_ptr<Window> window) try
+    : _internal::WindowObject(window)
 {
-    _vao.reset(new VAO);
-    _vbo.reset(new VBO);
-    _ibo.reset(new IBO);
+    _vao.reset(new VAO(window));
+    _vbo.reset(new VBO(window));
+    _ibo.reset(new IBO(window));
     resetTransformations(Transformation::All);
 }
 __CATCH_AND_RETHROW_METHOD_EXC
+
+Model::~Model()
+{
+    cleanWeakPtrVector(_instances);
+}
+
+Model::Shared Model::create(std::shared_ptr<Window> window)
+{
+    // Use new instead of std::make_shared to access private constructor
+    return (Shared)_instances.emplace_back(Model::Shared(new Model(window)));
+}
 
 void Model::scale(glm::vec3 scaling)
 {

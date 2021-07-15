@@ -14,7 +14,7 @@ bool Window::LOG::dpi_update{ true };
 
 
 // Window instances
-std::map<GLFWwindow const*, Window::Weak> Window::_instances{};
+std::vector<Window::Weak> Window::_instances{};
 // Connected monitors
 std::vector<_internal::Monitor> Window::_monitors{};
 
@@ -88,14 +88,7 @@ __CATCH_AND_RETHROW_METHOD_EXC
 // Destructor
 Window::~Window()
 {
-    for (auto it = _instances.cbegin(); it != _instances.cend();) {
-        if (it->second.expired()) {
-            it = _instances.erase(it);
-        }
-        else {
-            ++it;
-        }
-    }
+    cleanWeakPtrVector(_instances);
     if (_instances.empty()) {
         // Terminate GLFW
         glfwTerminate();
@@ -113,16 +106,22 @@ Window::~Window()
 // Creates a window and returns a corresponding shared_ptr
 Window::Shared Window::create(int w, int h, std::string const& title) try
 {
-    Shared window = Shared(new Window(w, h, title));
-    _instances.emplace(window->_window.get(), window);
-    return window;
+    return (Shared)_instances.emplace_back(Shared(new Window(w, h, title)));
 }
 __CATCH_AND_RETHROW_FUNC_EXC
 
 // Returns an existing Window instance by its GLFWwindow pointer
 Window::Shared Window::get(GLFWwindow const* ptr) try
 {
-    return _instances.at(ptr).lock();
+    for (Weak weak : _instances) {
+        Shared window = weak.lock();
+        if (!window)
+            continue ;
+        if (window->_window.get() == ptr) {
+            return window;
+        }
+    }
+    throw_exc(ERR_MSG::NOTHING_FOUND);
 }
 __CATCH_AND_RETHROW_FUNC_EXC
 
@@ -131,84 +130,6 @@ Window::Shared Window::getMain() try
     return get(glfwGetCurrentContext());
 }
 __CATCH_AND_RETHROW_FUNC_EXC
-
-    // --- Model methods ---
-
-Model::Shared Window::createModel()
-{
-    // Use new instead of std::make_shared to access private constructor
-    return Model::Shared(
-        _models.emplace_back(Model::Shared(new Model())));
-}
-
-Plane::Shared Window::createPlane()
-{
-    return Plane::Shared(
-        _planes.emplace_back(Plane::Shared(new Plane())));
-}
-
-Plane::Shared Window::createPlane(TextureBase::Shared texture)
-{
-    return Plane::Shared(
-        _planes.emplace_back(Plane::Shared(new Plane(texture))));
-}
-
-Button::Shared Window::createButton()
-{
-    return Button::Shared(
-        _buttons.emplace_back(Button::Shared(new Button())));
-}
-
-Button::Shared Window::createButton(TextureBase::Shared texture)
-{
-    return Button::Shared(
-        _buttons.emplace_back(Button::Shared(new Button(texture, _window.get()))));
-}
-
-void Window::unloadModel(Model::Shared model)
-{
-    for (auto it = _models.cbegin(); it != _models.cend(); ++it) {
-        if (*it == model) {
-            _models.erase(it);
-            break;
-        }
-    }
-}
-
-void Window::unloadPlane(Plane::Shared plane)
-{
-    for (auto it = _planes.cbegin(); it != _planes.cend(); ++it) {
-        if (*it == plane) {
-            _planes.erase(it);
-            break;
-        }
-    }
-}
-
-void Window::unloadButton(Button::Shared button)
-{
-    for (auto it = _buttons.cbegin(); it != _buttons.cend(); ++it) {
-        if (*it == button) {
-            _buttons.erase(it);
-            break;
-        }
-    }
-}
-
-void Window::unloadAllModels()
-{
-    _models.clear();
-}
-
-void Window::unloadAllPlanes()
-{
-    _planes.clear();
-}
-
-void Window::unloadAllButtons()
-{
-    _buttons.clear();
-}
 
     // --- Public methods ---
 
@@ -316,24 +237,6 @@ void Window::_setProjections()
     float x = ratio > 1.f ? ratio : 1.f;
     float y = ratio > 1.f ? 1.f : 1.f / ratio;
     _ortho_mat4 = glm::ortho(-x, x, -y, y, _z_near, _z_far);
-}
-
-void Window::_textureWasEdited(TextureBase::Shared texture)
-{
-    for (auto it = _instances.cbegin(); it != _instances.cend(); ++it) {
-        if (it->second.expired()) {
-            continue;
-        }
-        Shared window = it->second.lock();
-        for (Plane::Shared& plane : window->_planes) {
-            if (plane->_texture == texture)
-                plane->_updateTexScaling();
-        }
-        for (Button::Shared& button : window->_buttons) {
-            if (button->_texture == texture)
-                button->_updateTexScaling();
-        }
-    }
 }
 
 __SSS_GL_END
