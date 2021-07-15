@@ -8,17 +8,25 @@ __SSS_GL_BEGIN
 class Button : public Plane {
     friend void _internal::mouse_position_callback(GLFWwindow* ptr, double x, double y);
     friend void _internal::window_resize_callback(GLFWwindow* ptr, int w, int h);
-    friend class Window;
+    friend void _internal::mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods);
+    friend class Texture2D;
 
 protected:
-    Button() = default;
-    Button(TextureBase::Shared texture, GLFWwindow const* context);
+    Button(std::shared_ptr<Window> window);
+    Button(std::shared_ptr<Window> window, TextureBase::Shared texture);
+    using Weak = std::weak_ptr<Button>;
+
+private:
+    static std::vector<Weak> _instances;
 
 public:
-    virtual ~Button() = default;
+    virtual ~Button();
 
     // Shared pointer
     using Shared = std::shared_ptr<Button>;
+    static Shared create(std::shared_ptr<Window> window);
+    static Shared create(std::shared_ptr<Window> window, TextureBase::Shared texture);
+
     // Format to be used in setFunction();
     using ButtonFunction = void(*)();
 
@@ -46,7 +54,7 @@ private:
     int _relative_y{ 0 };
 
     // Updates window scaling when window is resized.
-    void _updateWinScaling(GLFWwindow const* context);
+    void _updateWinScaling();
     // Updates _is_hovered via the mouse position callback.
     void _updateHoverStatus(double x, double y);
 };

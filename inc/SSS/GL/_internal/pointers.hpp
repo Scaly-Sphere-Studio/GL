@@ -4,21 +4,38 @@
 #include "includes.hpp"
 
 __SSS_GL_BEGIN
+
+class Window; // Pre-declaration of Window class.
+
 __INTERNAL_BEGIN
 
 using GLFWwindow_Ptr = C_Ptr
     <GLFWwindow, void(*)(GLFWwindow*), glfwDestroyWindow>;
 
-struct AbstractObject {
-    inline AbstractObject(GLuint given_id) : id(given_id) {};
+// This class is to be inherited in all classes whose instances are bounded
+// to a specific Window instance. 
+class WindowObject {
+public:
+    // Delete default constructor to enforce bounding to a Window instance
+    WindowObject() = delete;
+    bool hasExpired() const noexcept { return _window.expired(); };
+    void throwIfExpired() const;
+protected:
+    WindowObject(std::shared_ptr<Window> window);
+    std::weak_ptr<Window> _window;
+};
+
+struct AbstractObject : public WindowObject {
+    inline AbstractObject(std::shared_ptr<Window> window, GLuint given_id)
+        : WindowObject(window), id(given_id) {};
     virtual void bind() const = 0;
     GLuint const id;
 };
 
-struct Texture : AbstractObject {
+struct Texture : public AbstractObject {
     using Ptr = std::unique_ptr<Texture>;
     using Shared = std::shared_ptr<Texture>;
-    Texture(GLenum given_target);
+    Texture(std::shared_ptr<Window> window, GLenum given_target);
     ~Texture();
     virtual void bind() const;
     void parameteri(GLenum pname, GLint param);
@@ -30,28 +47,28 @@ struct Texture : AbstractObject {
 
 __INTERNAL_END
 
-struct VAO : _internal::AbstractObject {
+struct VAO : public _internal::AbstractObject {
     using Ptr = std::unique_ptr<VAO>;
     using Shared = std::shared_ptr<VAO>;
-    VAO();
+    VAO(std::shared_ptr<Window> window);
     ~VAO();
     virtual void bind() const;
 };
 
-struct VBO : _internal::AbstractObject {
+struct VBO : public _internal::AbstractObject {
     using Ptr = std::unique_ptr<VBO>;
     using Shared = std::shared_ptr<VBO>;
-    VBO();
+    VBO(std::shared_ptr<Window> window);
     ~VBO();
     virtual void bind() const;
     virtual void unbind() const;
     void edit(GLsizeiptr size, const void* data, GLenum usage);
 };
 
-struct IBO : _internal::AbstractObject {
+struct IBO : public _internal::AbstractObject {
     using Ptr = std::unique_ptr<IBO>;
     using Shared = std::shared_ptr<IBO>;
-    IBO();
+    IBO(std::shared_ptr<Window> window);
     ~IBO();
     virtual void bind() const;
     virtual void unbind() const;

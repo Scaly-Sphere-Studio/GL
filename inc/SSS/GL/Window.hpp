@@ -26,7 +26,6 @@ class Window {
     friend void _internal::mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods);
     friend void _internal::monitor_callback(GLFWmonitor* ptr, int event);
     friend void _internal::key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods);
-    friend class Texture2D;
 
 public:
 // --- Log options ---
@@ -49,7 +48,7 @@ private:
     using Weak = std::weak_ptr<Window>;
 
     // Instances of created windows
-    static std::map<GLFWwindow const*, Weak> _instances;
+    static std::vector<Weak> _instances;
     // All connected monitors
     static std::vector<_internal::Monitor> _monitors;
 
@@ -70,22 +69,6 @@ public :
     static Shared get(GLFWwindow const* ptr);
     // Returns last focused window
     static Shared getMain();
-
-// --- Model methods ---
-
-    Model::Shared createModel();
-    Plane::Shared createPlane();
-    Plane::Shared createPlane(TextureBase::Shared texture);
-    Button::Shared createButton();
-    Button::Shared createButton(TextureBase::Shared texture);
-
-    void unloadModel(Model::Shared model);
-    void unloadPlane(Plane::Shared plane);
-    void unloadButton(Button::Shared button);
-
-    void unloadAllModels();
-    void unloadAllPlanes();
-    void unloadAllButtons();
 
 // --- Public methods ---
 
@@ -139,6 +122,8 @@ public :
     using KeyInputs = std::array<bool, GLFW_KEY_LAST + 1>;
     inline KeyInputs const& getKeyInputs() const noexcept { return _key_inputs; }
 
+    // Returns raw GLFWwindow ptr.
+    inline GLFWwindow* getGLFWwindow() const { return _window.get(); };
     // Returns the monitor on which the windowed is considered to be.
     // -> See internal callback window_pos_callback();
     inline GLFWmonitor* getMonitor() const noexcept { return _main_monitor.ptr; }
@@ -151,10 +136,6 @@ public :
 
 private:
 // --- Private variables ---
-
-    std::vector<Model::Shared> _models;
-    std::vector<Plane::Shared> _planes;
-    std::vector<Button::Shared> _buttons;
 
     // Window size
     int _w; // Width

@@ -9,13 +9,12 @@
 __SSS_GL_BEGIN
 
 // Init statics
+std::vector<Texture2D::Weak> Texture2D::_instances{};
 bool Texture2D::LOG::constructor{ false };
 bool Texture2D::LOG::destructor{ false };
 
-std::deque<Texture2D::Weak> Texture2D::_instances{};
-
-Texture2D::Texture2D() try
-    : TextureBase(GL_TEXTURE_2D)
+Texture2D::Texture2D(std::shared_ptr<Window> window) try
+    : TextureBase(window, GL_TEXTURE_2D)
 {
     _raw_texture.bind();
     _raw_texture.parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -31,30 +30,34 @@ __CATCH_AND_RETHROW_METHOD_EXC
 
 Texture2D::~Texture2D()
 {
+    cleanWeakPtrVector(_instances);
     if (LOG::destructor) {
         __LOG_DESTRUCTOR
     }
 }
 
-Texture2D::Shared Texture2D::create() try
+Texture2D::Shared Texture2D::create(std::shared_ptr<Window> window) try
 {
-    Shared texture(new Texture2D());
-    _instances.push_back(texture->weak_from_this());
-    return texture;
+    // Use new instead of std::make_shared to access private constructor
+    return (Shared)_instances.emplace_back(Texture2D::Shared(new Texture2D(window)));
 }
 __CATCH_AND_RETHROW_FUNC_EXC
 
-Texture2D::Shared Texture2D::create(std::string const& filepath) try
+Texture2D::Shared Texture2D::create(std::shared_ptr<Window> window,
+    std::string const& filepath) try
 {
-    Shared texture = create();
+    // Use new instead of std::make_shared to access private constructor
+    Shared texture = (Shared)_instances.emplace_back(Texture2D::Shared(new Texture2D(window)));
     texture->useFile(filepath);
     return texture;
 }
 __CATCH_AND_RETHROW_FUNC_EXC
 
-Texture2D::Shared Texture2D::create(void const* pixels, int width, int height) try
+Texture2D::Shared Texture2D::create(std::shared_ptr<Window> window,
+    void const* pixels, int width, int height) try
 {
-    Shared texture = create();
+    // Use new instead of std::make_shared to access private constructor
+    Shared texture = (Shared)_instances.emplace_back(Texture2D::Shared(new Texture2D(window)));
     texture->edit(pixels, width, height);
     return texture;
 }
@@ -75,10 +78,26 @@ void Texture2D::edit(void const* pixels, int width, int height) try
     _raw_texture.edit(pixels, _tex_w, _tex_h);
     // Clear previous pixel storage
     _pixels.clear();
-    // Update texture scaling of all planes (they are stored in window instances)
-    Window::_textureWasEdited(std::static_pointer_cast<TextureBase>(shared_from_this()));
+
+    _updatePlanesScaling();
 }
 __CATCH_AND_RETHROW_METHOD_EXC
+
+void Texture2D::_updatePlanesScaling()
+{
+    // Update texture scaling of all planes & buttons
+    TextureBase::Shared texture = std::static_pointer_cast<TextureBase>(shared_from_this());
+    for (Plane::Weak const& weak_plane : Plane::_instances) {
+        Plane::Shared plane = weak_plane.lock();
+        if (plane && plane->_texture == texture)
+            plane->_updateTexScaling();
+    }
+    for (Button::Weak const& weak_button : Button::_instances) {
+        Button::Shared button = weak_button.lock();
+        if (button && button->_texture == texture)
+            button->_updateTexScaling();
+    }
+}
 
 void Texture2D::_LoadingThread::_function(Texture2D::Weak texture, std::string filepath)
 {
@@ -102,22 +121,23 @@ void Texture2D::_LoadingThread::_function(Texture2D::Weak texture, std::string f
     // Fill vector
     if (_is_canceled) return;
     _pixels = RGBA32::Pixels(raw_pixels.get(), raw_pixels.get() + (_tex_w * _tex_h));
-
 }
 
 void Texture2D::pollThreads()
 {
+    // Loop over each Texture2D instance
     for (Weak const& weak : _instances) {
         Shared texture = weak.lock();
-        if (texture) {
-            if (texture->_loading_thread.isPending()) {
-                // Give the image to the OpenGL texture
-                texture->_raw_texture.edit(&texture->_pixels[0], texture->_tex_w, texture->_tex_h);
-                // Update texture scaling of all planes (they are stored in window instances)
-                Window::_textureWasEdited(std::static_pointer_cast<TextureBase>(texture));
-                // Set thread as handled.
-                texture->_loading_thread.setAsHandled();
-            }
+        if (!texture) {
+            continue;
+        }
+        // If the loading thread is pending, edit the texture
+        if (texture->_loading_thread.isPending()) {
+            // Give the image to the OpenGL texture and notify all planes & buttons
+            texture->_raw_texture.edit(&texture->_pixels[0], texture->_tex_w, texture->_tex_h);
+            texture->_updatePlanesScaling();
+            // Set thread as handled.
+            texture->_loading_thread.setAsHandled();
         }
     }
 }

@@ -3,12 +3,36 @@
 
 __SSS_GL_BEGIN
 
-Button::Button(TextureBase::Shared texture, GLFWwindow const* context) try
-    : Plane::Plane(texture)
+std::vector<Button::Weak> Button::_instances{};
+
+Button::Button(std::shared_ptr<Window> window)
+    : Plane(window)
 {
-    _updateWinScaling(context);
+}
+
+Button::Button(std::shared_ptr<Window> window, TextureBase::Shared texture) try
+    : Plane(window, texture)
+{
+    _updateWinScaling();
 }
 __CATCH_AND_RETHROW_METHOD_EXC
+
+Button::~Button()
+{
+    cleanWeakPtrVector(_instances);
+}
+
+Button::Shared Button::create(std::shared_ptr<Window> window)
+{
+    // Use new instead of std::make_shared to access private constructor
+    return (Shared)_instances.emplace_back(Button::Shared(new Button(window)));
+}
+
+Button::Shared Button::create(std::shared_ptr<Window> window, TextureBase::Shared texture)
+{
+    // Use new instead of std::make_shared to access private constructor
+    return (Shared)_instances.emplace_back(Button::Shared(new Button(window, texture)));
+}
 
 // Sets the function to be called when the button is clicked.
 // The function MUST be of the format void (*)();
@@ -44,15 +68,12 @@ glm::mat4 Button::getModelMat4() noexcept
     return _model_mat4;
 }
 
-void Button::_updateWinScaling(GLFWwindow const* context)
+void Button::_updateWinScaling() try
 {
-    Window::Shared const win = Window::get(context);
-    if (!win) {
-        return;
-    }
+    throwIfExpired();
 
     float const ratio = (static_cast<float>(_tex_w) / static_cast<float>(_tex_h));
-    float const screen_ratio = win->getScreenRatio();
+    float const screen_ratio = _window.lock()->getScreenRatio();
     glm::vec3 scaling(1);
     if (ratio < 1.f) {
         if (screen_ratio < ratio) {
@@ -77,6 +98,7 @@ void Button::_updateWinScaling(GLFWwindow const* context)
         _should_compute_mat4 = true;
     }
 }
+__CATCH_AND_RETHROW_METHOD_EXC
 
 // Updates _is_hovered via the mouse position callback.
 void Button::_updateHoverStatus(double x, double y) try

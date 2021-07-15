@@ -1,12 +1,27 @@
 #include "SSS/GL/_internal/pointers.hpp"
+#include "SSS/GL/Window.hpp"
 
 __SSS_GL_BEGIN
 __INTERNAL_BEGIN
 
+WindowObject::WindowObject(std::shared_ptr<Window> window)
+    : _window(window)
+{
+    window->use();
+}
+
+void WindowObject::throwIfExpired() const
+{
+    if (hasExpired()) {
+        throw_exc("Bound window was destroyed, this instance has expired.");
+    }
+}
+
 // --- Texture ---
 
-Texture::Texture(GLenum given_target) try
+Texture::Texture(std::shared_ptr<Window> window, GLenum given_target) try
     : _internal::AbstractObject(
+        window,
         []()->GLuint {
             GLuint id;
             glGenTextures(1, &id);
@@ -24,11 +39,14 @@ __CATCH_AND_RETHROW_METHOD_EXC
 
 void Texture::bind() const
 {
+    throwIfExpired();
+    _window.lock()->use();
     glBindTexture(target, id);
 }
 
 void Texture::parameteri(GLenum pname, GLint param)
 {
+    bind();
     glTexParameteri(target, pname, param);
 }
 
@@ -47,12 +65,15 @@ __INTERNAL_END
 
     // --- VAO ---
 
-VAO::VAO() try
-    : _internal::AbstractObject([]()->GLuint {
-        GLuint id;
-        glGenVertexArrays(1, &id);
-        return id;
-    }())
+VAO::VAO(std::shared_ptr<Window> window) try
+    : _internal::AbstractObject(
+        window,
+        []()->GLuint {
+            GLuint id;
+            glGenVertexArrays(1, &id);
+            return id;
+        }()
+    )
 {
 }
 __CATCH_AND_RETHROW_METHOD_EXC
@@ -64,17 +85,22 @@ VAO::~VAO()
 
 void VAO::bind() const
 {
+    throwIfExpired();
+    _window.lock()->use();
     glBindVertexArray(id);
 }
 
     // --- VBO ---
 
-VBO::VBO() try
-    : _internal::AbstractObject([]()->GLuint {
-        GLuint id;
-        glGenBuffers(1, &id);
-        return id;
-    }())
+VBO::VBO(std::shared_ptr<Window> window) try
+    : _internal::AbstractObject(
+        window,
+        []()->GLuint {
+            GLuint id;
+            glGenBuffers(1, &id);
+            return id;
+        }()
+    )
 {
 }
 __CATCH_AND_RETHROW_METHOD_EXC
@@ -86,11 +112,15 @@ VBO::~VBO()
 
 void VBO::bind() const
 {
+    throwIfExpired();
+    _window.lock()->use();
     glBindBuffer(GL_ARRAY_BUFFER, id);
 }
 
 void VBO::unbind() const
 {
+    throwIfExpired();
+    _window.lock()->use();
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -102,12 +132,15 @@ void VBO::edit(GLsizeiptr size, const void* data, GLenum usage)
 
     // --- IBO ---
 
-IBO::IBO() try
-    : _internal::AbstractObject([]()->GLuint {
-        GLuint id;
-        glGenBuffers(1, &id);
-        return id;
-    }())
+IBO::IBO(std::shared_ptr<Window> window) try
+    : _internal::AbstractObject(
+        window,
+        []()->GLuint {
+            GLuint id;
+            glGenBuffers(1, &id);
+            return id;
+        }()
+    )
 {
 }
 __CATCH_AND_RETHROW_METHOD_EXC
@@ -119,16 +152,21 @@ IBO::~IBO()
 
 void IBO::bind() const
 {
+    throwIfExpired();
+    _window.lock()->use();
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
 }
 
 void IBO::unbind() const
 {
+    throwIfExpired();
+    _window.lock()->use();
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void IBO::edit(GLsizeiptr size, const void* data, GLenum usage)
 {
+    bind();
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, usage);
 }
 

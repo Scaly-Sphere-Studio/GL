@@ -7,21 +7,25 @@
 __SSS_GL_BEGIN
 
 class Plane : public Model {
-    friend class Window;
+    friend class Texture2D;
 
 private:
-    static VAO::Shared _static_vao;
-    static VBO::Shared _static_vbo;
-    static IBO::Shared _static_ibo;
-    static void _init_statics();
+    void _init_statics(std::shared_ptr<Window> window);
 
 protected:
-    Plane();
-    Plane(TextureBase::Shared texture);
+    Plane(std::shared_ptr<Window> window);
+    Plane(std::shared_ptr<Window> window, TextureBase::Shared texture);
+    using Weak = std::weak_ptr<Plane>;
+
+private:
+    static std::vector<Weak> _instances;
+
 public:
-    virtual ~Plane() = default;
+    virtual ~Plane();
 
     using Shared = std::shared_ptr<Plane>;
+    static Shared create(std::shared_ptr<Window> window);
+    static Shared create(std::shared_ptr<Window> window, TextureBase::Shared texture);
     
     void useTexture(TextureBase::Shared texture);
 

@@ -1,4 +1,5 @@
 #include "SSS/GL/Shaders.hpp"
+#include "SSS/GL/Window.hpp"
 
 __SSS_GL_BEGIN
 
@@ -79,11 +80,18 @@ static GLuint loadShaders(std::string const& vertex_fp, std::string const& fragm
 	return program_id;
 }
 
-Program::Program(std::string const& vertex_fp, std::string const& fragment_fp) try
-	: _id(loadShaders(vertex_fp, fragment_fp))
+Program::Program(std::shared_ptr<Window> window, std::string const& vertex_fp, std::string const& fragment_fp) try
+	: _internal::WindowObject(window), _id(loadShaders(vertex_fp, fragment_fp))
 {
 }
 __CATCH_AND_RETHROW_METHOD_EXC
+
+void Program::use() const
+{
+	throwIfExpired();
+	_window.lock()->use();
+	glUseProgram(_id);
+}
 
 Program::~Program()
 {

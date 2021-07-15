@@ -14,16 +14,21 @@ enum class Transformation {
 };
 __ENABLE_BITMASK_OPERATORS(Transformation);
 
-class Model {
+class Model : public _internal::WindowObject {
     friend class Window;
 
 protected:
-    Model();
+    Model(std::shared_ptr<Window> window);
+    using Weak = std::weak_ptr<Model>;
+
+private:
+    static std::vector<Weak> _instances;
 
 public:
-    virtual ~Model() = default;
+    virtual ~Model();
 
     using Shared = std::shared_ptr<Model>;
+    static Shared create(std::shared_ptr<Window> window);
 
     void scale(glm::vec3 scaling);
     void scale(float scaling);

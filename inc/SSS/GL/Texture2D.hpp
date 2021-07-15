@@ -4,15 +4,18 @@
 
 __SSS_GL_BEGIN
 
-class TextureBase {
+class Window;
+
+class TextureBase : public _internal::WindowObject {
 public:
     using Shared = std::shared_ptr<TextureBase>;
 protected:
-    TextureBase(GLenum target) : _raw_texture(target) {};
+    TextureBase(std::shared_ptr<Window> window, GLenum target)
+        : _internal::WindowObject(window), _raw_texture(window, target) {};
 public:
     TextureBase() = delete;
     virtual void bind() { _raw_texture.bind(); };
-    inline void getDimensions(int& w, int& h) { w = _tex_w; h = _tex_h; };
+    inline void getDimensions(int& w, int& h) const noexcept { w = _tex_w; h = _tex_h; };
     inline RGBA32::Pixels const& getStoredPixels() { return _pixels; };
 protected:
     int _tex_w{ 0 }, _tex_h{ 0 };
@@ -22,9 +25,15 @@ protected:
 
 class Texture2D : public TextureBase, public std::enable_shared_from_this<Texture2D> {
     friend class Plane;
+    friend class Window;
 
 protected:
-    Texture2D();
+    Texture2D(std::shared_ptr<Window> window);
+    using Weak = std::weak_ptr<Texture2D>;
+
+private:
+    static std::vector<Weak> _instances;
+
 public:
     ~Texture2D();
 
@@ -34,19 +43,14 @@ public:
     };
 
     using Shared = std::shared_ptr<Texture2D>;
-    using Ptr = std::unique_ptr<Texture2D>;
-
-    static Shared create();
-    static Shared create(std::string const& filepath);
-    static Shared create(void const* pixels, int width, int height);
+    static Shared create(std::shared_ptr<Window> window);
+    static Shared create(std::shared_ptr<Window> window,
+        std::string const& filepath);
+    static Shared create(std::shared_ptr<Window> window,
+        void const* pixels, int width, int height);
 
     static void pollThreads();
 
-protected:
-    using Weak = std::weak_ptr<Texture2D>;
-    static std::deque<Weak> _instances;
-
-public:
     void useFile(std::string filepath);
     void edit(void const* pixels, int width, int height);
 
@@ -62,6 +66,8 @@ private:
         virtual void _function(Texture2D::Weak texture, std::string filepath);
     } _loading_thread;
     friend _LoadingThread;
+
+    void _updatePlanesScaling();
 };
 
 __SSS_GL_END
