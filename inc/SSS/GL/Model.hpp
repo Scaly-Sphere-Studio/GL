@@ -27,6 +27,7 @@ private:
 public:
     virtual ~Model();
 
+    using Ptr = std::unique_ptr<Model>;
     using Shared = std::shared_ptr<Model>;
     static Shared create(std::shared_ptr<Window> window);
 

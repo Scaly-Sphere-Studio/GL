@@ -125,13 +125,42 @@ Window::Shared Window::get(GLFWwindow const* ptr) try
 }
 __CATCH_AND_RETHROW_FUNC_EXC
 
-Window::Shared Window::getMain() try
-{
-    return get(glfwGetCurrentContext());
-}
-__CATCH_AND_RETHROW_FUNC_EXC
-
     // --- Public methods ---
+
+void Window::createTexture(TextureType type, uint32_t id) try
+{
+    switch (type) {
+    case TextureType::Classic:
+        _objects.textures.classics.try_emplace(id);
+        _objects.textures.classics.at(id).reset(new Texture2D(shared_from_this()));
+        break;
+    case TextureType::Text:
+        // TODO: Rework TextArea constructor
+        _objects.textures.text.try_emplace(id);
+        _objects.textures.text.at(id).reset(new TextTexture(shared_from_this(), 700, 700));
+        break;
+    }
+}
+__CATCH_AND_RETHROW_METHOD_EXC
+
+void Window::createModel(ModelType type, uint32_t id) try
+{
+    switch (type) {
+    case ModelType::Classic:
+        _objects.models.classics.try_emplace(id);
+        _objects.models.classics.at(id).reset(new Model(shared_from_this()));
+        break;
+    case ModelType::Plane:
+        _objects.models.planes.try_emplace(id);
+        _objects.models.planes.at(id).reset(new Plane(shared_from_this()));
+        break;
+    case ModelType::Button:
+        _objects.models.buttons.try_emplace(id);
+        _objects.models.buttons.at(id).reset(new Button(shared_from_this()));
+        break;
+    }
+}
+__CATCH_AND_RETHROW_METHOD_EXC
 
 // Renders a frame & polls events.
 // Logs fps if specified in LOG structure.

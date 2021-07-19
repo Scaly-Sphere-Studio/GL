@@ -7,6 +7,7 @@
 __SSS_GL_BEGIN
 
 class Plane : public Model {
+    friend class Window;
     friend class Texture2D;
 
 private:
@@ -23,6 +24,7 @@ private:
 public:
     virtual ~Plane();
 
+    using Ptr = std::unique_ptr<Plane>;
     using Shared = std::shared_ptr<Plane>;
     static Shared create(std::shared_ptr<Window> window);
     static Shared create(std::shared_ptr<Window> window, TextureBase::Shared texture);

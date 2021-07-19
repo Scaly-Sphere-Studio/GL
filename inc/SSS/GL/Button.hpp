@@ -9,6 +9,7 @@ class Button : public Plane {
     friend void _internal::mouse_position_callback(GLFWwindow* ptr, double x, double y);
     friend void _internal::window_resize_callback(GLFWwindow* ptr, int w, int h);
     friend void _internal::mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods);
+    friend class Window;
     friend class Texture2D;
 
 protected:
@@ -23,6 +24,7 @@ public:
     virtual ~Button();
 
     // Shared pointer
+    using Ptr = std::unique_ptr<Button>;
     using Shared = std::shared_ptr<Button>;
     static Shared create(std::shared_ptr<Window> window);
     static Shared create(std::shared_ptr<Window> window, TextureBase::Shared texture);

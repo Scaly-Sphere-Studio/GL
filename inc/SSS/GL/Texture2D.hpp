@@ -42,6 +42,7 @@ public:
         static bool destructor;
     };
 
+    using Ptr = std::unique_ptr<Texture2D>;
     using Shared = std::shared_ptr<Texture2D>;
     static Shared create(std::shared_ptr<Window> window);
     static Shared create(std::shared_ptr<Window> window,

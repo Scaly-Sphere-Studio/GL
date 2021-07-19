@@ -22,6 +22,7 @@ private:
 public:
     ~TextTexture();
     
+    using Ptr = std::unique_ptr<TextTexture>;
     using Shared = std::shared_ptr<TextTexture>;
     static Shared create(std::shared_ptr<Window> window, int width, int height);
 
