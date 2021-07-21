@@ -57,6 +57,9 @@
     <ClCompile Include="src\TextTexture.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Context.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\SSS\GL\Window.hpp">
@@ -90,6 +93,9 @@
       <Filter>inc\_internal</Filter>
     </ClInclude>
     <ClInclude Include="inc\SSS\GL\TextTexture.hpp">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\SSS\GL\Context.hpp">
       <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>

@@ -27,6 +27,7 @@
   <ItemGroup>
     <ClInclude Include="inc\SSS\GL.hpp" />
     <ClInclude Include="inc\SSS\GL\Button.hpp" />
+    <ClInclude Include="inc\SSS\GL\Context.hpp" />
     <ClInclude Include="inc\SSS\GL\Model.hpp" />
     <ClInclude Include="inc\SSS\GL\Shaders.hpp" />
     <ClInclude Include="inc\SSS\GL\Plane.hpp" />
@@ -39,6 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Button.cpp" />
+    <ClCompile Include="src\Context.cpp" />
     <ClCompile Include="src\Model.cpp" />
     <ClCompile Include="src\TextTexture.cpp" />
     <ClCompile Include="src\_internal\callbacks.cpp" />

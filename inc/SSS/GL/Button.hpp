@@ -9,25 +9,16 @@ class Button : public Plane {
     friend void _internal::mouse_position_callback(GLFWwindow* ptr, double x, double y);
     friend void _internal::window_resize_callback(GLFWwindow* ptr, int w, int h);
     friend void _internal::mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods);
-    friend class Window;
+    friend class Context;
     friend class Texture2D;
 
 protected:
-    Button(std::shared_ptr<Window> window);
-    Button(std::shared_ptr<Window> window, TextureBase::Shared texture);
-    using Weak = std::weak_ptr<Button>;
-
-private:
-    static std::vector<Weak> _instances;
+    Button(std::shared_ptr<Context> context);
 
 public:
     virtual ~Button();
 
-    // Shared pointer
     using Ptr = std::unique_ptr<Button>;
-    using Shared = std::shared_ptr<Button>;
-    static Shared create(std::shared_ptr<Window> window);
-    static Shared create(std::shared_ptr<Window> window, TextureBase::Shared texture);
 
     // Format to be used in setFunction();
     using ButtonFunction = void(*)();

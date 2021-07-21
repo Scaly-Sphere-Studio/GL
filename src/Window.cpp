@@ -1,4 +1,5 @@
 #include "SSS/GL/Window.hpp"
+#include "SSS/GL/Context.hpp"
 #include "SSS/GL/_internal/callbacks.hpp"
 
 __SSS_GL_BEGIN
@@ -8,53 +9,41 @@ __SSS_GL_BEGIN
 // Default log options
 bool Window::LOG::constructor{ true };
 bool Window::LOG::destructor{ true };
-bool Window::LOG::glfw_init{ true };
 bool Window::LOG::fps{ true };
-bool Window::LOG::dpi_update{ true };
 
-
-// Window instances
-std::vector<Window::Weak> Window::_instances{};
 // Connected monitors
 std::vector<_internal::Monitor> Window::_monitors{};
 
     // --- Constructor & destructor ---
 
 // Constructor, creates a window and makes its context current
-Window::Window(int w, int h, std::string const& title) try
+Window::Window(std::shared_ptr<Context> context, GLFWwindow* win_ptr, Args const& args) try
+    : _internal::ContextObject(context)
 {
-    // Init GLFW
-    if (_instances.empty()) {
-        // Init GLFW
-        glfwInit();
-        if (LOG::glfw_init) {
-            __LOG_OBJ_MSG("GLFW initialized.");
-        }
-        // Retrive monitors
-        _internal::monitor_callback(nullptr, 0);
-        glfwSetMonitorCallback(_internal::monitor_callback);
-    }
-    // Retrieve video size of primary monitor
-    GLFWvidmode const* mode = glfwGetVideoMode(_monitors[0].ptr);
-    _w = w < mode->width ? w : mode->width;
-    _h = h < mode->height ? h : mode->height;
+    ContextManager const context_manager(_context.lock());
 
-    // Set projections
-    _setProjections();
-
-    // Hints
-    //glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+    // Set main monitor
+    _setMainMonitor(_monitors[args.monitor_id]);
+    // Retrieve video size of monitor and adjust size parameters
+    GLFWvidmode const* mode = glfwGetVideoMode(_main_monitor.ptr);
+    _w = args.w < mode->width ? args.w : mode->width;
+    _h = args.h < mode->height ? args.h : mode->height;
 
     // Create window
-    _window.reset(glfwCreateWindow(w, h, title.c_str(), nullptr, nullptr));
+    _window.reset(glfwCreateWindow(
+        _w,
+        _h,
+        args.title.c_str(),
+        args.fullscreen ? _main_monitor.ptr : nullptr,
+        win_ptr
+    ));
+
     // Throw if an error occured
     if (!_window.get()) {
         const char* msg;
         glfwGetError(&msg);
         throw_exc(msg);
     }
-    // Make its context current
-    use();
 
     // Init glad
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -66,11 +55,10 @@ Window::Window(int w, int h, std::string const& title) try
     // Enable blending (transparency)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    // Set main monitor
-    _setMainMonitor(_monitors[0]);
     // Set VSYNC to false by default
     setVSYNC(false);
     // Center window
+    // TODO: fix monitor pos
     glfwSetWindowPos(_window.get(), (mode->width - _w) / 2, (mode->height - _h) / 2);
     // Set window callbacks
     glfwSetWindowSizeCallback(_window.get(), _internal::window_resize_callback);
@@ -78,6 +66,9 @@ Window::Window(int w, int h, std::string const& title) try
     glfwSetCursorPosCallback(_window.get(), _internal::mouse_position_callback);
     glfwSetMouseButtonCallback(_window.get(), _internal::mouse_button_callback);
     glfwSetKeyCallback(_window.get(), _internal::key_callback);
+
+    // Set projections
+    _setProjections();
 
     if (LOG::constructor) {
         __LOG_CONSTRUCTOR
@@ -88,84 +79,18 @@ __CATCH_AND_RETHROW_METHOD_EXC
 // Destructor
 Window::~Window()
 {
-    cleanWeakPtrVector(_instances);
-    if (_instances.empty()) {
-        // Terminate GLFW
-        glfwTerminate();
-        if (LOG::glfw_init) {
-            __LOG_OBJ_MSG("GLFW terminated.");
-        }
-    }
     if (LOG::destructor) {
         __LOG_DESTRUCTOR
     }
 }
 
-    // --- Instances storage ---
-
-// Creates a window and returns a corresponding shared_ptr
-Window::Shared Window::create(int w, int h, std::string const& title) try
-{
-    return (Shared)_instances.emplace_back(Shared(new Window(w, h, title)));
-}
-__CATCH_AND_RETHROW_FUNC_EXC
-
-// Returns an existing Window instance by its GLFWwindow pointer
-Window::Shared Window::get(GLFWwindow const* ptr) try
-{
-    for (Weak weak : _instances) {
-        Shared window = weak.lock();
-        if (!window)
-            continue ;
-        if (window->_window.get() == ptr) {
-            return window;
-        }
-    }
-    throw_exc(ERR_MSG::NOTHING_FOUND);
-}
-__CATCH_AND_RETHROW_FUNC_EXC
-
     // --- Public methods ---
-
-void Window::createTexture(TextureType type, uint32_t id) try
-{
-    switch (type) {
-    case TextureType::Classic:
-        _objects.textures.classics.try_emplace(id);
-        _objects.textures.classics.at(id).reset(new Texture2D(shared_from_this()));
-        break;
-    case TextureType::Text:
-        // TODO: Rework TextArea constructor
-        _objects.textures.text.try_emplace(id);
-        _objects.textures.text.at(id).reset(new TextTexture(shared_from_this(), 700, 700));
-        break;
-    }
-}
-__CATCH_AND_RETHROW_METHOD_EXC
-
-void Window::createModel(ModelType type, uint32_t id) try
-{
-    switch (type) {
-    case ModelType::Classic:
-        _objects.models.classics.try_emplace(id);
-        _objects.models.classics.at(id).reset(new Model(shared_from_this()));
-        break;
-    case ModelType::Plane:
-        _objects.models.planes.try_emplace(id);
-        _objects.models.planes.at(id).reset(new Plane(shared_from_this()));
-        break;
-    case ModelType::Button:
-        _objects.models.buttons.try_emplace(id);
-        _objects.models.buttons.at(id).reset(new Button(shared_from_this()));
-        break;
-    }
-}
-__CATCH_AND_RETHROW_METHOD_EXC
 
 // Renders a frame & polls events.
 // Logs fps if specified in LOG structure.
 void Window::render() try
 {
+    ContextManager const context_manager(_context.lock());
     // Render back buffer
     glfwSwapBuffers(_window.get());
     // Update fps, log if needed
@@ -181,12 +106,6 @@ void Window::render() try
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
-// Make the OpenGL context this one.
-void Window::use() const
-{
-    glfwMakeContextCurrent(_window.get());
-}
-
 // Wether the user requested to close the window.
 // NOTE: this simply is a call to glfwWindowShouldClose
 bool Window::shouldClose() const noexcept
@@ -197,19 +116,9 @@ bool Window::shouldClose() const noexcept
 // Enables or disables the VSYNC of the window
 void Window::setVSYNC(bool state)
 {
-    // Ensure the current context is this window
-    GLFWwindow* ptr = glfwGetCurrentContext();
-    bool const isCurrent = ptr == _window.get();
-    // Swap context if needed
-    if (!isCurrent) {
-        glfwMakeContextCurrent(_window.get());
-    }
+    ContextManager const context_manager(_context.lock());
     // Set VSYNC
     glfwSwapInterval(state);
-    // Re-swap context if needed
-    if (!isCurrent) {
-        glfwMakeContextCurrent(ptr);
-    }
 }
 
 // Enables or disables fullscreen mode on given screen
@@ -252,12 +161,25 @@ void Window::setFullscreen(bool state, int screen_id)
     }
 }
 
+inline void Window::setFOV(float radians)
+{
+    _fov = radians;
+    _setProjections();
+}
+
+inline void Window::setProjectionRange(float z_near, float z_far)
+{
+    _z_near = z_near;
+    _z_far = z_far;
+    _setProjections();
+}
+
 void Window::_setMainMonitor(_internal::Monitor const& monitor)
 {
     _main_monitor = monitor;
 }
 
-void Window::_setProjections()
+void Window::_setProjections() try
 {
     float const ratio = getScreenRatio();
     // Set perspective projection
@@ -267,5 +189,6 @@ void Window::_setProjections()
     float y = ratio > 1.f ? 1.f : 1.f / ratio;
     _ortho_mat4 = glm::ortho(-x, x, -y, y, _z_near, _z_far);
 }
+__CATCH_AND_RETHROW_METHOD_EXC
 
 __SSS_GL_END

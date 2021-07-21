@@ -6,33 +6,33 @@ __SSS_GL_BEGIN
 
 class Window;
 
-class TextureBase : public _internal::WindowObject {
-public:
-    using Shared = std::shared_ptr<TextureBase>;
+enum class TextureType {
+    None = 0,   // No class
+    Classic,    // Texture2D class
+    Text        // TextTexture class
+};
+
+class TextureBase : public _internal::ContextObject {
 protected:
-    TextureBase(std::shared_ptr<Window> window, GLenum target)
-        : _internal::WindowObject(window), _raw_texture(window, target) {};
+    TextureBase(std::shared_ptr<Context> context, GLenum target)
+        : _internal::ContextObject(context), _raw_texture(context, target) {};
 public:
     TextureBase() = delete;
     virtual void bind() { _raw_texture.bind(); };
     inline void getDimensions(int& w, int& h) const noexcept { w = _tex_w; h = _tex_h; };
-    inline RGBA32::Pixels const& getStoredPixels() { return _pixels; };
+    inline RGBA32::Pixels const& getStoredPixels() { return _raw_pixels; };
 protected:
     int _tex_w{ 0 }, _tex_h{ 0 };
     _internal::Texture _raw_texture;
-    RGBA32::Pixels _pixels;
+    RGBA32::Pixels _raw_pixels;
 };
 
-class Texture2D : public TextureBase, public std::enable_shared_from_this<Texture2D> {
+class Texture2D : public TextureBase {
     friend class Plane;
-    friend class Window;
+    friend class Context;
 
 protected:
-    Texture2D(std::shared_ptr<Window> window);
-    using Weak = std::weak_ptr<Texture2D>;
-
-private:
-    static std::vector<Weak> _instances;
+    Texture2D(std::shared_ptr<Context> context);
 
 public:
     ~Texture2D();
@@ -43,15 +43,7 @@ public:
     };
 
     using Ptr = std::unique_ptr<Texture2D>;
-    using Shared = std::shared_ptr<Texture2D>;
-    static Shared create(std::shared_ptr<Window> window);
-    static Shared create(std::shared_ptr<Window> window,
-        std::string const& filepath);
-    static Shared create(std::shared_ptr<Window> window,
-        void const* pixels, int width, int height);
-
-    static void pollThreads();
-
+    
     void useFile(std::string filepath);
     void edit(void const* pixels, int width, int height);
 
@@ -59,12 +51,18 @@ private:
 // --- Image loading ---
 
     // Loading thread which fills _raw_pixels using stb_image
-    class _LoadingThread : public ThreadBase <Texture2D::Weak, std::string> {
+    class _LoadingThread : public ThreadBase <std::string> {
+        friend class Context;
         // Export constructors
         using ThreadBase::ThreadBase;
     protected:
         // Thread function
-        virtual void _function(Texture2D::Weak texture, std::string filepath);
+        virtual void _function(std::string filepath);
+
+    private:
+        RGBA32::Pixels _pixels;
+        int _w{ 0 };
+        int _h{ 0 };
     } _loading_thread;
     friend _LoadingThread;
 

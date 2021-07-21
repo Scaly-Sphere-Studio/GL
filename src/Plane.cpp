@@ -1,16 +1,12 @@
 #include "SSS/GL/Plane.hpp"
-#include "SSS/GL/Window.hpp"
+#include "SSS/GL/Context.hpp"
 
 __SSS_GL_BEGIN
 
-std::vector<Plane::Weak> Plane::_instances{};
-
-void Plane::_init_statics(std::shared_ptr<Window> window) try
+Plane::Plane(std::shared_ptr<Context> context) try
+    : Model(context)
 {
-    _vao.reset(new VAO(window));
-    _vbo.reset(new VBO(window));
-    _ibo.reset(new IBO(window));
-
+    ContextManager const context_manager(_context.lock());
     constexpr float vertices[] = {
         // positions          // texture coords (1 - y)
         -0.5f,  0.5f, 0.0f,   0.0f, 1.f - 1.0f,   // top left
@@ -33,43 +29,16 @@ void Plane::_init_statics(std::shared_ptr<Window> window) try
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 }
-__CATCH_AND_RETHROW_FUNC_EXC
-
-Plane::Plane(std::shared_ptr<Window> window) try
-    : Model(window)
-{
-    // Init statics
-    _init_statics(window);
-}
-__CATCH_AND_RETHROW_METHOD_EXC
-
-Plane::Plane(std::shared_ptr<Window> window, TextureBase::Shared texture) try
-    : Plane(window)
-{
-    useTexture(texture);
-}
 __CATCH_AND_RETHROW_METHOD_EXC
 
 Plane::~Plane()
 {
-    cleanWeakPtrVector(_instances);
 }
 
-Plane::Shared Plane::create(std::shared_ptr<Window> window)
+void Plane::useTexture(uint32_t texture_id, TextureType texture_type)
 {
-    // Use new instead of std::make_shared to access private constructor
-    return (Shared)_instances.emplace_back(Plane::Shared(new Plane(window)));
-}
-
-Plane::Shared Plane::create(std::shared_ptr<Window> window, TextureBase::Shared texture)
-{
-    // Use new instead of std::make_shared to access private constructor
-    return (Shared)_instances.emplace_back(Plane::Shared(new Plane(window, texture)));
-}
-
-void Plane::useTexture(TextureBase::Shared texture)
-{
-    _texture.swap(texture);
+    _texture_id = texture_id;
+    _texture_type = texture_type;
     _updateTexScaling();
 }
 
@@ -85,19 +54,43 @@ glm::mat4 Plane::getModelMat4() noexcept
 
 void Plane::draw() const try
 {
-    throwIfExpired();
+    Context::Shared context = _context.lock();
+    if (!context) {
+        return;
+    }
+    Context::Objects const& objects = context->getObjects();
+    ContextManager const context_manager(context);
     _vao->bind();
-    _texture->bind();
-    _window.lock()->use();
+    // Bind texture
+    switch (_texture_type) {
+    case TextureType::Classic:
+        objects.textures.classics.at(_texture_id)->bind();
+        break;
+    case TextureType::Text:
+        objects.textures.text.at(_texture_id)->bind();
+        break;
+    }
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
 void Plane::_updateTexScaling()
 {
-    // Check if dimensions changed
+    // Retrieve texture dimensions
+    if (_context.expired()) {
+        return;
+    }
     int w, h;
-    _texture->getDimensions(w, h);
+    Context::Objects const& objects = _context.lock()->getObjects();
+    switch (_texture_type) {
+    case TextureType::Classic:
+        objects.textures.classics.at(_texture_id)->getDimensions(w, h);
+        break;
+    case TextureType::Text:
+        objects.textures.text.at(_texture_id)->getDimensions(w, h);
+        break;
+    }
+    // Check if dimensions changed
     if (_tex_w == w && _tex_h == h) {
         return;
     }

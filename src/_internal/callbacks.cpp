@@ -1,5 +1,5 @@
 #include "SSS/GL/_internal/callbacks.hpp"
-#include "SSS/GL/Window.hpp"
+#include "SSS/GL/Context.hpp"
 
 __SSS_GL_BEGIN
 
@@ -21,20 +21,20 @@ void window_resize_callback(GLFWwindow* ptr, int w, int h) try
         __LOG_FUNC_MSG(toString(w) + 'x' + toString(h));
     }
 
-    Window::Shared window = Window::get(ptr);
-    window->use();
+    Window::Ptr const& window = Context::getWindow(ptr);
     window->_w = w;
     window->_h = h;
     window->_setProjections();
     glViewport(0, 0, w, h);
 
+    // TODO : Fix this, along with the TODO in the Button class
     // Update scaling of Buttons adapting to screen ratio
-    for (auto const& weak : Button::_instances) {
-        Button::Shared button = weak.lock();
-        if (button) {
-            button->_updateWinScaling();
-        }
-    }
+    //for (auto const& weak : Button::_instances) {
+    //    Button::Shared button = weak.lock();
+    //    if (button) {
+    //        button->_updateWinScaling();
+    //    }
+    //}
 
     // Call user defined callback, if needed
     if (window->_resize_callback != nullptr) {
@@ -50,8 +50,7 @@ void window_pos_callback(GLFWwindow* ptr, int x, int y) try
         __LOG_FUNC_MSG(toString(x) + 'x' + toString(y));
     }
 
-    Window::Shared window = Window::get(ptr);
-    window->use();
+    Window::Ptr const& window = Context::getWindow(ptr);
 
     if (Window::_monitors.size() == 1) {
         if (Window::_monitors[0].ptr != window->_main_monitor.ptr) {
@@ -90,20 +89,20 @@ void mouse_position_callback(GLFWwindow* ptr, double x, double y)
         __LOG_FUNC_MSG(toString(x) + 'x' + toString(y));
     }
 
-    Window::Shared window = Window::get(ptr);
-    window->use();
+    Window::Ptr const& window = Context::getWindow(ptr);
 
     // Get mouse coordinates in -1; 1 range
     x = (x / static_cast<double>(window->_w) * 2.0) - 1.0;
     y = ((y / static_cast<double>(window->_h) * 2.0) - 1.0) * -1.0;
 
+    // TODO: fix this Button problem
     // Update button hover status
-    for (auto const& weak : Button::_instances) {
-        Button::Shared button = weak.lock();
-        if (button) {
-            button->_updateHoverStatus(x, y);
-        }
-    }
+    //for (auto const& weak : Button::_instances) {
+    //    Button::Shared button = weak.lock();
+    //    if (button) {
+    //        button->_updateHoverStatus(x, y);
+    //    }
+    //}
 
     // Call user defined callback, if needed
     if (window->_mouse_position_callback != nullptr) {
@@ -121,18 +120,17 @@ void mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) tr
         );
     }
 
-    Window::Shared window = Window::get(ptr);
-    window->use();
+    Window::Ptr const& window = Context::getWindow(ptr);
 
     // Call button functions, if needed
-    if (action == GLFW_PRESS) {
-        for (auto const& weak : Button::_instances) {
-            Button::Shared button = weak.lock();
-            if (button && button->isHovered()) {
-                button->callFunction();
-            }
-        }
-    }
+    //if (action == GLFW_PRESS) {
+    //    for (auto const& weak : Button::_instances) {
+    //        Button::Shared button = weak.lock();
+    //        if (button && button->isHovered()) {
+    //            button->callFunction();
+    //        }
+    //    }
+    //}
 
     // Call user defined callback, if needed
     if (window->_mouse_button_callback != nullptr) {
@@ -152,8 +150,7 @@ void key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods) 
         );
     }
 
-    Window::Shared window = Window::get(ptr);
-    window->use();
+    Window::Ptr const& window = Context::getWindow(ptr);
 
     window->_key_inputs[key] = action != GLFW_RELEASE;
 

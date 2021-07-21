@@ -18,7 +18,7 @@ __INTERNAL_END
 
     // --- Window class ---
     
-class Window : public std::enable_shared_from_this<Window> {
+class Window : public _internal::ContextObject {
     
     friend void _internal::window_resize_callback(GLFWwindow* ptr, int w, int h);
     friend void _internal::window_pos_callback(GLFWwindow* ptr, int x, int y);
@@ -27,38 +27,38 @@ class Window : public std::enable_shared_from_this<Window> {
     friend void _internal::key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods);
     friend void _internal::monitor_callback(GLFWmonitor* ptr, int event);
 
+    friend class Context;
+
 public:
 // --- Log options ---
     
     struct LOG {
         static bool constructor;
         static bool destructor;
-        static bool glfw_init;
         static bool fps;
-        static bool dpi_update;
+    };
+
+    struct Args {
+        int w{ 720 };
+        int h{ 720 };
+        std::string title{ "Untitled" };
+        int monitor_id{ 0 };
+        bool fullscreen{ false };
     };
 
 // --- Public aliases ---
 
-    using Shared = std::shared_ptr<Window>;
+    using Ptr = std::unique_ptr<Window>;
 
 private:
-// --- Instances storage (private) ---
-
-    using Weak = std::weak_ptr<Window>;
-
-    // Instances of created windows
-    static std::vector<Weak> _instances;
     // All connected monitors
     static std::vector<_internal::Monitor> _monitors;
 
     // Constructor, creates a window and makes its context current
     // Private, to be called via Window::create();
-    Window(int w, int h, std::string const& title);
+    Window(std::shared_ptr<Context> context, GLFWwindow* win_ptr, Args const& args);
 
 public :
-// --- Instances storage (public) ---
-
     // Rule of 5
     ~Window();                                      // Destructor
     Window(const Window&)               = delete;   // Copy constructor
@@ -66,67 +66,11 @@ public :
     Window& operator=(const Window&)    = delete;   // Copy assignment
     Window& operator=(Window&&)         = delete;   // Move assignment
 
-    // Creates a window and returns a corresponding shared_ptr
-    static Shared create(int w, int h, std::string const& title = "Untitled");
-    // To be used in callbacks.
-    // Returns an existing Window instance, via its GLFWwindow pointer
-    static Shared get(GLFWwindow const* ptr);
-
-// --- Window objects ---
-
-    // All Window bound objects
-    struct Objects {
-        // Models
-        struct {
-            std::map<uint32_t, Model::Ptr> classics;
-            std::map<uint32_t, Plane::Ptr> planes;
-            std::map<uint32_t, Button::Ptr> buttons;
-        } models;
-        // Textures
-        struct {
-            std::map<uint32_t, Texture2D::Ptr> classics;
-            std::map<uint32_t, TextTexture::Ptr> text;
-        } textures;
-
-        // Rule of 5
-        Objects()                           = default;  // Constructor
-        ~Objects()                          = default;  // Destructor
-        Objects(const Objects&)             = delete;   // Copy constructor
-        Objects(Objects&&)                  = delete;   // Move constructor
-        Objects& operator=(const Objects&)  = delete;   // Copy assignment
-        Objects& operator=(Objects&&)       = delete;   // Move assignment
-    };
-
-private:
-    Objects _objects;
-
-public:
-    inline Objects const& getObjects() const noexcept { return _objects; };
-    
-    enum class TextureType {
-        Classic,    // Texture2D class
-        Text        // TextTexture class
-    };
-    void createTexture(TextureType type, uint32_t id);
-
-    enum class ModelType {
-        Classic,    // Model class
-        Plane,      // Plane class
-        Button      // Button class
-    };
-    void createModel(ModelType type, uint32_t id);
-
-    void createShaders();
-    void createRenderer();
-
 // --- Public methods ---
 
     // Renders a frame & polls events.
     // Logs fps if specified in LOG structure.
     void render();
-
-    // Make the OpenGL context this one.
-    void use() const;
 
     // Wether the user requested to close the window.
     // NOTE: this simply is a call to glfwWindowShouldClose
@@ -161,12 +105,8 @@ public:
         }
     };
 
-    inline void setFOV(float radians) noexcept { _fov = radians; };
-    inline void setProjectionRange(float z_near, float z_far) noexcept
-    {
-        _z_near = z_near;
-        _z_far = z_far;
-    };
+    void setFOV(float radians);
+    void setProjectionRange(float z_near, float z_far);
 
     using KeyInputs = std::array<bool, GLFW_KEY_LAST + 1>;
     inline KeyInputs const& getKeyInputs() const noexcept { return _key_inputs; }
