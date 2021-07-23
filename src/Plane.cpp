@@ -3,10 +3,10 @@
 
 __SSS_GL_BEGIN
 
-Plane::Plane(std::shared_ptr<Context> context) try
+Plane::Plane(GLFWwindow const* context) try
     : Model(context)
 {
-    ContextManager const context_manager(_context.lock());
+    ContextLocker const context_manager(_context);
     constexpr float vertices[] = {
         // positions          // texture coords (1 - y)
         -0.5f,  0.5f, 0.0f,   0.0f, 1.f - 1.0f,   // top left
@@ -59,7 +59,7 @@ void Plane::draw() const try
         return;
     }
     Context::Objects const& objects = context->getObjects();
-    ContextManager const context_manager(context);
+    ContextLocker const context_manager(_context);
     _vao->bind();
     // Bind texture
     switch (_texture_type) {

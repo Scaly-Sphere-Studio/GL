@@ -3,7 +3,7 @@
 
 __SSS_GL_BEGIN
 
-Button::Button(std::shared_ptr<Context> context)
+Button::Button(GLFWwindow const* context)
     : Plane(context)
 {
 }

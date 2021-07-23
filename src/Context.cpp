@@ -23,7 +23,7 @@ Context::Context() try
     glfwDefaultWindowHints();
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, DEBUGMODE ? GLFW_TRUE : GLFW_FALSE);
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-    _hidden_window.reset(glfwCreateWindow(1, 1, "hidden window", nullptr, nullptr));
+    _window.reset(glfwCreateWindow(1, 1, "hidden window", nullptr, nullptr));
     glfwDefaultWindowHints();
 }
 __CATCH_AND_RETHROW_METHOD_EXC
@@ -32,12 +32,12 @@ Context::~Context()
 {
     // Make context current if needed
     GLFWwindow* current_context = glfwGetCurrentContext();
-    if (current_context == _hidden_window.get()) {
+    if (current_context == _window.get()) {
         cleanObjects();
     }
     else {
-        std::lock_guard<std::mutex> const lock(_context_mutex);
-        glfwMakeContextCurrent(_hidden_window.get());
+        std::lock_guard<std::mutex> const lock(_mutex);
+        glfwMakeContextCurrent(_window.get());
         cleanObjects();
         glfwMakeContextCurrent(current_context);
     }
@@ -72,7 +72,7 @@ void Context::createWindow(uint32_t id, Window::Args const& args) try
 {
     _objects.windows.try_emplace(id);
     _objects.windows.at(id).reset(
-        new Window(shared_from_this(), _hidden_window.get(), args));
+        new Window(_window.get(), args));
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
@@ -177,11 +177,61 @@ void Context::pollTextureThreads() try
 }
 __CATCH_AND_RETHROW_FUNC_EXC
 
-void Context::createShaders(uint32_t id, std::string const& vertex_fp, std::string const& fragment_fp)
+ContextLocker::ContextLocker(GLFWwindow const* ptr) try
+    : _current(const_cast<GLFWwindow*>(ptr)),
+    _previous(glfwGetCurrentContext()),
+    _equal(_current == _previous)
 {
-    _objects.programs.try_emplace(id);
-    _objects.programs.at(id).reset(
-        new Program(shared_from_this(), vertex_fp, fragment_fp));
+    if (ptr == nullptr) {
+        SSS::throw_exc(SSS::context_msg(SSS::ERR_MSG::INVALID_ARGUMENT, "nullptr"));
+    }
+    if (_equal) {
+        return;
+    }
+
+    glfwMakeContextCurrent(nullptr);
+    if (_previous != nullptr) {
+        getMutex(_previous).unlock();
+    }
+    getMutex(_current).lock();
+    glfwMakeContextCurrent(_current);
 }
+__CATCH_AND_RETHROW_METHOD_EXC
+
+ContextLocker::~ContextLocker()
+{
+    if (_equal) {
+        return;
+    }
+
+    glfwMakeContextCurrent(nullptr);
+    getMutex(_current).unlock();
+    if (_previous != nullptr) {
+        getMutex(_previous).lock();
+    }
+    glfwMakeContextCurrent(_current);
+}
+
+std::mutex& ContextLocker::getMutex(GLFWwindow* ptr) try
+{
+    for (Context::Weak const& weak_context : Context::_instances) {
+        if (weak_context.expired()) {
+            continue;
+        }
+        Context::Shared context = weak_context.lock();
+        if (context->_window.get() == ptr) {
+            return context->_mutex;
+        }
+        for (auto it = context->_objects.windows.cbegin();
+            it != context->_objects.windows.cend(); ++it)
+        {
+            if (it->second && it->second->_window.get() == ptr) {
+                return it->second->_mutex;
+            }
+        }
+    }
+    throw_exc(ERR_MSG::NOTHING_FOUND);
+}
+__CATCH_AND_RETHROW_FUNC_EXC
 
 __SSS_GL_END

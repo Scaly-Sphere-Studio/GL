@@ -12,10 +12,10 @@ __SSS_GL_BEGIN
 bool Texture2D::LOG::constructor{ false };
 bool Texture2D::LOG::destructor{ false };
 
-Texture2D::Texture2D(std::shared_ptr<Context> context) try
+Texture2D::Texture2D(GLFWwindow const* context) try
     : TextureBase(context, GL_TEXTURE_2D)
 {
-    ContextManager context_manager(_context.lock());
+    ContextLocker const context_manager(_context);
     _raw_texture.bind();
     _raw_texture.parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     _raw_texture.parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);

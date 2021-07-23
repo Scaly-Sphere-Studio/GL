@@ -13,7 +13,7 @@ class Button : public Plane {
     friend class Texture2D;
 
 protected:
-    Button(std::shared_ptr<Context> context);
+    Button(GLFWwindow const* context);
 
 public:
     virtual ~Button();

@@ -14,6 +14,7 @@
 #include <array>
 #include <fstream>
 #include <mutex>
+#include <shared_mutex>
 #include <algorithm>
 
 #define __SSS_GL_BEGIN __SSS_BEGIN namespace GL {

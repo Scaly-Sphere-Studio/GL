@@ -11,7 +11,7 @@ class Plane : public Model {
     friend class Texture2D;
 
 protected:
-    Plane(std::shared_ptr<Context> context);
+    Plane(GLFWwindow const* context);
 
 public:
     virtual ~Plane();

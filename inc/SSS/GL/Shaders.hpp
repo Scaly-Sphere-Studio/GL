@@ -10,7 +10,7 @@ class Program : public _internal::ContextObject {
 
 private:
     // Constructor : loads shaders and links them to a program
-    Program(std::shared_ptr<Context> context, std::string const& vertex_fp, std::string const& fragment_fp);
+    Program(GLFWwindow const* context, std::string const& vertex_fp, std::string const& fragment_fp);
 
 public:
     ~Program();

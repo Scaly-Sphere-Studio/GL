@@ -14,7 +14,7 @@ enum class TextureType {
 
 class TextureBase : public _internal::ContextObject {
 protected:
-    TextureBase(std::shared_ptr<Context> context, GLenum target)
+    TextureBase(GLFWwindow const* context, GLenum target)
         : _internal::ContextObject(context), _raw_texture(context, target) {};
 public:
     TextureBase() = delete;
@@ -32,7 +32,7 @@ class Texture2D : public TextureBase {
     friend class Context;
 
 protected:
-    Texture2D(std::shared_ptr<Context> context);
+    Texture2D(GLFWwindow const* context);
 
 public:
     ~Texture2D();

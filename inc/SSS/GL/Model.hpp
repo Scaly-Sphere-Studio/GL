@@ -24,7 +24,7 @@ class Model : public _internal::ContextObject {
     friend class Context;
 
 protected:
-    Model(std::shared_ptr<Context> context);
+    Model(GLFWwindow const* context);
 
 public:
     virtual ~Model();

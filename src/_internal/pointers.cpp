@@ -4,18 +4,18 @@
 __SSS_GL_BEGIN
 __INTERNAL_BEGIN
 
-ContextObject::ContextObject(std::shared_ptr<Context> context)
+ContextObject::ContextObject(GLFWwindow const* context)
     : _context(context)
 {
 }
 
 // --- Texture ---
 
-Texture::Texture(std::shared_ptr<Context> context, GLenum given_target) try
+Texture::Texture(GLFWwindow const* context, GLenum given_target) try
     : _internal::AbstractObject(
         context,
         [&]()->GLuint {
-            ContextManager const context_manager(context);
+            ContextLocker const context_manager(_context);
             GLuint id;
             glGenTextures(1, &id);
             return id;
@@ -27,19 +27,19 @@ __CATCH_AND_RETHROW_METHOD_EXC
 
     Texture::~Texture()
 {
-    ContextManager const context_manager(_context.lock());
+    ContextLocker const context_manager(_context);
     glDeleteTextures(1, &id);
 }
 
 void Texture::bind() const
 {
-    ContextManager const context_manager(_context.lock());
+    ContextLocker const context_manager(_context);
     glBindTexture(target, id);
 }
 
 void Texture::parameteri(GLenum pname, GLint param)
 {
-    ContextManager const context_manager(_context.lock());
+    ContextLocker const context_manager(_context);
     bind();
     glTexParameteri(target, pname, param);
 }
@@ -50,7 +50,7 @@ void Texture::edit(const GLvoid* pixels, GLsizei width, GLsizei height,
     if (pixels == nullptr) {
         return;
     }
-    ContextManager const context_manager(_context.lock());
+    ContextLocker const context_manager(_context);
     bind();
     glTexImage2D(target, level, internalformat, width, height,
         0, format, type, pixels);
@@ -60,11 +60,11 @@ __INTERNAL_END
 
     // --- VAO ---
 
-VAO::VAO(std::shared_ptr<Context> context) try
+VAO::VAO(GLFWwindow const* context) try
     : _internal::AbstractObject(
         context,
         [&]()->GLuint {
-            ContextManager const context_manager(context);
+            ContextLocker const context_manager(_context);
             GLuint id;
             glGenVertexArrays(1, &id);
             return id;
@@ -76,23 +76,23 @@ __CATCH_AND_RETHROW_METHOD_EXC
 
 VAO::~VAO()
 {
-    ContextManager const context_manager(_context.lock());
+    ContextLocker const context_manager(_context);
     glDeleteVertexArrays(1, &id);
 }
 
 void VAO::bind() const
 {
-    ContextManager const context_manager(_context.lock());
+    ContextLocker const context_manager(_context);
     glBindVertexArray(id);
 }
 
     // --- VBO ---
 
-VBO::VBO(std::shared_ptr<Context> context) try
+VBO::VBO(GLFWwindow const* context) try
     : _internal::AbstractObject(
         context,
         [&]()->GLuint {
-            ContextManager const context_manager(context);
+            ContextLocker const context_manager(_context);
             GLuint id;
             glGenBuffers(1, &id);
             return id;
@@ -104,25 +104,25 @@ __CATCH_AND_RETHROW_METHOD_EXC
 
 VBO::~VBO()
 {
-    ContextManager const context_manager(_context.lock());
+    ContextLocker const context_manager(_context);
     glDeleteBuffers(1, &id);
 }
 
 void VBO::bind() const
 {
-    ContextManager const context_manager(_context.lock());
+    ContextLocker const context_manager(_context);
     glBindBuffer(GL_ARRAY_BUFFER, id);
 }
 
 void VBO::unbind() const
 {
-    ContextManager const context_manager(_context.lock());
+    ContextLocker const context_manager(_context);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void VBO::edit(GLsizeiptr size, const void* data, GLenum usage)
 {
-    ContextManager const context_manager(_context.lock());
+    ContextLocker const context_manager(_context);
     bind();
     glBufferData(GL_ARRAY_BUFFER, size, data, usage);
     unbind();
@@ -130,11 +130,11 @@ void VBO::edit(GLsizeiptr size, const void* data, GLenum usage)
 
     // --- IBO ---
 
-IBO::IBO(std::shared_ptr<Context> context) try
+IBO::IBO(GLFWwindow const* context) try
     : _internal::AbstractObject(
         context,
         [&]()->GLuint {
-            ContextManager const context_manager(context);
+            ContextLocker const context_manager(_context);
             GLuint id;
             glGenBuffers(1, &id);
             return id;
@@ -146,25 +146,25 @@ __CATCH_AND_RETHROW_METHOD_EXC
 
 IBO::~IBO()
 {
-    ContextManager const context_manager(_context.lock());
+    ContextLocker const context_manager(_context);
     glDeleteBuffers(1, &id);
 }
 
 void IBO::bind() const
 {
-    ContextManager const context_manager(_context.lock());
+    ContextLocker const context_manager(_context);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
 }
 
 void IBO::unbind() const
 {
-    ContextManager const context_manager(_context.lock());
+    ContextLocker const context_manager(_context);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void IBO::edit(GLsizeiptr size, const void* data, GLenum usage)
 {
-    ContextManager const context_manager(_context.lock());
+    ContextLocker const context_manager(_context);
     bind();
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, usage);
     unbind();

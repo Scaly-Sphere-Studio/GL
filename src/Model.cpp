@@ -3,10 +3,10 @@
 
 __SSS_GL_BEGIN
 
-Model::Model(std::shared_ptr<Context> context) try
+Model::Model(GLFWwindow const* context) try
     : _internal::ContextObject(context)
 {
-    ContextManager const context_manager(_context.lock());
+    ContextLocker const context_manager(_context);
     _vao.reset(new VAO(context));
     _vbo.reset(new VBO(context));
     _ibo.reset(new IBO(context));

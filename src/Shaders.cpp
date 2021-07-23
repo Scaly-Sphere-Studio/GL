@@ -80,30 +80,30 @@ static GLuint loadShaders(std::string const& vertex_fp, std::string const& fragm
 	return program_id;
 }
 
-Program::Program(std::shared_ptr<Context> context, std::string const& vertex_fp, std::string const& fragment_fp) try
+Program::Program(GLFWwindow const* context, std::string const& vertex_fp, std::string const& fragment_fp) try
 	: _internal::ContextObject(context)
 {
-	ContextManager const context_manager(_context.lock());
+	ContextLocker const context_manager(_context);
 	_id = loadShaders(vertex_fp, fragment_fp);
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
 void Program::use() const
 {
-	ContextManager const context_manager(_context.lock());
+	ContextLocker const context_manager(_context);
 	glUseProgram(_id);
 }
 
 Program::~Program()
 {
-	ContextManager const context_manager(_context.lock());
+	ContextLocker const context_manager(_context);
 	glDeleteProgram(_id);
 }
 
 // Return the location of a uniform variable for this program
 GLuint Program::getUniformLocation(std::string const& name)
 {
-	ContextManager const context_manager(_context.lock());
+	ContextLocker const context_manager(_context);
 	return glGetUniformLocation(_id, name.c_str());
 }
 

@@ -17,10 +17,9 @@ std::vector<_internal::Monitor> Window::_monitors{};
     // --- Constructor & destructor ---
 
 // Constructor, creates a window and makes its context current
-Window::Window(std::shared_ptr<Context> context, GLFWwindow* win_ptr, Args const& args) try
-    : _internal::ContextObject(context)
+Window::Window(GLFWwindow* win_ptr, Args const& args) try
 {
-    ContextManager const context_manager(_context.lock());
+    ContextLocker const context_manager(_context);
 
     // Set main monitor
     _setMainMonitor(_monitors[args.monitor_id]);
@@ -90,7 +89,7 @@ Window::~Window()
 // Logs fps if specified in LOG structure.
 void Window::render() try
 {
-    ContextManager const context_manager(_context.lock());
+    ContextLocker const context_manager(_context);
     // Render back buffer
     glfwSwapBuffers(_window.get());
     // Update fps, log if needed
@@ -116,7 +115,7 @@ bool Window::shouldClose() const noexcept
 // Enables or disables the VSYNC of the window
 void Window::setVSYNC(bool state)
 {
-    ContextManager const context_manager(_context.lock());
+    ContextLocker const context_manager(_context);
     // Set VSYNC
     glfwSwapInterval(state);
 }

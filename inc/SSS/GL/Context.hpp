@@ -10,9 +10,12 @@
 
 __SSS_GL_BEGIN
 
-class Context : public std::enable_shared_from_this<Context> {
-
+class Context :
+    public _internal::ContextHolder,
+    public std::enable_shared_from_this<Context>
+{
     friend class ContextManager;
+    friend class ContextLocker;
 
 private:
     Context();                                      // Constructor
@@ -55,8 +58,6 @@ public:
             std::map<uint32_t, TextTexture::Ptr> text;
         } textures;
 
-        std::map<uint32_t, Program::Ptr> programs;
-
         // Rule of 5
         Objects()                           = default;  // Constructor
         ~Objects()                          = default;  // Destructor
@@ -84,41 +85,24 @@ public:
     void createTexture(TextureType type, uint32_t id);
     void removeTexture(TextureType type, uint32_t id);
     static void pollTextureThreads();
-
-    void createShaders(uint32_t id, std::string const& vertex_fp, std::string const& fragment_fp);
-    void createRenderer();
-
-private:
-    _internal::GLFWwindow_Ptr _hidden_window;
-    std::mutex _context_mutex;
 };
 
-class ContextManager {
+class ContextLocker {
 public:
-    ContextManager() = delete;
-    ContextManager(Context::Shared context) : _given_context(context) {
-        _previous_context = glfwGetCurrentContext();
-        if (context && context->_hidden_window.get() != _previous_context) {
-            context->_context_mutex.lock();
-            glfwMakeContextCurrent(context->_hidden_window.get());
-            _was_changed = true;
-        }
-    };
-    ~ContextManager() {
-        if (_was_changed) {
-            glfwMakeContextCurrent(_previous_context);
-            _given_context->_context_mutex.unlock();
-        }
-    };
-    // Rule of 5
-    ContextManager(const ContextManager&)               = delete;   // Copy constructor
-    ContextManager(ContextManager&&)                    = delete;   // Move constructor
-    ContextManager& operator=(const ContextManager&)    = delete;   // Copy assignment
-    ContextManager& operator=(ContextManager&&)         = delete;   // Move assignment
+    ContextLocker()                                 = delete;   // Constructor
+    ContextLocker(GLFWwindow const* ptr);                       // Constructor
+    ~ContextLocker();                                           // Destructor
+    ContextLocker(const ContextLocker&)             = delete;   // Copy constructor
+    ContextLocker(ContextLocker&&)                  = delete;   // Move constructor
+    ContextLocker& operator=(const ContextLocker&)  = delete;   // Copy assignment
+    ContextLocker& operator=(ContextLocker&&)       = delete;   // Move assignment
+
 private:
-    Context::Shared _given_context;
-    GLFWwindow* _previous_context{ nullptr };
-    bool _was_changed{ false };
+    GLFWwindow* _current;
+    GLFWwindow* _previous;
+    bool _equal;
+
+    static std::mutex& getMutex(GLFWwindow* ptr);
 };
 
 __SSS_GL_END

@@ -13,7 +13,7 @@ class TextTexture :
 {
     friend class Context;
 private:
-    TextTexture(std::shared_ptr<Context> context, int width, int height);
+    TextTexture(GLFWwindow const* context, int width, int height);
     using Weak = std::weak_ptr<TextTexture>;
 
 private:

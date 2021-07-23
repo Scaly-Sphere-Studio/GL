@@ -18,7 +18,7 @@ __INTERNAL_END
 
     // --- Window class ---
     
-class Window : public _internal::ContextObject {
+class Window : public _internal::ContextHolder {
     
     friend void _internal::window_resize_callback(GLFWwindow* ptr, int w, int h);
     friend void _internal::window_pos_callback(GLFWwindow* ptr, int x, int y);
@@ -28,6 +28,7 @@ class Window : public _internal::ContextObject {
     friend void _internal::monitor_callback(GLFWmonitor* ptr, int event);
 
     friend class Context;
+    friend class ContextLocker;
 
 public:
 // --- Log options ---
@@ -56,7 +57,7 @@ private:
 
     // Constructor, creates a window and makes its context current
     // Private, to be called via Window::create();
-    Window(std::shared_ptr<Context> context, GLFWwindow* win_ptr, Args const& args);
+    Window(GLFWwindow* win_ptr, Args const& args);
 
 public :
     // Rule of 5
@@ -65,6 +66,27 @@ public :
     Window(Window&&)                    = delete;   // Move constructor
     Window& operator=(const Window&)    = delete;   // Copy assignment
     Window& operator=(Window&&)         = delete;   // Move assignment
+
+    struct Objects {
+        std::map<uint32_t, VAO::Ptr> VAOs;
+        std::map<uint32_t, Program::Ptr> programs;
+    };
+
+private:
+    Objects _objects;
+
+public:
+    inline Objects const& getObjects() const noexcept { return _objects; };
+    void cleanObjects() noexcept;
+
+    void createVAO(uint32_t id);
+    void removeVAO(uint32_t id);
+
+    void createShaders(uint32_t id, std::string const& vertex_fp, std::string const& fragment_fp);
+    void removeShaders(uint32_t id);
+
+    void createRenderer();
+    void removeRenderer();
 
 // --- Public methods ---
 
@@ -133,8 +155,6 @@ private:
     int _windowed_x{ 0 };   // Old x (left) pos
     int _windowed_y{ 0 };   // Old y (up) pos
     
-    // Window ptr. Automatically destroyed
-    _internal::GLFWwindow_Ptr _window;
     // Main monitor the window is on
     _internal::Monitor _main_monitor;
 

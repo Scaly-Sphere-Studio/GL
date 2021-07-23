@@ -12,6 +12,11 @@ __INTERNAL_BEGIN
 using GLFWwindow_Ptr = C_Ptr
     <GLFWwindow, void(*)(GLFWwindow*), glfwDestroyWindow>;
 
+struct ContextHolder {
+    GLFWwindow_Ptr _window;
+    std::mutex _mutex;
+};
+
 // This class is to be inherited in all classes whose instances are bounded
 // to a specific Window instance. 
 class ContextObject {
@@ -19,12 +24,12 @@ public:
     // Delete default constructor to enforce bounding to a Window instance
     ContextObject() = delete;
 protected:
-    ContextObject(std::shared_ptr<Context> context);
-    std::weak_ptr<Context> _context;
+    ContextObject(GLFWwindow const* context);
+    GLFWwindow const* _context;
 };
 
 struct AbstractObject : public ContextObject {
-    inline AbstractObject(std::shared_ptr<Context> context, GLuint given_id)
+    inline AbstractObject(GLFWwindow const* context, GLuint given_id)
         : ContextObject(context), id(given_id) {};
     virtual void bind() const = 0;
     GLuint const id;
@@ -33,7 +38,7 @@ struct AbstractObject : public ContextObject {
 struct Texture : public AbstractObject {
     using Ptr = std::unique_ptr<Texture>;
     using Shared = std::shared_ptr<Texture>;
-    Texture(std::shared_ptr<Context> context, GLenum given_target);
+    Texture(GLFWwindow const* context, GLenum given_target);
     ~Texture();
     virtual void bind() const;
     void parameteri(GLenum pname, GLint param);
@@ -48,7 +53,7 @@ __INTERNAL_END
 struct VAO : public _internal::AbstractObject {
     using Ptr = std::unique_ptr<VAO>;
     using Shared = std::shared_ptr<VAO>;
-    VAO(std::shared_ptr<Context> context);
+    VAO(GLFWwindow const* context);
     ~VAO();
     virtual void bind() const;
 };
@@ -56,7 +61,7 @@ struct VAO : public _internal::AbstractObject {
 struct VBO : public _internal::AbstractObject {
     using Ptr = std::unique_ptr<VBO>;
     using Shared = std::shared_ptr<VBO>;
-    VBO(std::shared_ptr<Context> context);
+    VBO(GLFWwindow const* context);
     ~VBO();
     virtual void bind() const;
     virtual void unbind() const;
@@ -66,7 +71,7 @@ struct VBO : public _internal::AbstractObject {
 struct IBO : public _internal::AbstractObject {
     using Ptr = std::unique_ptr<IBO>;
     using Shared = std::shared_ptr<IBO>;
-    IBO(std::shared_ptr<Context> context);
+    IBO(GLFWwindow const* context);
     ~IBO();
     virtual void bind() const;
     virtual void unbind() const;
