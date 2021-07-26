@@ -1,10 +1,10 @@
 #include "SSS/GL/Button.hpp"
-#include "SSS/GL/Context.hpp"
+#include "SSS/GL/Window.hpp"
 
 __SSS_GL_BEGIN
 
-Button::Button(GLFWwindow const* context)
-    : Plane(context)
+Button::Button(std::weak_ptr<Window> window)
+    : Plane(window)
 {
 }
 
@@ -24,8 +24,8 @@ __CATCH_AND_RETHROW_METHOD_EXC
 // Called whenever the button is clicked.
 void Button::callFunction() try
 {
-    if (_texture_type == TextureType::Text && !_context.expired()) {
-        _context.lock()->getObjects().textures.text
+    if (_texture_type == TextureType::Text && !_window.expired()) {
+        _window.lock()->getObjects().textures.text
             .at(_texture_id)->placeCursor(_relative_x, _relative_y);
     }
     if (_f == nullptr) {
@@ -93,17 +93,17 @@ void Button::_updateHoverStatus(double x, double y) try
 
     // If the button is a PNG, check the alpha channel of the pixel being hovered.
     // Else, set hovering as true.
-    if (_texture_type == TextureType::None || _context.expired()) {
+    if (_texture_type == TextureType::None || _window.expired()) {
         _is_hovered = true;
         return;
     }
     RGBA32::Pixels const& pixels = [&]() {
         switch (_texture_type) {
         case TextureType::Classic:
-            return _context.lock()->getObjects().textures.classics
+            return _window.lock()->getObjects().textures.classics
                 .at(_texture_id)->getStoredPixels();
         case TextureType::Text:
-            return _context.lock()->getObjects().textures.text
+            return _window.lock()->getObjects().textures.text
                 .at(_texture_id)->getStoredPixels();
         default:
             throw_exc(ERR_MSG::INVALID_ARGUMENT);

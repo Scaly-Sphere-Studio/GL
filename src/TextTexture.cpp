@@ -1,12 +1,12 @@
 #include "SSS/GL/TextTexture.hpp"
-#include "SSS/GL/Context.hpp"
+#include "SSS/GL/Window.hpp"
 
 __SSS_GL_BEGIN
 
-TextTexture::TextTexture(GLFWwindow const* context, int width, int height)
-    : TextureBase(context, GL_TEXTURE_2D), TR::TextArea(width, height)
+TextTexture::TextTexture(std::weak_ptr<Window> window, int width, int height)
+    : TextureBase(window, GL_TEXTURE_2D), TR::TextArea(width, height)
 {
-    ContextLocker const context_manager(_context);
+    Context const context(_window);
     _tex_w = width;
     _tex_h = height;
     _raw_texture.bind();
@@ -22,7 +22,7 @@ TextTexture::~TextTexture()
 
 void TextTexture::bind()
 {
-    ContextLocker const context_manager(_context);
+    Context const context(_window);
     if (update() || _update_texture) {
         _raw_texture.edit(getPixels(), _tex_w, _tex_h);
         _update_texture = false;

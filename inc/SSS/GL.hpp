@@ -1,6 +1,5 @@
 #pragma once
 
-#include <SSS/GL/Context.hpp>
 #include <SSS/GL/Window.hpp>
 #include <SSS/GL/Shaders.hpp>
 #include <SSS/GL/Model.hpp>

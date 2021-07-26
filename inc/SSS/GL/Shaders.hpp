@@ -5,12 +5,12 @@
 
 __SSS_GL_BEGIN
 
-class Program : public _internal::ContextObject {
-    friend class Context;
+class Program : public _internal::WindowObject {
+    friend class Window;
 
 private:
     // Constructor : loads shaders and links them to a program
-    Program(GLFWwindow const* context, std::string const& vertex_fp, std::string const& fragment_fp);
+    Program(std::weak_ptr<Window> window, std::string const& vertex_fp, std::string const& fragment_fp);
 
 public:
     ~Program();

@@ -20,11 +20,11 @@ enum class Transformation {
 };
 __ENABLE_BITMASK_OPERATORS(Transformation);
 
-class Model : public _internal::ContextObject {
-    friend class Context;
+class Model : public _internal::WindowObject {
+    friend class Window;
 
 protected:
-    Model(GLFWwindow const* context);
+    Model(std::weak_ptr<Window> window);
 
 public:
     virtual ~Model();

@@ -1,5 +1,5 @@
 #include "SSS/GL/Window.hpp"
-#include "SSS/GL/Context.hpp"
+#include "SSS/GL/Window.hpp"
 #include "SSS/GL/_internal/callbacks.hpp"
 
 __SSS_GL_BEGIN
@@ -9,17 +9,30 @@ __SSS_GL_BEGIN
 // Default log options
 bool Window::LOG::constructor{ true };
 bool Window::LOG::destructor{ true };
+bool Window::LOG::glfw_init{ true };
 bool Window::LOG::fps{ true };
 
+// Window ptr
+std::vector<std::weak_ptr<Window>> Window::_instances{};
 // Connected monitors
 std::vector<_internal::Monitor> Window::_monitors{};
 
     // --- Constructor & destructor ---
 
-// Constructor, creates a window and makes its context current
-Window::Window(GLFWwindow* win_ptr, Args const& args) try
+// Constructor, creates a window
+Window::Window(Args const& args) try
 {
-    ContextLocker const context_manager(_context);
+    // Init GLFW
+    if (_instances.empty()) {
+        // Init GLFW
+        glfwInit();
+        if (LOG::glfw_init) {
+            __LOG_OBJ_MSG("GLFW initialized.");
+        }
+        // Retrive monitors
+        _internal::monitor_callback(nullptr, 0);
+        glfwSetMonitorCallback(_internal::monitor_callback);
+    }
 
     // Set main monitor
     _setMainMonitor(_monitors[args.monitor_id]);
@@ -34,7 +47,7 @@ Window::Window(GLFWwindow* win_ptr, Args const& args) try
         _h,
         args.title.c_str(),
         args.fullscreen ? _main_monitor.ptr : nullptr,
-        win_ptr
+        nullptr
     ));
 
     // Throw if an error occured
@@ -43,6 +56,9 @@ Window::Window(GLFWwindow* win_ptr, Args const& args) try
         glfwGetError(&msg);
         throw_exc(msg);
     }
+
+    // Make context current for this scope
+    Context const context(_window.get());
 
     // Init glad
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -78,8 +94,161 @@ __CATCH_AND_RETHROW_METHOD_EXC
 // Destructor
 Window::~Window()
 {
+    // Free all bound objects
+    cleanObjects();
+    // Remove weak ptr from instance vector
+    cleanWeakPtrVector(_instances);
+    // Terminate GLFW
+    if (_instances.empty()) {
+        glfwTerminate();
+        if (LOG::glfw_init) {
+            __LOG_OBJ_MSG("GLFW terminated.");
+        }
+    }
     if (LOG::destructor) {
         __LOG_DESTRUCTOR
+    }
+}
+
+Window::Shared Window::create(Args const& args) try
+{
+    return (Shared)_instances.emplace_back(Shared(new Window(args)));
+}
+__CATCH_AND_RETHROW_FUNC_EXC
+
+Window::Shared Window::get(GLFWwindow* ptr) try
+{
+    for (Weak const& weak : _instances) {
+        Shared window = weak.lock();
+        if (window && window->_window.get() == ptr) {
+            return window;
+        }
+    }
+    throw_exc(ERR_MSG::NOTHING_FOUND);
+}
+__CATCH_AND_RETHROW_FUNC_EXC
+
+void Window::cleanObjects() noexcept
+{
+    Context const context(_window.get());
+    _objects.models.classics.clear();
+    _objects.models.planes.clear();
+    _objects.models.buttons.clear();
+    _objects.textures.classics.clear();
+    _objects.textures.text.clear();
+}
+
+void Window::createModel(uint32_t id, ModelType type) try
+{
+    switch (type) {
+    case ModelType::Classic:
+        _objects.models.classics.try_emplace(id);
+        _objects.models.classics.at(id).reset(new Model(weak_from_this()));
+        break;
+    case ModelType::Plane:
+        _objects.models.planes.try_emplace(id);
+        _objects.models.planes.at(id).reset(new Plane(weak_from_this()));
+        break;
+    case ModelType::Button:
+        _objects.models.buttons.try_emplace(id);
+        _objects.models.buttons.at(id).reset(new Button(weak_from_this()));
+        break;
+    }
+}
+__CATCH_AND_RETHROW_METHOD_EXC
+
+void Window::removeModel(uint32_t id, ModelType type)
+{
+    switch (type) {
+    case ModelType::Classic:
+        if (_objects.models.classics.count(id) != 0) {
+            _objects.models.classics.erase(_objects.models.classics.find(id));
+        }
+        break;
+    case ModelType::Plane:
+        if (_objects.models.planes.count(id) != 0) {
+            _objects.models.planes.erase(_objects.models.planes.find(id));
+        }
+        break;
+    case ModelType::Button:
+        if (_objects.models.buttons.count(id) != 0) {
+            _objects.models.buttons.erase(_objects.models.buttons.find(id));
+        }
+        break;
+    }
+}
+
+void Window::createTexture(uint32_t id, TextureType type) try
+{
+    switch (type) {
+    case TextureType::Classic:
+        _objects.textures.classics.try_emplace(id);
+        _objects.textures.classics.at(id).reset(new Texture2D(weak_from_this()));
+        break;
+    case TextureType::Text:
+        // TODO: Rework TextArea constructor
+        _objects.textures.text.try_emplace(id);
+        _objects.textures.text.at(id).reset(new TextTexture(weak_from_this(), 700, 700));
+        break;
+    }
+}
+__CATCH_AND_RETHROW_METHOD_EXC
+
+void Window::removeTexture(uint32_t id, TextureType type)
+{
+    switch (type) {
+    case TextureType::Classic:
+        if (_objects.textures.classics.count(id) != 0) {
+            _objects.textures.classics.erase(_objects.textures.classics.find(id));
+        }
+        break;
+    case TextureType::Text:
+        if (_objects.textures.text.count(id) != 0) {
+            _objects.textures.text.erase(_objects.textures.text.find(id));
+        }
+        break;
+    }
+}
+
+void Window::pollTextureThreads() try
+{
+    // Loop over each Context instance
+    for (Weak const& weak : _instances) {
+        Shared context = weak.lock();
+        if (!context) {
+            continue;
+        }
+        // Loop over each Texture2D instance
+        auto const& map = context->_objects.textures.classics;
+        for (auto it = map.cbegin(); it != map.cend(); ++it) {
+            Texture2D::Ptr const& tex = it->second;
+            // If the loading thread is pending, edit the texture
+            if (tex->_loading_thread.isPending()) {
+                // Give the image to the OpenGL texture and notify all planes & buttons
+                tex->_tex_w = tex->_loading_thread._w;
+                tex->_tex_h = tex->_loading_thread._h;
+                tex->_raw_pixels = std::move(tex->_loading_thread._pixels);
+                tex->_raw_texture.edit(&tex->_raw_pixels[0], tex->_tex_w, tex->_tex_h);
+                tex->_updatePlanesScaling();
+                // Set thread as handled.
+                tex->_loading_thread.setAsHandled();
+            }
+        }
+    }
+}
+__CATCH_AND_RETHROW_FUNC_EXC
+
+void Window::createShaders(uint32_t id, std::string const& vert_fp, std::string const& frag_fp) try
+{
+    _objects.shaders.try_emplace(id);
+    _objects.shaders.at(id).reset(new Program(weak_from_this(), vert_fp, frag_fp));
+}
+__CATCH_AND_RETHROW_METHOD_EXC
+
+void Window::removeShaders(uint32_t id)
+{
+    if (_objects.shaders.count(id) != 0) {
+        _objects.shaders.erase(_objects.shaders.find(id));
     }
 }
 
@@ -89,7 +258,8 @@ Window::~Window()
 // Logs fps if specified in LOG structure.
 void Window::render() try
 {
-    ContextLocker const context_manager(_context);
+    // Make context current for this scope
+    Context const context(_window.get());
     // Render back buffer
     glfwSwapBuffers(_window.get());
     // Update fps, log if needed
@@ -115,7 +285,8 @@ bool Window::shouldClose() const noexcept
 // Enables or disables the VSYNC of the window
 void Window::setVSYNC(bool state)
 {
-    ContextLocker const context_manager(_context);
+    // Make context current for this scope
+    Context const context(_window.get());
     // Set VSYNC
     glfwSwapInterval(state);
 }
@@ -189,5 +360,39 @@ void Window::_setProjections() try
     _ortho_mat4 = glm::ortho(-x, x, -y, y, _z_near, _z_far);
 }
 __CATCH_AND_RETHROW_METHOD_EXC
+
+Context::Context(std::weak_ptr<Window> ptr)
+{
+    if (ptr.expired()) {
+        return;
+    }
+    Window::Shared window = ptr.lock();
+    _given = window->_window.get();
+    _previous = glfwGetCurrentContext();
+    _equal = _given == _previous;
+    if (_equal) {
+        return;
+    }
+    glfwMakeContextCurrent(_given);
+}
+
+Context::Context(GLFWwindow* ptr)
+{
+    _given = ptr;
+    _previous = glfwGetCurrentContext();
+    _equal = _given == _previous;
+    if (_equal) {
+        return;
+    }
+    glfwMakeContextCurrent(_given);
+}
+
+Context::~Context()
+{
+    if (_equal) {
+        return;
+    }
+    glfwMakeContextCurrent(_previous);
+}
 
 __SSS_GL_END

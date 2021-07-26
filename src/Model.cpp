@@ -1,15 +1,15 @@
 #include "SSS/GL/Model.hpp"
-#include "SSS/GL/Context.hpp"
+#include "SSS/GL/Window.hpp"
 
 __SSS_GL_BEGIN
 
-Model::Model(GLFWwindow const* context) try
-    : _internal::ContextObject(context)
+Model::Model(std::weak_ptr<Window> window) try
+    : _internal::WindowObject(window)
 {
-    ContextLocker const context_manager(_context);
-    _vao.reset(new VAO(context));
-    _vbo.reset(new VBO(context));
-    _ibo.reset(new IBO(context));
+    Context const context(_window);
+    _vao.reset(new VAO(_window));
+    _vbo.reset(new VBO(_window));
+    _ibo.reset(new IBO(_window));
     resetTransformations(Transformation::All);
 }
 __CATCH_AND_RETHROW_METHOD_EXC

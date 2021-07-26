@@ -27,7 +27,6 @@
   <ItemGroup>
     <ClInclude Include="inc\SSS\GL.hpp" />
     <ClInclude Include="inc\SSS\GL\Button.hpp" />
-    <ClInclude Include="inc\SSS\GL\Context.hpp" />
     <ClInclude Include="inc\SSS\GL\Model.hpp" />
     <ClInclude Include="inc\SSS\GL\Shaders.hpp" />
     <ClInclude Include="inc\SSS\GL\Plane.hpp" />
@@ -39,16 +38,15 @@
     <ClInclude Include="inc\SSS\GL\_internal\pointers.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Button.cpp" />
-    <ClCompile Include="src\Context.cpp" />
-    <ClCompile Include="src\Model.cpp" />
-    <ClCompile Include="src\TextTexture.cpp" />
     <ClCompile Include="src\_internal\callbacks.cpp" />
     <ClCompile Include="src\_internal\pointers.cpp" />
-    <ClCompile Include="src\Shaders.cpp" />
-    <ClCompile Include="src\Plane.cpp" />
     <ClCompile Include="src\Window.cpp" />
+    <ClCompile Include="src\Model.cpp" />
+    <ClCompile Include="src\Plane.cpp" />
+    <ClCompile Include="src\Button.cpp" />
     <ClCompile Include="src\Texture2D.cpp" />
+    <ClCompile Include="src\TextTexture.cpp" />
+    <ClCompile Include="src\Shaders.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

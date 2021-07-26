@@ -1,5 +1,5 @@
 #include "SSS/GL/_internal/callbacks.hpp"
-#include "SSS/GL/Context.hpp"
+#include "SSS/GL/Window.hpp"
 
 __SSS_GL_BEGIN
 
@@ -21,7 +21,7 @@ void window_resize_callback(GLFWwindow* ptr, int w, int h) try
         __LOG_FUNC_MSG(toString(w) + 'x' + toString(h));
     }
 
-    Window::Ptr const& window = Context::getWindow(ptr);
+    Window::Shared window = Window::get(ptr);
     window->_w = w;
     window->_h = h;
     window->_setProjections();
@@ -50,7 +50,7 @@ void window_pos_callback(GLFWwindow* ptr, int x, int y) try
         __LOG_FUNC_MSG(toString(x) + 'x' + toString(y));
     }
 
-    Window::Ptr const& window = Context::getWindow(ptr);
+    Window::Shared window = Window::get(ptr);
 
     if (Window::_monitors.size() == 1) {
         if (Window::_monitors[0].ptr != window->_main_monitor.ptr) {
@@ -89,7 +89,7 @@ void mouse_position_callback(GLFWwindow* ptr, double x, double y)
         __LOG_FUNC_MSG(toString(x) + 'x' + toString(y));
     }
 
-    Window::Ptr const& window = Context::getWindow(ptr);
+    Window::Shared window = Window::get(ptr);
 
     // Get mouse coordinates in -1; 1 range
     x = (x / static_cast<double>(window->_w) * 2.0) - 1.0;
@@ -120,7 +120,7 @@ void mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) tr
         );
     }
 
-    Window::Ptr const& window = Context::getWindow(ptr);
+    Window::Shared window = Window::get(ptr);
 
     // Call button functions, if needed
     //if (action == GLFW_PRESS) {
@@ -150,7 +150,7 @@ void key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods) 
         );
     }
 
-    Window::Ptr const& window = Context::getWindow(ptr);
+    Window::Shared window = Window::get(ptr);
 
     window->_key_inputs[key] = action != GLFW_RELEASE;
 

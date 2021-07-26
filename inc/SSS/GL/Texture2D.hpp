@@ -12,10 +12,10 @@ enum class TextureType {
     Text        // TextTexture class
 };
 
-class TextureBase : public _internal::ContextObject {
+class TextureBase : public _internal::WindowObject {
 protected:
-    TextureBase(GLFWwindow const* context, GLenum target)
-        : _internal::ContextObject(context), _raw_texture(context, target) {};
+    TextureBase(std::weak_ptr<Window> window, GLenum target)
+        : _internal::WindowObject(window), _raw_texture(window, target) {};
 public:
     TextureBase() = delete;
     virtual void bind() { _raw_texture.bind(); };
@@ -29,10 +29,10 @@ protected:
 
 class Texture2D : public TextureBase {
     friend class Plane;
-    friend class Context;
+    friend class Window;
 
 protected:
-    Texture2D(GLFWwindow const* context);
+    Texture2D(std::weak_ptr<Window> window);
 
 public:
     ~Texture2D();
@@ -52,7 +52,7 @@ private:
 
     // Loading thread which fills _raw_pixels using stb_image
     class _LoadingThread : public ThreadBase <std::string> {
-        friend class Context;
+        friend class Window;
         // Export constructors
         using ThreadBase::ThreadBase;
     protected:

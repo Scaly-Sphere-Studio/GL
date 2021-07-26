@@ -9,11 +9,11 @@ class Button : public Plane {
     friend void _internal::mouse_position_callback(GLFWwindow* ptr, double x, double y);
     friend void _internal::window_resize_callback(GLFWwindow* ptr, int w, int h);
     friend void _internal::mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods);
-    friend class Context;
+    friend class Window;
     friend class Texture2D;
 
 protected:
-    Button(GLFWwindow const* context);
+    Button(std::weak_ptr<Window> window);
 
 public:
     virtual ~Button();

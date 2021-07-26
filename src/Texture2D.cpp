@@ -1,5 +1,5 @@
 #include "SSS/GL/Texture2D.hpp"
-#include "SSS/GL/Context.hpp"
+#include "SSS/GL/Window.hpp"
 
 // Init STB
 #define STB_IMAGE_IMPLEMENTATION
@@ -12,10 +12,10 @@ __SSS_GL_BEGIN
 bool Texture2D::LOG::constructor{ false };
 bool Texture2D::LOG::destructor{ false };
 
-Texture2D::Texture2D(GLFWwindow const* context) try
-    : TextureBase(context, GL_TEXTURE_2D)
+Texture2D::Texture2D(std::weak_ptr<Window> window) try
+    : TextureBase(window, GL_TEXTURE_2D)
 {
-    ContextLocker const context_manager(_context);
+    Context const context(_window);
     _raw_texture.bind();
     _raw_texture.parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     _raw_texture.parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -56,10 +56,10 @@ __CATCH_AND_RETHROW_METHOD_EXC
 
 void Texture2D::_updatePlanesScaling()
 {
-    if (_context.expired()) {
+    if (_window.expired()) {
         return;
     }
-    Context::Objects const& objects = _context.lock()->getObjects();
+    Window::Objects const& objects = _window.lock()->getObjects();
     // Retrieve texture ID
     uint32_t id = 0;
     for (auto it = objects.textures.classics.cbegin(); it != objects.textures.classics.cend(); ++it) {
@@ -90,7 +90,7 @@ void Texture2D::_LoadingThread::_function(std::string filepath)
         raw_pixels((uint32_t*)(stbi_load(
             filepath.c_str(),   // Filepath to picture
             &_w,                // Width, to query
-            &_w,                // Height, to query
+            &_h,                // Height, to query
             nullptr,            // Byte composition, to query if not requested
             4                   // Byte composition, to request
         )));

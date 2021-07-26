@@ -7,11 +7,11 @@
 __SSS_GL_BEGIN
 
 class Plane : public Model {
-    friend class Context;
+    friend class Window;
     friend class Texture2D;
 
 protected:
-    Plane(GLFWwindow const* context);
+    Plane(std::weak_ptr<Window> window);
 
 public:
     virtual ~Plane();

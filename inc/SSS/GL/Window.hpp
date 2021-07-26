@@ -18,7 +18,7 @@ __INTERNAL_END
 
     // --- Window class ---
     
-class Window : public _internal::ContextHolder {
+class Window : public std::enable_shared_from_this<Window> {
     
     friend void _internal::window_resize_callback(GLFWwindow* ptr, int w, int h);
     friend void _internal::window_pos_callback(GLFWwindow* ptr, int x, int y);
@@ -28,7 +28,6 @@ class Window : public _internal::ContextHolder {
     friend void _internal::monitor_callback(GLFWmonitor* ptr, int event);
 
     friend class Context;
-    friend class ContextLocker;
 
 public:
 // --- Log options ---
@@ -36,6 +35,7 @@ public:
     struct LOG {
         static bool constructor;
         static bool destructor;
+        static bool glfw_init;
         static bool fps;
     };
 
@@ -49,15 +49,18 @@ public:
 
 // --- Public aliases ---
 
-    using Ptr = std::unique_ptr<Window>;
+    using Shared = std::shared_ptr<Window>;
 
 private:
+    using Weak = std::weak_ptr<Window>;
+    // All Window instances
+    static std::vector<Weak> _instances;
     // All connected monitors
     static std::vector<_internal::Monitor> _monitors;
 
-    // Constructor, creates a window and makes its context current
+    // Constructor, creates a window
     // Private, to be called via Window::create();
-    Window(GLFWwindow* win_ptr, Args const& args);
+    Window(Args const& args);
 
 public :
     // Rule of 5
@@ -67,9 +70,32 @@ public :
     Window& operator=(const Window&)    = delete;   // Copy assignment
     Window& operator=(Window&&)         = delete;   // Move assignment
 
+    static Shared create(Args const& args);
+    static Shared get(GLFWwindow* ptr);
+
+    // All context bound objects
     struct Objects {
-        std::map<uint32_t, VAO::Ptr> VAOs;
-        std::map<uint32_t, Program::Ptr> programs;
+        // Models
+        struct {
+            std::map<uint32_t, Model::Ptr> classics;
+            std::map<uint32_t, Plane::Ptr> planes;
+            std::map<uint32_t, Button::Ptr> buttons;
+        } models;
+        // Textures
+        struct {
+            std::map<uint32_t, Texture2D::Ptr> classics;
+            std::map<uint32_t, TextTexture::Ptr> text;
+        } textures;
+        // Shaders
+        std::map<uint32_t, Program::Ptr> shaders;
+
+        // Rule of 5
+        Objects()                           = default;  // Constructor
+        ~Objects()                          = default;  // Destructor
+        Objects(const Objects&)             = delete;   // Copy constructor
+        Objects(Objects&&)                  = delete;   // Move constructor
+        Objects& operator=(const Objects&)  = delete;   // Copy assignment
+        Objects& operator=(Objects&&)       = delete;   // Move assignment
     };
 
 private:
@@ -79,14 +105,15 @@ public:
     inline Objects const& getObjects() const noexcept { return _objects; };
     void cleanObjects() noexcept;
 
-    void createVAO(uint32_t id);
-    void removeVAO(uint32_t id);
+    void createModel(uint32_t id, ModelType type);
+    void removeModel(uint32_t id, ModelType type);
 
-    void createShaders(uint32_t id, std::string const& vertex_fp, std::string const& fragment_fp);
+    void createTexture(uint32_t id, TextureType type);
+    void removeTexture(uint32_t id, TextureType type);
+    static void pollTextureThreads();
+
+    void createShaders(uint32_t id, std::string const& vert_fp, std::string const& frag_fp);
     void removeShaders(uint32_t id);
-
-    void createRenderer();
-    void removeRenderer();
 
 // --- Public methods ---
 
@@ -155,6 +182,8 @@ private:
     int _windowed_x{ 0 };   // Old x (left) pos
     int _windowed_y{ 0 };   // Old y (up) pos
     
+    // GLFWwindow ptr
+    _internal::GLFWwindow_Ptr _window;    
     // Main monitor the window is on
     _internal::Monitor _main_monitor;
 
@@ -183,6 +212,22 @@ private:
 
     // Calculates both projetions based on internal variables
     void _setProjections();
+};
+
+class Context {
+public:
+    Context()                           = delete;   // Default constructor
+    Context(std::weak_ptr<Window> ptr);             // Constructor
+    Context(GLFWwindow* ptr);                       // Constructor
+    ~Context();                                     // Destructor
+    Context(const Context&)             = delete;   // Copy constructor
+    Context(Context&&)                  = delete;   // Move constructor
+    Context& operator=(const Context&)  = delete;   // Copy assignment
+    Context& operator=(Context&&)       = delete;   // Move assignment
+private:
+    GLFWwindow* _given{ nullptr };
+    GLFWwindow* _previous{ nullptr };
+    bool _equal{ true };
 };
 
 __SSS_GL_END

@@ -1,5 +1,5 @@
 #include "SSS/GL/Shaders.hpp"
-#include "SSS/GL/Context.hpp"
+#include "SSS/GL/Window.hpp"
 
 __SSS_GL_BEGIN
 
@@ -80,30 +80,30 @@ static GLuint loadShaders(std::string const& vertex_fp, std::string const& fragm
 	return program_id;
 }
 
-Program::Program(GLFWwindow const* context, std::string const& vertex_fp, std::string const& fragment_fp) try
-	: _internal::ContextObject(context)
+Program::Program(std::weak_ptr<Window> window, std::string const& vertex_fp, std::string const& fragment_fp) try
+	: _internal::WindowObject(window)
 {
-	ContextLocker const context_manager(_context);
+	Context const context(_window);
 	_id = loadShaders(vertex_fp, fragment_fp);
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
 void Program::use() const
 {
-	ContextLocker const context_manager(_context);
+	Context const context(_window);
 	glUseProgram(_id);
 }
 
 Program::~Program()
 {
-	ContextLocker const context_manager(_context);
+	Context const context(_window);
 	glDeleteProgram(_id);
 }
 
 // Return the location of a uniform variable for this program
 GLuint Program::getUniformLocation(std::string const& name)
 {
-	ContextLocker const context_manager(_context);
+	Context const context(_window);
 	return glGetUniformLocation(_id, name.c_str());
 }
 

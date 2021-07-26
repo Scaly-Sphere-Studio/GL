@@ -1,12 +1,13 @@
 #include "SSS/GL/Plane.hpp"
-#include "SSS/GL/Context.hpp"
+#include "SSS/GL/Window.hpp"
 
 __SSS_GL_BEGIN
 
-Plane::Plane(GLFWwindow const* context) try
-    : Model(context)
+Plane::Plane(std::weak_ptr<Window> window) try
+    : Model(window)
 {
-    ContextLocker const context_manager(_context);
+    Context const context(_window);
+
     constexpr float vertices[] = {
         // positions          // texture coords (1 - y)
         -0.5f,  0.5f, 0.0f,   0.0f, 1.f - 1.0f,   // top left
@@ -20,6 +21,8 @@ Plane::Plane(GLFWwindow const* context) try
     };
 
     _vao->bind();
+    _vbo->bind();
+    _ibo->bind();
 
     _vbo->edit(sizeof(vertices), vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
@@ -54,12 +57,12 @@ glm::mat4 Plane::getModelMat4() noexcept
 
 void Plane::draw() const try
 {
-    Context::Shared context = _context.lock();
-    if (!context) {
+    Window::Shared window = _window.lock();
+    if (!window) {
         return;
     }
-    Context::Objects const& objects = context->getObjects();
-    ContextLocker const context_manager(_context);
+    Window::Objects const& objects = window->getObjects();
+    Context const context(_window);
     _vao->bind();
     // Bind texture
     switch (_texture_type) {
@@ -77,11 +80,11 @@ __CATCH_AND_RETHROW_METHOD_EXC
 void Plane::_updateTexScaling()
 {
     // Retrieve texture dimensions
-    if (_context.expired()) {
+    if (_window.expired()) {
         return;
     }
     int w, h;
-    Context::Objects const& objects = _context.lock()->getObjects();
+    Window::Objects const& objects = _window.lock()->getObjects();
     switch (_texture_type) {
     case TextureType::Classic:
         objects.textures.classics.at(_texture_id)->getDimensions(w, h);

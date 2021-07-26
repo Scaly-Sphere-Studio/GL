@@ -11,9 +11,9 @@ class TextTexture :
     public TR::TextArea,
     public std::enable_shared_from_this<TextTexture>
 {
-    friend class Context;
+    friend class Window;
 private:
-    TextTexture(GLFWwindow const* context, int width, int height);
+    TextTexture(std::weak_ptr<Window> window, int width, int height);
     using Weak = std::weak_ptr<TextTexture>;
 
 private:
@@ -24,7 +24,7 @@ public:
     
     using Ptr = std::unique_ptr<TextTexture>;
     using Shared = std::shared_ptr<TextTexture>;
-    static Shared create(std::shared_ptr<Context> context, int width, int height);
+    static Shared create(std::shared_ptr<Window> context, int width, int height);
 
     virtual void bind();
 
