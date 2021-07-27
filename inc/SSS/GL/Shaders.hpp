@@ -6,13 +6,17 @@
 __SSS_GL_BEGIN
 
 class Program : public _internal::WindowObject {
+    friend class Window;
+
+private:
+    // Constructor : loads shaders and links them to a program
+    Program(std::weak_ptr<Window> window, std::string const& vertex_fp, std::string const& fragment_fp);
+
 public:
+    ~Program();
+    
     // Aliases
     using Ptr = std::unique_ptr<Program>;
-
-    // Constructor : loads shaders and links them to a program
-    Program(std::shared_ptr<Window> window, std::string const& vertex_fp, std::string const& fragment_fp);
-    ~Program();
 
     // Use this shader program for the current rendering
     void use() const;
@@ -22,7 +26,7 @@ public:
 
 private:
     // Program id
-    GLuint const _id;
+    GLuint _id;
 };
 
 __SSS_GL_END

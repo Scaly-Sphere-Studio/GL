@@ -3,11 +3,10 @@
 
 __SSS_GL_BEGIN
 
-std::vector<TextTexture::Weak> TextTexture::_instances{};
-
-TextTexture::TextTexture(std::shared_ptr<Window> window, int width, int height)
+TextTexture::TextTexture(std::weak_ptr<Window> window, int width, int height)
     : TextureBase(window, GL_TEXTURE_2D), TR::TextArea(width, height)
 {
+    Context const context(_window);
     _tex_w = width;
     _tex_h = height;
     _raw_texture.bind();
@@ -19,19 +18,11 @@ TextTexture::TextTexture(std::shared_ptr<Window> window, int width, int height)
 
 TextTexture::~TextTexture()
 {
-    cleanWeakPtrVector(_instances);
-}
-
-TextTexture::Shared TextTexture::create(std::shared_ptr<Window> window, int width, int height)
-{
-    // Use new instead of std::make_shared to access private constructor
-    Shared texture = (Shared)_instances.emplace_back(Shared(new TextTexture(window, width, height)));
-    TR::TextArea::_instances.push_back(std::static_pointer_cast<TR::TextArea>(texture));
-    return texture;
 }
 
 void TextTexture::bind()
 {
+    Context const context(_window);
     if (update() || _update_texture) {
         _raw_texture.edit(getPixels(), _tex_w, _tex_h);
         _update_texture = false;

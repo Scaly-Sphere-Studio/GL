@@ -22,17 +22,19 @@ void window_resize_callback(GLFWwindow* ptr, int w, int h) try
     }
 
     Window::Shared window = Window::get(ptr);
-    window->use();
     window->_w = w;
     window->_h = h;
     window->_setProjections();
-    glViewport(0, 0, w, h);
+    {
+        Context const context(window);
+        glViewport(0, 0, w, h);
+    }
 
     // Update scaling of Buttons adapting to screen ratio
-    for (auto const& weak : Button::_instances) {
-        Button::Shared button = weak.lock();
-        if (button) {
-            button->_updateWinScaling();
+    auto const& buttons = window->_objects.models.buttons;
+    for (auto it = buttons.cbegin(); it != buttons.cend(); ++it) {
+        if (it->second) {
+            it->second->_updateWinScaling();
         }
     }
 
@@ -51,31 +53,31 @@ void window_pos_callback(GLFWwindow* ptr, int x, int y) try
     }
 
     Window::Shared window = Window::get(ptr);
-    window->use();
 
     if (Window::_monitors.size() == 1) {
         if (Window::_monitors[0].ptr != window->_main_monitor.ptr) {
             window->_setMainMonitor(Window::_monitors[0]);
         }
-        return;
     }
+    else {
+        int const x_center = x + window->_w / 2;
+        int const y_center = y + window->_h / 2;
 
-    int const x_center = x + window->_w / 2;
-    int const y_center = y + window->_h / 2;
-
-    for (Monitor const& monitor : Window::_monitors) {
-        int x0, y0, xmax, ymax;
-        glfwGetMonitorPos(monitor.ptr, &x0, &y0);
-        GLFWvidmode const* mode = glfwGetVideoMode(monitor.ptr);
-        xmax = x0 + mode->width;
-        ymax = y0 + mode->height;
-        if (x0 <= x_center && xmax > x_center && y0 <= y_center && ymax > y_center) {
-            if (monitor.ptr != window->_main_monitor.ptr) {
-                window->_setMainMonitor(monitor);
+        for (Monitor const& monitor : Window::_monitors) {
+            int x0, y0, xmax, ymax;
+            glfwGetMonitorPos(monitor.ptr, &x0, &y0);
+            GLFWvidmode const* mode = glfwGetVideoMode(monitor.ptr);
+            xmax = x0 + mode->width;
+            ymax = y0 + mode->height;
+            if (x0 <= x_center && xmax > x_center && y0 <= y_center && ymax > y_center) {
+                if (monitor.ptr != window->_main_monitor.ptr) {
+                    window->_setMainMonitor(monitor);
+                }
+                break;
             }
-            break;
         }
     }
+
     // Call user defined callback, if needed
     if (window->_pos_callback != nullptr) {
         window->_pos_callback(ptr, x, y);
@@ -91,17 +93,16 @@ void mouse_position_callback(GLFWwindow* ptr, double x, double y)
     }
 
     Window::Shared window = Window::get(ptr);
-    window->use();
 
     // Get mouse coordinates in -1; 1 range
     x = (x / static_cast<double>(window->_w) * 2.0) - 1.0;
     y = ((y / static_cast<double>(window->_h) * 2.0) - 1.0) * -1.0;
 
     // Update button hover status
-    for (auto const& weak : Button::_instances) {
-        Button::Shared button = weak.lock();
-        if (button) {
-            button->_updateHoverStatus(x, y);
+    auto const& buttons = window->_objects.models.buttons;
+    for (auto it = buttons.cbegin(); it != buttons.cend(); ++it) {
+        if (it->second) {
+            it->second->_updateHoverStatus(x, y);
         }
     }
 
@@ -122,14 +123,13 @@ void mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) tr
     }
 
     Window::Shared window = Window::get(ptr);
-    window->use();
 
     // Call button functions, if needed
     if (action == GLFW_PRESS) {
-        for (auto const& weak : Button::_instances) {
-            Button::Shared button = weak.lock();
-            if (button && button->isHovered()) {
-                button->callFunction();
+        auto const& buttons = window->_objects.models.buttons;
+        for (auto it = buttons.cbegin(); it != buttons.cend(); ++it) {
+            if (it->second && it->second->isHovered()) {
+                it->second->callFunction();
             }
         }
     }
@@ -153,7 +153,6 @@ void key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods) 
     }
 
     Window::Shared window = Window::get(ptr);
-    window->use();
 
     window->_key_inputs[key] = action != GLFW_RELEASE;
 

@@ -13,7 +13,7 @@ class TextTexture :
 {
     friend class Window;
 private:
-    TextTexture(std::shared_ptr<Window> window, int width, int height);
+    TextTexture(std::weak_ptr<Window> window, int width, int height);
     using Weak = std::weak_ptr<TextTexture>;
 
 private:
@@ -22,8 +22,9 @@ private:
 public:
     ~TextTexture();
     
+    using Ptr = std::unique_ptr<TextTexture>;
     using Shared = std::shared_ptr<TextTexture>;
-    static Shared create(std::shared_ptr<Window> window, int width, int height);
+    static Shared create(std::shared_ptr<Window> context, int width, int height);
 
     virtual void bind();
 

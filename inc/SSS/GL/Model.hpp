@@ -5,6 +5,12 @@
 
 __SSS_GL_BEGIN
 
+enum class ModelType {
+    Classic,    // Model class
+    Plane,      // Plane class
+    Button      // Button class
+};
+
 enum class Transformation {
     None        = 0,
     Scaling     = 1 << 0,
@@ -18,17 +24,12 @@ class Model : public _internal::WindowObject {
     friend class Window;
 
 protected:
-    Model(std::shared_ptr<Window> window);
-    using Weak = std::weak_ptr<Model>;
-
-private:
-    static std::vector<Weak> _instances;
+    Model(std::weak_ptr<Window> window);
 
 public:
     virtual ~Model();
 
-    using Shared = std::shared_ptr<Model>;
-    static Shared create(std::shared_ptr<Window> window);
+    using Ptr = std::unique_ptr<Model>;
 
     void scale(glm::vec3 scaling);
     void scale(float scaling);

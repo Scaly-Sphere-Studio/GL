@@ -3,35 +3,13 @@
 
 __SSS_GL_BEGIN
 
-std::vector<Button::Weak> Button::_instances{};
-
-Button::Button(std::shared_ptr<Window> window)
+Button::Button(std::weak_ptr<Window> window)
     : Plane(window)
 {
 }
 
-Button::Button(std::shared_ptr<Window> window, TextureBase::Shared texture) try
-    : Plane(window, texture)
-{
-    _updateWinScaling();
-}
-__CATCH_AND_RETHROW_METHOD_EXC
-
 Button::~Button()
 {
-    cleanWeakPtrVector(_instances);
-}
-
-Button::Shared Button::create(std::shared_ptr<Window> window)
-{
-    // Use new instead of std::make_shared to access private constructor
-    return (Shared)_instances.emplace_back(Button::Shared(new Button(window)));
-}
-
-Button::Shared Button::create(std::shared_ptr<Window> window, TextureBase::Shared texture)
-{
-    // Use new instead of std::make_shared to access private constructor
-    return (Shared)_instances.emplace_back(Button::Shared(new Button(window, texture)));
 }
 
 // Sets the function to be called when the button is clicked.
@@ -46,9 +24,9 @@ __CATCH_AND_RETHROW_METHOD_EXC
 // Called whenever the button is clicked.
 void Button::callFunction() try
 {
-    TextTexture::Shared text_texture = std::dynamic_pointer_cast<TextTexture>(_texture);
-    if (text_texture) {
-        text_texture->placeCursor(_relative_x, _relative_y);
+    if (_texture_type == TextureType::Text && !_window.expired()) {
+        _window.lock()->getObjects().textures.text
+            .at(_texture_id)->placeCursor(_relative_x, _relative_y);
     }
     if (_f == nullptr) {
         __LOG_METHOD_WRN("Function wasn't set.");
@@ -70,10 +48,12 @@ glm::mat4 Button::getModelMat4() noexcept
 
 void Button::_updateWinScaling() try
 {
-    throwIfExpired();
-
+    Window::Shared const window = _window.lock();
+    if (!window) {
+        return;
+    }
     float const ratio = (static_cast<float>(_tex_w) / static_cast<float>(_tex_h));
-    float const screen_ratio = _window.lock()->getScreenRatio();
+    float const screen_ratio = window->getScreenRatio();
     glm::vec3 scaling(1);
     if (ratio < 1.f) {
         if (screen_ratio < ratio) {
@@ -114,6 +94,29 @@ void Button::_updateHoverStatus(double x, double y) try
         return;
     }
 
+    // If the button is a PNG, check the alpha channel of the pixel being hovered.
+    // Else, set hovering as true.
+    if (_texture_type == TextureType::None || _window.expired()) {
+        _is_hovered = true;
+        return;
+    }
+    RGBA32::Pixels const& pixels = [&]() {
+        switch (_texture_type) {
+        case TextureType::Classic:
+            return _window.lock()->getObjects().textures.classics
+                .at(_texture_id)->getStoredPixels();
+        case TextureType::Text:
+            return _window.lock()->getObjects().textures.text
+                .at(_texture_id)->getStoredPixels();
+        default:
+            throw_exc(ERR_MSG::INVALID_ARGUMENT);
+        }
+    }();
+    if (pixels.empty()) {
+        _is_hovered = true;
+        return;
+    }
+
     // Update relative x & y positions.
     float const x_range = v[0] - u[0],
         y_range = v[1] - u[1],
@@ -122,17 +125,10 @@ void Button::_updateHoverStatus(double x, double y) try
     _relative_x = static_cast<int>(x_diff / x_range * static_cast<float>(_tex_w));
     _relative_y = _tex_h - static_cast<int>(y_diff / y_range * static_cast<float>(_tex_h));
 
-    // If the button is a PNG, check the alpha channel of the pixel being hovered.
-    RGBA32::Pixels const& pixels = _texture->getStoredPixels();
-    if (pixels.empty()) {
-        _is_hovered = true;
-    }
-    else {
-        // Update status
-        size_t const pixel = static_cast<size_t>(_relative_y * _tex_w + _relative_x);
-        if (pixel < pixels.size()) {
-            _is_hovered = pixels.at(pixel).bytes.a != 0;
-        }
+    // Update status
+    size_t const pixel = static_cast<size_t>(_relative_y * _tex_w + _relative_x);
+    if (pixel < pixels.size()) {
+        _is_hovered = pixels.at(pixel).bytes.a != 0;
     }
 }
 __CATCH_AND_RETHROW_METHOD_EXC

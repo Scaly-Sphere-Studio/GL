@@ -18,14 +18,16 @@ __INTERNAL_END
 
     // --- Window class ---
     
-class Window {
+class Window : public std::enable_shared_from_this<Window> {
     
     friend void _internal::window_resize_callback(GLFWwindow* ptr, int w, int h);
     friend void _internal::window_pos_callback(GLFWwindow* ptr, int x, int y);
     friend void _internal::mouse_position_callback(GLFWwindow* ptr, double x, double y);
     friend void _internal::mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods);
-    friend void _internal::monitor_callback(GLFWmonitor* ptr, int event);
     friend void _internal::key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods);
+    friend void _internal::monitor_callback(GLFWmonitor* ptr, int event);
+
+    friend class Context;
 
 public:
 // --- Log options ---
@@ -35,7 +37,14 @@ public:
         static bool destructor;
         static bool glfw_init;
         static bool fps;
-        static bool dpi_update;
+    };
+
+    struct Args {
+        int w{ 720 };
+        int h{ 720 };
+        std::string title{ "Untitled" };
+        int monitor_id{ 0 };
+        bool fullscreen{ false };
     };
 
 // --- Public aliases ---
@@ -43,41 +52,74 @@ public:
     using Shared = std::shared_ptr<Window>;
 
 private:
-// --- Instances storage (private) ---
-
     using Weak = std::weak_ptr<Window>;
-
-    // Instances of created windows
+    // All Window instances
     static std::vector<Weak> _instances;
     // All connected monitors
     static std::vector<_internal::Monitor> _monitors;
 
-    // Constructor, creates a window and makes its context current
+    // Constructor, creates a window
     // Private, to be called via Window::create();
-    Window(int w, int h, std::string const& title);
+    Window(Args const& args);
 
 public :
-// --- Instances storage (public) ---
+    // Rule of 5
+    ~Window();                                      // Destructor
+    Window(const Window&)               = delete;   // Copy constructor
+    Window(Window&&)                    = delete;   // Move constructor
+    Window& operator=(const Window&)    = delete;   // Copy assignment
+    Window& operator=(Window&&)         = delete;   // Move assignment
 
-    // Destructor
-    ~Window();
+    static Shared create(Args const& args);
+    static Shared get(GLFWwindow* ptr);
 
-    // Creates a window and returns a corresponding shared_ptr
-    static Shared create(int w, int h, std::string const& title = "Untitled");
-    // To be used in callbacks.
-    // Returns an existing Window instance, via its GLFWwindow pointer
-    static Shared get(GLFWwindow const* ptr);
-    // Returns last focused window
-    static Shared getMain();
+    // All context bound objects
+    struct Objects {
+        // Models
+        struct {
+            std::map<uint32_t, Model::Ptr> classics;
+            std::map<uint32_t, Plane::Ptr> planes;
+            std::map<uint32_t, Button::Ptr> buttons;
+        } models;
+        // Textures
+        struct {
+            std::map<uint32_t, Texture2D::Ptr> classics;
+            std::map<uint32_t, TextTexture::Ptr> text;
+        } textures;
+        // Shaders
+        std::map<uint32_t, Program::Ptr> shaders;
+
+        // Rule of 5
+        Objects()                           = default;  // Constructor
+        ~Objects()                          = default;  // Destructor
+        Objects(const Objects&)             = delete;   // Copy constructor
+        Objects(Objects&&)                  = delete;   // Move constructor
+        Objects& operator=(const Objects&)  = delete;   // Copy assignment
+        Objects& operator=(Objects&&)       = delete;   // Move assignment
+    };
+
+private:
+    Objects _objects;
+
+public:
+    inline Objects const& getObjects() const noexcept { return _objects; };
+    void cleanObjects() noexcept;
+
+    void createModel(uint32_t id, ModelType type);
+    void removeModel(uint32_t id, ModelType type);
+
+    void createTexture(uint32_t id, TextureType type);
+    void removeTexture(uint32_t id, TextureType type);
+    static void pollTextureThreads();
+
+    void createShaders(uint32_t id, std::string const& vert_fp, std::string const& frag_fp);
+    void removeShaders(uint32_t id);
 
 // --- Public methods ---
 
     // Renders a frame & polls events.
     // Logs fps if specified in LOG structure.
     void render();
-
-    // Make the OpenGL context this one.
-    void use() const;
 
     // Wether the user requested to close the window.
     // NOTE: this simply is a call to glfwWindowShouldClose
@@ -112,12 +154,8 @@ public :
         }
     };
 
-    inline void setFOV(float radians) noexcept { _fov = radians; };
-    inline void setProjectionRange(float z_near, float z_far) noexcept
-    {
-        _z_near = z_near;
-        _z_far = z_far;
-    };
+    void setFOV(float radians);
+    void setProjectionRange(float z_near, float z_far);
 
     using KeyInputs = std::array<bool, GLFW_KEY_LAST + 1>;
     inline KeyInputs const& getKeyInputs() const noexcept { return _key_inputs; }
@@ -140,13 +178,12 @@ private:
     // Window size
     int _w; // Width
     int _h; // Height
-
     // Windowed to Fullscreen variables
     int _windowed_x{ 0 };   // Old x (left) pos
     int _windowed_y{ 0 };   // Old y (up) pos
     
-    // Window ptr. Automatically destroyed
-    _internal::GLFWwindow_Ptr _window;
+    // GLFWwindow ptr
+    _internal::GLFWwindow_Ptr _window;    
     // Main monitor the window is on
     _internal::Monitor _main_monitor;
 
@@ -157,22 +194,40 @@ private:
     // Ortho projection, set by window dimensions
     glm::mat4 _ortho_mat4;
 
-    GLFWwindowsizefun   _resize_callback{ nullptr };
-    GLFWwindowposfun    _pos_callback{ nullptr };
-    GLFWkeyfun          _key_callback{ nullptr };
-    GLFWcursorposfun    _mouse_position_callback{ nullptr };
-    GLFWmousebuttonfun  _mouse_button_callback{ nullptr };
+    // Internal callbacks that are called before calling within themselves user callbacks
+    GLFWwindowsizefun   _resize_callback{ nullptr };            // Window resize
+    GLFWwindowposfun    _pos_callback{ nullptr };               // Window position
+    GLFWkeyfun          _key_callback{ nullptr };               // Window keyboard key
+    GLFWcursorposfun    _mouse_position_callback{ nullptr };    // Window mouse position
+    GLFWmousebuttonfun  _mouse_button_callback{ nullptr };      // Window mouse button
 
+    // Array of keyboard keys being currently pressed
     KeyInputs _key_inputs;
 
     // FPS Timer
     FPS_Timer _fps_timer;
 
+    // Sets the window's main monitor
     void _setMainMonitor(_internal::Monitor const& monitor);
 
+    // Calculates both projetions based on internal variables
     void _setProjections();
+};
 
-    static void _textureWasEdited(TextureBase::Shared texture);
+class Context {
+public:
+    Context()                           = delete;   // Default constructor
+    Context(std::weak_ptr<Window> ptr);             // Constructor
+    Context(GLFWwindow* ptr);                       // Constructor
+    ~Context();                                     // Destructor
+    Context(const Context&)             = delete;   // Copy constructor
+    Context(Context&&)                  = delete;   // Move constructor
+    Context& operator=(const Context&)  = delete;   // Copy assignment
+    Context& operator=(Context&&)       = delete;   // Move assignment
+private:
+    GLFWwindow* _given{ nullptr };
+    GLFWwindow* _previous{ nullptr };
+    bool _equal{ true };
 };
 
 __SSS_GL_END

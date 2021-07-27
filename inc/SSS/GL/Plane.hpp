@@ -7,33 +7,25 @@
 __SSS_GL_BEGIN
 
 class Plane : public Model {
+    friend class Window;
     friend class Texture2D;
 
-private:
-    void _init_statics(std::shared_ptr<Window> window);
-
 protected:
-    Plane(std::shared_ptr<Window> window);
-    Plane(std::shared_ptr<Window> window, TextureBase::Shared texture);
-    using Weak = std::weak_ptr<Plane>;
-
-private:
-    static std::vector<Weak> _instances;
+    Plane(std::weak_ptr<Window> window);
 
 public:
     virtual ~Plane();
 
-    using Shared = std::shared_ptr<Plane>;
-    static Shared create(std::shared_ptr<Window> window);
-    static Shared create(std::shared_ptr<Window> window, TextureBase::Shared texture);
+    using Ptr = std::unique_ptr<Plane>;
     
-    void useTexture(TextureBase::Shared texture);
+    void useTexture(uint32_t texture_id, TextureType texture_type);
 
     virtual glm::mat4 getModelMat4() noexcept;
     void draw() const;
 
 protected:
-    TextureBase::Shared _texture;
+    uint32_t _texture_id{ 0 };
+    TextureType _texture_type{ TextureType::None };
     GLsizei _tex_w{ 0 }, _tex_h{ 0 };
     glm::vec3 _tex_scaling{ 1 };
     
