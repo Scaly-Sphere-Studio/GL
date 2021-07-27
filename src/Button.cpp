@@ -48,9 +48,12 @@ glm::mat4 Button::getModelMat4() noexcept
 
 void Button::_updateWinScaling() try
 {
+    Window::Shared const window = _window.lock();
+    if (!window) {
+        return;
+    }
     float const ratio = (static_cast<float>(_tex_w) / static_cast<float>(_tex_h));
-    // TODO: fix this function as we can't access a specific window anymore
-    float const screen_ratio = 1.f;
+    float const screen_ratio = window->getScreenRatio();
     glm::vec3 scaling(1);
     if (ratio < 1.f) {
         if (screen_ratio < ratio) {

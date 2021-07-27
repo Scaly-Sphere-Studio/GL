@@ -80,7 +80,9 @@ __CATCH_AND_RETHROW_METHOD_EXC
 void Plane::_updateTexScaling()
 {
     // Retrieve texture dimensions
-    if (_window.expired()) {
+    if (_window.expired() || _texture_type == TextureType::None) {
+        _tex_scaling = glm::vec3(1);
+        _should_compute_mat4 = true;
         return;
     }
     int w, h;

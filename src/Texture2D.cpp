@@ -79,6 +79,7 @@ void Texture2D::_updatePlanesScaling()
         Button::Ptr const& button = it->second;
         if (button->_texture_type == TextureType::Classic && button->_texture_id == id) {
             button->_updateTexScaling();
+            button->_updateWinScaling();
         }
     }
 }

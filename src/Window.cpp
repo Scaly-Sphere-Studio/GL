@@ -35,7 +35,12 @@ Window::Window(Args const& args) try
     }
 
     // Set main monitor
-    _setMainMonitor(_monitors[args.monitor_id]);
+    if (args.monitor_id < 0 || args.monitor_id >= _monitors.size()) {
+        _setMainMonitor(_monitors[0]);
+    }
+    else {
+        _setMainMonitor(_monitors[args.monitor_id]);
+    }
     // Retrieve video size of monitor and adjust size parameters
     GLFWvidmode const* mode = glfwGetVideoMode(_main_monitor.ptr);
     _w = args.w < mode->width ? args.w : mode->width;
@@ -49,12 +54,23 @@ Window::Window(Args const& args) try
         args.fullscreen ? _main_monitor.ptr : nullptr,
         nullptr
     ));
-
     // Throw if an error occured
     if (!_window.get()) {
         const char* msg;
         glfwGetError(&msg);
         throw_exc(msg);
+    }
+    // Center window on given monitor
+    int x, y;
+    glfwGetMonitorPos(_main_monitor.ptr, &x, &y);
+    if (args.fullscreen) {
+        // Retrieve actual width & height
+        glfwGetWindowSize(_window.get(), &_w, &_h);
+        _windowed_x = x + (mode->width - _w) / 2;
+        _windowed_y = y + (mode->height - _h) / 2;
+    }
+    else {
+        glfwSetWindowPos(_window.get(), x + (mode->width - _w) / 2, y + (mode->height - _h) / 2);
     }
 
     // Make context current for this scope
@@ -70,20 +86,19 @@ Window::Window(Args const& args) try
     // Enable blending (transparency)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     // Set VSYNC to false by default
     setVSYNC(false);
-    // Center window
-    // TODO: fix monitor pos
-    glfwSetWindowPos(_window.get(), (mode->width - _w) / 2, (mode->height - _h) / 2);
-    // Set window callbacks
+
+    // Set projections
+    _setProjections();
+
+    // Set window callbacks, after everything else is set
     glfwSetWindowSizeCallback(_window.get(), _internal::window_resize_callback);
     glfwSetWindowPosCallback(_window.get(), _internal::window_pos_callback);
     glfwSetCursorPosCallback(_window.get(), _internal::mouse_position_callback);
     glfwSetMouseButtonCallback(_window.get(), _internal::mouse_button_callback);
     glfwSetKeyCallback(_window.get(), _internal::key_callback);
-
-    // Set projections
-    _setProjections();
 
     if (LOG::constructor) {
         __LOG_CONSTRUCTOR
