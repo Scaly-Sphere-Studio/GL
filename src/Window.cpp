@@ -346,13 +346,13 @@ void Window::setFullscreen(bool state, int screen_id)
     }
 }
 
-inline void Window::setFOV(float radians)
+void Window::setFOV(float radians)
 {
     _fov = radians;
     _setProjections();
 }
 
-inline void Window::setProjectionRange(float z_near, float z_far)
+void Window::setProjectionRange(float z_near, float z_far)
 {
     _z_near = z_near;
     _z_far = z_far;
