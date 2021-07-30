@@ -45,16 +45,13 @@
     <ClCompile Include="src\Button.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Texture2D.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\_internal\callbacks.cpp">
       <Filter>src\_internal</Filter>
     </ClCompile>
     <ClCompile Include="src\_internal\pointers.cpp">
       <Filter>src\_internal</Filter>
     </ClCompile>
-    <ClCompile Include="src\TextTexture.cpp">
+    <ClCompile Include="src\Texture.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -77,9 +74,6 @@
     <ClInclude Include="inc\SSS\GL\Button.hpp">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL\Texture2D.hpp">
-      <Filter>inc</Filter>
-    </ClInclude>
     <ClInclude Include="inc\SSS\GL\_internal\callbacks.hpp">
       <Filter>inc\_internal</Filter>
     </ClInclude>
@@ -89,7 +83,7 @@
     <ClInclude Include="inc\SSS\GL\_internal\includes.hpp">
       <Filter>inc\_internal</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL\TextTexture.hpp">
+    <ClInclude Include="inc\SSS\GL\Texture.hpp">
       <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>

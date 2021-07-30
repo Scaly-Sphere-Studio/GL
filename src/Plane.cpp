@@ -38,10 +38,10 @@ Plane::~Plane()
 {
 }
 
-void Plane::useTexture(uint32_t texture_id, TextureType texture_type)
+void Plane::useTexture(uint32_t texture_id)
 {
     _texture_id = texture_id;
-    _texture_type = texture_type;
+    _use_texture = true;
     _updateTexScaling();
 }
 
@@ -57,21 +57,15 @@ glm::mat4 Plane::getModelMat4() noexcept
 
 void Plane::draw() const try
 {
-    Window::Shared window = _window.lock();
+    Window::Shared const window = _window.lock();
     if (!window) {
         return;
     }
-    Window::Objects const& objects = window->getObjects();
     Context const context(_window);
     _vao->bind();
-    // Bind texture
-    switch (_texture_type) {
-    case TextureType::Classic:
-        objects.textures.classics.at(_texture_id)->bind();
-        break;
-    case TextureType::Text:
-        objects.textures.text.at(_texture_id)->bind();
-        break;
+    // Bind texture if needed
+    if (_use_texture) {
+        window->getObjects().textures.at(_texture_id)->bind();
     }
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 }
@@ -80,22 +74,15 @@ __CATCH_AND_RETHROW_METHOD_EXC
 void Plane::_updateTexScaling()
 {
     // Retrieve texture dimensions
-    if (_window.expired() || _texture_type == TextureType::None) {
+    Window::Shared const window = _window.lock();
+    if (!window || !_use_texture) {
         _tex_scaling = glm::vec3(1);
         _should_compute_mat4 = true;
         return;
     }
-    int w, h;
-    Window::Objects const& objects = _window.lock()->getObjects();
-    switch (_texture_type) {
-    case TextureType::Classic:
-        objects.textures.classics.at(_texture_id)->getDimensions(w, h);
-        break;
-    case TextureType::Text:
-        objects.textures.text.at(_texture_id)->getDimensions(w, h);
-        break;
-    }
     // Check if dimensions changed
+    int w, h;
+    window->getObjects().textures.at(_texture_id)->getDimensions(w, h);
     if (_tex_w == w && _tex_h == h) {
         return;
     }
@@ -113,7 +100,6 @@ void Plane::_updateTexScaling()
     else {
         scaling[0] = ratio;
     }
-    __LOG_METHOD_MSG(context_msg("scaling", toString(scaling[0])) + "x" + toString(scaling[1]))
 
     // If scaling changed, indicate that the Model matrice should be computed
     if (_tex_scaling != scaling) {

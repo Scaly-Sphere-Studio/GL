@@ -42,9 +42,9 @@ public:
 
 protected:
 
-    VAO::Shared _vao;
-    VBO::Shared _vbo;
-    IBO::Shared _ibo;
+    VAO::Ptr _vao;
+    VBO::Ptr _vbo;
+    IBO::Ptr _ibo;
 
     glm::mat4 _scaling;
     glm::mat4 _rotation;

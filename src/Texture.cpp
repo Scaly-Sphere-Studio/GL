@@ -1,4 +1,4 @@
-#include "SSS/GL/Texture2D.hpp"
+#include "SSS/GL/Texture.hpp"
 #include "SSS/GL/Window.hpp"
 
 // Init STB
@@ -9,11 +9,12 @@
 __SSS_GL_BEGIN
 
 // Init statics
-bool Texture2D::LOG::constructor{ false };
-bool Texture2D::LOG::destructor{ false };
+bool Texture::LOG::constructor{ false };
+bool Texture::LOG::destructor{ false };
 
-Texture2D::Texture2D(std::weak_ptr<Window> window) try
-    : TextureBase(window, GL_TEXTURE_2D)
+Texture::Texture(std::weak_ptr<Window> window) try
+    : _internal::WindowObject(window),
+    _raw_texture(window, GL_TEXTURE_2D)
 {
     Context const context(_window);
     _raw_texture.bind();
@@ -22,47 +23,68 @@ Texture2D::Texture2D(std::weak_ptr<Window> window) try
     _raw_texture.parameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     _raw_texture.parameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
+    _text_area = TR::TextArea::create(0, 0);
+
     if (LOG::constructor) {
         __LOG_CONSTRUCTOR
     }
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
-Texture2D::~Texture2D()
+Texture::~Texture()
 {
     if (LOG::destructor) {
         __LOG_DESTRUCTOR
     }
 }
 
-void Texture2D::useFile(std::string filepath)
-{
-    _loading_thread.run(filepath);
-}
-
-void Texture2D::edit(void const* pixels, int width, int height) try
+void Texture::edit(void const* pixels, int width, int height) try
 {
     // Update size info
-    _tex_w = width;
-    _tex_h = height;
+    _w = width;
+    _h = height;
     // Give the image to the OpenGL texture
-    _raw_texture.edit(pixels, _tex_w, _tex_h);
+    _raw_texture.edit(pixels, _w, _h);
     // Clear previous pixel storage
-    _raw_pixels.clear();
+    _pixels.clear();
 
     _updatePlanesScaling();
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
-void Texture2D::_updatePlanesScaling()
+void Texture::useFile(std::string filepath)
 {
-    if (_window.expired()) {
+    _loading_thread.run(filepath);
+}
+
+void Texture::bind()
+{
+    Context const context(_window);
+    if (_type == Type::Text) {
+        _text_area->update();
+        if (_text_area->changesPending()) {
+            int const w = _w, h = _h;
+            _text_area->getDimensions(_w, _h);
+            if (w != _w || h != _h) {
+                _updatePlanesScaling();
+            }
+            _raw_texture.edit(_text_area->getPixels(), _w, _h);
+            _text_area->changesHandled();
+        }
+    }
+    _raw_texture.bind();
+}
+
+void Texture::_updatePlanesScaling()
+{
+    Window::Shared const window = _window.lock();
+    if (!window) {
         return;
     }
-    Window::Objects const& objects = _window.lock()->getObjects();
+    Window::Objects const& objects = window->getObjects();
     // Retrieve texture ID
     uint32_t id = 0;
-    for (auto it = objects.textures.classics.cbegin(); it != objects.textures.classics.cend(); ++it) {
+    for (auto it = objects.textures.cbegin(); it != objects.textures.cend(); ++it) {
         if (it->second.get() == this) {
             id = it->first;
             break;
@@ -71,20 +93,20 @@ void Texture2D::_updatePlanesScaling()
     // Update texture scaling of all planes & buttons matching this texture
     for (auto it = objects.models.planes.cbegin(); it != objects.models.planes.cend(); ++it) {
         Plane::Ptr const& plane = it->second;
-        if (plane->_texture_type == TextureType::Classic && plane->_texture_id == id) {
+        if (plane->_use_texture && plane->_texture_id == id) {
             plane->_updateTexScaling();
         }
     }
     for (auto it = objects.models.buttons.cbegin(); it != objects.models.buttons.cend(); ++it) {
         Button::Ptr const& button = it->second;
-        if (button->_texture_type == TextureType::Classic && button->_texture_id == id) {
+        if (button->_use_texture && button->_texture_id == id) {
             button->_updateTexScaling();
             button->_updateWinScaling();
         }
     }
 }
 
-void Texture2D::_LoadingThread::_function(std::string filepath)
+void Texture::_LoadingThread::_function(std::string filepath)
 {
     // Load image
     SSS::C_Ptr <uint32_t, void(*)(void*), stbi_image_free>

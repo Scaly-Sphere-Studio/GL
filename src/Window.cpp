@@ -1,5 +1,4 @@
 #include "SSS/GL/Window.hpp"
-#include "SSS/GL/Window.hpp"
 #include "SSS/GL/_internal/callbacks.hpp"
 
 __SSS_GL_BEGIN
@@ -35,7 +34,7 @@ Window::Window(Args const& args) try
     }
 
     // Set main monitor
-    if (args.monitor_id < 0 || args.monitor_id >= _monitors.size()) {
+    if (args.monitor_id < 0 || static_cast<size_t>(args.monitor_id) >= _monitors.size()) {
         _setMainMonitor(_monitors[0]);
     }
     else {
@@ -46,6 +45,10 @@ Window::Window(Args const& args) try
     _w = args.w < mode->width ? args.w : mode->width;
     _h = args.h < mode->height ? args.h : mode->height;
 
+    // If in Debug mode, set the Debug hint
+    if constexpr (DEBUGMODE) {
+        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+    }
     // Create window
     _window.reset(glfwCreateWindow(
         _w,
@@ -149,8 +152,8 @@ void Window::cleanObjects() noexcept
     _objects.models.classics.clear();
     _objects.models.planes.clear();
     _objects.models.buttons.clear();
-    _objects.textures.classics.clear();
-    _objects.textures.text.clear();
+    _objects.textures.clear();
+    _objects.shaders.clear();
 }
 
 void Window::createModel(uint32_t id, ModelType type) try
@@ -193,35 +196,17 @@ void Window::removeModel(uint32_t id, ModelType type)
     }
 }
 
-void Window::createTexture(uint32_t id, TextureType type) try
+void Window::createTexture(uint32_t id) try
 {
-    switch (type) {
-    case TextureType::Classic:
-        _objects.textures.classics.try_emplace(id);
-        _objects.textures.classics.at(id).reset(new Texture2D(weak_from_this()));
-        break;
-    case TextureType::Text:
-        // TODO: Rework TextArea constructor
-        _objects.textures.text.try_emplace(id);
-        _objects.textures.text.at(id).reset(new TextTexture(weak_from_this(), 700, 700));
-        break;
-    }
+    _objects.textures.try_emplace(id);
+    _objects.textures.at(id).reset(new Texture(weak_from_this()));
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
-void Window::removeTexture(uint32_t id, TextureType type)
+void Window::removeTexture(uint32_t id)
 {
-    switch (type) {
-    case TextureType::Classic:
-        if (_objects.textures.classics.count(id) != 0) {
-            _objects.textures.classics.erase(_objects.textures.classics.find(id));
-        }
-        break;
-    case TextureType::Text:
-        if (_objects.textures.text.count(id) != 0) {
-            _objects.textures.text.erase(_objects.textures.text.find(id));
-        }
-        break;
+    if (_objects.textures.count(id) != 0) {
+        _objects.textures.erase(_objects.textures.find(id));
     }
 }
 
@@ -229,21 +214,22 @@ void Window::pollTextureThreads() try
 {
     // Loop over each Context instance
     for (Weak const& weak : _instances) {
-        Shared context = weak.lock();
-        if (!context) {
+        Shared window = weak.lock();
+        if (!window) {
             continue;
         }
+        Context const context(window);
         // Loop over each Texture2D instance
-        auto const& map = context->_objects.textures.classics;
+        auto const& map = window->_objects.textures;
         for (auto it = map.cbegin(); it != map.cend(); ++it) {
-            Texture2D::Ptr const& tex = it->second;
+            Texture::Ptr const& tex = it->second;
             // If the loading thread is pending, edit the texture
             if (tex->_loading_thread.isPending()) {
                 // Give the image to the OpenGL texture and notify all planes & buttons
-                tex->_tex_w = tex->_loading_thread._w;
-                tex->_tex_h = tex->_loading_thread._h;
-                tex->_raw_pixels = std::move(tex->_loading_thread._pixels);
-                tex->_raw_texture.edit(&tex->_raw_pixels[0], tex->_tex_w, tex->_tex_h);
+                tex->_w = tex->_loading_thread._w;
+                tex->_h = tex->_loading_thread._h;
+                tex->_pixels = std::move(tex->_loading_thread._pixels);
+                tex->_raw_texture.edit(&tex->_pixels[0], tex->_w, tex->_h);
                 tex->_updatePlanesScaling();
                 // Set thread as handled.
                 tex->_loading_thread.setAsHandled();
@@ -381,7 +367,7 @@ Context::Context(std::weak_ptr<Window> ptr)
     if (ptr.expired()) {
         return;
     }
-    Window::Shared window = ptr.lock();
+    Window::Shared const window = ptr.lock();
     _given = window->_window.get();
     _previous = glfwGetCurrentContext();
     _equal = _given == _previous;

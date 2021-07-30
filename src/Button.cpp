@@ -24,15 +24,16 @@ __CATCH_AND_RETHROW_METHOD_EXC
 // Called whenever the button is clicked.
 void Button::callFunction() try
 {
-    if (_texture_type == TextureType::Text && !_window.expired()) {
-        _window.lock()->getObjects().textures.text
-            .at(_texture_id)->placeCursor(_relative_x, _relative_y);
+    Window::Shared const window = _window.lock();
+    if (window && _use_texture) {
+        Texture::Ptr const& texture = window->getObjects().textures.at(_texture_id);
+        if (texture->getType() == Texture::Type::Text) {
+            texture->getTextArea()->placeCursor(_relative_x, _relative_y);
+        }
     }
-    if (_f == nullptr) {
-        __LOG_METHOD_WRN("Function wasn't set.");
-        return;
+    if (_f != nullptr) {
+        _f();
     }
-    _f();
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
@@ -96,23 +97,13 @@ void Button::_updateHoverStatus(double x, double y) try
 
     // If the button is a PNG, check the alpha channel of the pixel being hovered.
     // Else, set hovering as true.
-    if (_texture_type == TextureType::None || _window.expired()) {
+    Window::Shared const window = _window.lock();
+    if (!window || !_use_texture) {
         _is_hovered = true;
         return;
     }
-    RGBA32::Pixels const& pixels = [&]() {
-        switch (_texture_type) {
-        case TextureType::Classic:
-            return _window.lock()->getObjects().textures.classics
-                .at(_texture_id)->getStoredPixels();
-        case TextureType::Text:
-            return _window.lock()->getObjects().textures.text
-                .at(_texture_id)->getStoredPixels();
-        default:
-            throw_exc(ERR_MSG::INVALID_ARGUMENT);
-        }
-    }();
-    if (pixels.empty()) {
+    Texture::Ptr const& texture = window->getObjects().textures.at(_texture_id);
+    if (texture->_type == Texture::Type::Text) {
         _is_hovered = true;
         return;
     }
@@ -127,8 +118,8 @@ void Button::_updateHoverStatus(double x, double y) try
 
     // Update status
     size_t const pixel = static_cast<size_t>(_relative_y * _tex_w + _relative_x);
-    if (pixel < pixels.size()) {
-        _is_hovered = pixels.at(pixel).bytes.a != 0;
+    if (pixel < texture->_pixels.size()) {
+        _is_hovered = texture->_pixels.at(pixel).bytes.a != 0;
     }
 }
 __CATCH_AND_RETHROW_METHOD_EXC

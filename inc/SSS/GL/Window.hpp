@@ -82,10 +82,7 @@ public :
             std::map<uint32_t, Button::Ptr> buttons;
         } models;
         // Textures
-        struct {
-            std::map<uint32_t, Texture2D::Ptr> classics;
-            std::map<uint32_t, TextTexture::Ptr> text;
-        } textures;
+        std::map<uint32_t, Texture::Ptr> textures;
         // Shaders
         std::map<uint32_t, Program::Ptr> shaders;
 
@@ -108,8 +105,8 @@ public:
     void createModel(uint32_t id, ModelType type);
     void removeModel(uint32_t id, ModelType type);
 
-    void createTexture(uint32_t id, TextureType type);
-    void removeTexture(uint32_t id, TextureType type);
+    void createTexture(uint32_t id);
+    void removeTexture(uint32_t id);
     static void pollTextureThreads();
 
     void createShaders(uint32_t id, std::string const& vert_fp, std::string const& frag_fp);

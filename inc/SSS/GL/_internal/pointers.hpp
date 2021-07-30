@@ -32,7 +32,6 @@ struct AbstractObject : public WindowObject {
 
 struct Texture : public AbstractObject {
     using Ptr = std::unique_ptr<Texture>;
-    using Shared = std::shared_ptr<Texture>;
     Texture(std::weak_ptr<Window> window, GLenum given_target);
     ~Texture();
     virtual void bind() const;
@@ -47,7 +46,6 @@ __INTERNAL_END
 
 struct VAO : public _internal::AbstractObject {
     using Ptr = std::unique_ptr<VAO>;
-    using Shared = std::shared_ptr<VAO>;
     VAO(std::weak_ptr<Window> window);
     ~VAO();
     virtual void bind() const;
@@ -55,7 +53,6 @@ struct VAO : public _internal::AbstractObject {
 
 struct VBO : public _internal::AbstractObject {
     using Ptr = std::unique_ptr<VBO>;
-    using Shared = std::shared_ptr<VBO>;
     VBO(std::weak_ptr<Window> window);
     ~VBO();
     virtual void bind() const;
@@ -65,7 +62,6 @@ struct VBO : public _internal::AbstractObject {
 
 struct IBO : public _internal::AbstractObject {
     using Ptr = std::unique_ptr<IBO>;
-    using Shared = std::shared_ptr<IBO>;
     IBO(std::weak_ptr<Window> window);
     ~IBO();
     virtual void bind() const;

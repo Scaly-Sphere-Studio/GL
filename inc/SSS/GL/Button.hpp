@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Plane.hpp"
-#include "TextTexture.hpp"
 
 __SSS_GL_BEGIN
 
@@ -10,7 +9,7 @@ class Button : public Plane {
     friend void _internal::window_resize_callback(GLFWwindow* ptr, int w, int h);
     friend void _internal::mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods);
     friend class Window;
-    friend class Texture2D;
+    friend class Texture;
 
 protected:
     Button(std::weak_ptr<Window> window);
