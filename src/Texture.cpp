@@ -101,6 +101,7 @@ void Texture::_updatePlanesScaling()
         Button::Ptr const& button = it->second;
         if (button->_use_texture && button->_texture_id == id) {
             button->_updateTexScaling();
+            button->_updateWinScaling();
         }
     }
 }

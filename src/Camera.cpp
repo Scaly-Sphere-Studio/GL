@@ -17,31 +17,29 @@ Camera::Camera(std::weak_ptr<Window> weak_window)
 
 void Camera::setPosition(glm::vec3 position)
 {
-    static constexpr glm::mat4 center_mat(0.f, 0.f, 0.f, 0.f,
-        0.f, 0.f, 0.f, 0.f,
-        0.f, 0.f, 0.f, 0.f,
-        0.f, 0.f, 0.f, 1.f
-    );
-    _position = glm::translate(center_mat, position);
+    glm::mat4 const center(glm::translate(glm::mat4(1), glm::vec3(-1)));
+    _position = glm::translate(center, position);
     _computeView();
 }
 
-void Camera::move(glm::vec3 translation)
+void Camera::move(glm::vec3 translation, bool use_rotation_axis)
 {
+    if (use_rotation_axis) {
+        translation = glm::rotate(_rotation, translation);
+    }
     _position = glm::translate(_position, translation);
     _computeView();
 }
 
-void Camera::setRotation(float radians, glm::vec3 axe)
+void Camera::setRotation(float radians, glm::vec3 axis)
 {
-    _rotation = glm::rotate(glm::mat4(1), radians, axe);
+    _rotation = glm::quat(glm::angleAxis(radians, glm::normalize(axis)));
     _computeView();
 }
 
-void Camera::rotate(float radians, glm::vec3 axe)
+void Camera::rotate(float radians, glm::vec3 axis)
 {
-    _rotation = glm::rotate(_rotation, radians, axe);
-    glm::vec3 v = _rotation * glm::vec4(1);
+    _rotation *= glm::quat(glm::angleAxis(radians, glm::normalize(axis)));
     _computeView();
 }
 
@@ -72,13 +70,11 @@ glm::mat4 Camera::getMVP(glm::mat4 model) const
 void Camera::_computeView()
 {
     static constexpr glm::vec3 up_vec(0, 1, 0);
+    static constexpr glm::vec3 center_base(0, 0, -1);
 
     glm::vec3 const eye = _position * glm::vec4(1);
-    glm::vec3 const axis = glm::normalize(_rotation * glm::vec4(1));
-    __LOG_FUNC_MSG(toString(axis[0]) + "/" + toString(axis[1]) + "/" + toString(axis[2]));
-    glm::vec3 const center = glm::translate(_position, axis) * glm::vec4(1);
-    __LOG_FUNC_MSG(toString(center[0]) + "/" + toString(center[1]) + "/" + toString(center[2]));
-    _view = glm::lookAt(eye, center, glm::vec3(0, 1, 0));
+    glm::vec3 const center = eye + glm::rotate(_rotation, center_base);
+    _view = glm::lookAt(eye, center, up_vec);
 }
 
 void Camera::_computeProjection()

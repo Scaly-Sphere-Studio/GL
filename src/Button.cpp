@@ -37,21 +37,59 @@ void Button::callFunction() try
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
+glm::mat4 Button::getModelMat4() noexcept
+{
+    if (_should_compute_mat4) {
+        glm::mat4 scaling = glm::scale(_scaling, _tex_scaling * _win_scaling);
+        _model_mat4 = _translation * _rotation * scaling;
+        _should_compute_mat4 = false;
+    }
+    return _model_mat4;
+}
+
+void Button::_updateWinScaling() try
+{
+    Window::Shared const window = _window.lock();
+    if (!window) {
+        return;
+    }
+    float const ratio = (static_cast<float>(_tex_w) / static_cast<float>(_tex_h));
+    float const screen_ratio = window->getScreenRatio();
+    glm::vec3 scaling(1);
+    if (ratio < 1.f) {
+        if (screen_ratio < ratio) {
+            scaling[0] = 1 / ratio;
+            scaling[1] = screen_ratio / ratio;
+        }
+        else {
+            scaling[0] = 1 / screen_ratio;
+        }
+    }
+    else {
+        if (screen_ratio > ratio) {
+            scaling[1] = ratio;
+            scaling[0] = ratio / screen_ratio;
+        }
+        else {
+            scaling[1] = screen_ratio;
+        }
+    }
+    if (_win_scaling != scaling) {
+        _win_scaling = scaling;
+        _should_compute_mat4 = true;
+    }
+}
+__CATCH_AND_RETHROW_METHOD_EXC
+
 // Updates _is_hovered via the mouse position callback.
 void Button::_updateHoverStatus(double x, double y) try
 {
     // Reset hover status
     _is_hovered = false;
 
-    // Retrieve window
-    Window::Shared const window = _window.lock();
-    if (!window) {
-        return;
-    }
-
     // Get the button's relative position using its matrice
-    glm::vec2 const u = window->getOrtho() * getModelMat4() * glm::vec4(-0.5, -0.5, 0, 1);
-    glm::vec2 const v = window->getOrtho() * getModelMat4() * glm::vec4(0.5, 0.5, 0, 1);
+    glm::vec2 const u = getModelMat4() * glm::vec4(-0.5, -0.5, 0, 1);
+    glm::vec2 const v = getModelMat4() * glm::vec4(0.5, 0.5, 0, 1);
     // Check if the mouse is inside the rectangle
     if (!(x > u[0] && x < v[0] && y > u[1] && y < v[1])) {
         return;
@@ -59,7 +97,8 @@ void Button::_updateHoverStatus(double x, double y) try
 
     // If the button is a PNG, check the alpha channel of the pixel being hovered.
     // Else, set hovering as true.
-    if (!_use_texture) {
+    Window::Shared const window = _window.lock();
+    if (!window || !_use_texture) {
         _is_hovered = true;
         return;
     }
