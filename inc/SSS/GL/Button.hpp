@@ -32,12 +32,7 @@ public:
     // Called whenever the button is clicked.
     void callFunction();
 
-    inline glm::mat4 getMVP() noexcept { return getModelMat4(); };
-
 private:
-    virtual glm::mat4 getModelMat4() noexcept;
-
-    glm::vec3 _win_scaling{ 1 };
     // Function called when the button is clicked.
     ButtonFunction _f{ nullptr };
     // Mouse hovering state, always updated via the mouse position callback.
@@ -45,8 +40,6 @@ private:
     int _relative_x{ 0 };
     int _relative_y{ 0 };
 
-    // Updates window scaling when window is resized.
-    void _updateWinScaling();
     // Updates _is_hovered via the mouse position callback.
     void _updateHoverStatus(double x, double y);
 };

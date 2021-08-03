@@ -30,14 +30,6 @@ void window_resize_callback(GLFWwindow* ptr, int w, int h) try
         glViewport(0, 0, w, h);
     }
 
-    // Update scaling of Buttons adapting to screen ratio
-    auto const& buttons = window->_objects.models.buttons;
-    for (auto it = buttons.cbegin(); it != buttons.cend(); ++it) {
-        if (it->second) {
-            it->second->_updateWinScaling();
-        }
-    }
-
     // Call user defined callback, if needed
     if (window->_resize_callback != nullptr) {
         window->_resize_callback(ptr, w, h);
