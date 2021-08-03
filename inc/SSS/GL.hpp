@@ -6,3 +6,4 @@
 #include <SSS/GL/Plane.hpp>
 #include <SSS/GL/Button.hpp>
 #include <SSS/GL/Texture.hpp>
+#include <SSS/GL/Camera.hpp>

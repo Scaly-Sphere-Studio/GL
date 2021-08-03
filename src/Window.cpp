@@ -239,6 +239,20 @@ void Window::pollTextureThreads() try
 }
 __CATCH_AND_RETHROW_FUNC_EXC
 
+void Window::createCamera(uint32_t id) try
+{
+    _objects.cameras.try_emplace(id);
+    _objects.cameras.at(id).reset(new Camera(weak_from_this()));
+}
+__CATCH_AND_RETHROW_FUNC_EXC
+
+void Window::removeCamera(uint32_t id)
+{
+    if (_objects.cameras.count(id) != 0) {
+        _objects.cameras.erase(_objects.cameras.find(id));
+    }
+}
+
 void Window::createShaders(uint32_t id, std::string const& vert_fp, std::string const& frag_fp) try
 {
     _objects.shaders.try_emplace(id);

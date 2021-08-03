@@ -5,6 +5,7 @@
 #include "Model.hpp"
 #include "Plane.hpp"
 #include "Button.hpp"
+#include "Camera.hpp"
 
 __SSS_GL_BEGIN
 
@@ -83,6 +84,8 @@ public :
         } models;
         // Textures
         std::map<uint32_t, Texture::Ptr> textures;
+        // Cameras
+        std::map<uint32_t, Camera::Ptr> cameras;
         // Shaders
         std::map<uint32_t, Program::Ptr> shaders;
 
@@ -108,6 +111,9 @@ public:
     void createTexture(uint32_t id);
     void removeTexture(uint32_t id);
     static void pollTextureThreads();
+
+    void createCamera(uint32_t id);
+    void removeCamera(uint32_t id);
 
     void createShaders(uint32_t id, std::string const& vert_fp, std::string const& frag_fp);
     void removeShaders(uint32_t id);

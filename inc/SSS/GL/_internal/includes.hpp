@@ -1,10 +1,12 @@
 #pragma once
 
 // OpenGL headers
-#include <glad/glad.h>  // glad
-#include <GLFW/glfw3.h> // glfw
-#include <glm/glm.hpp>  // glm
-#include <glm/ext.hpp>  // glm
+#include <glad/glad.h>              // glad
+#include <GLFW/glfw3.h>             // glfw
+#include <glm/glm.hpp>              // glm
+#include <glm/ext.hpp>              // glm
+#include <glm/gtc/quaternion.hpp>   // glm
+#include <glm/gtx/quaternion.hpp>   // glm
 
 // SSS libs
 #include <SSS/Commons.hpp>

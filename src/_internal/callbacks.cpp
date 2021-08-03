@@ -30,6 +30,15 @@ void window_resize_callback(GLFWwindow* ptr, int w, int h) try
         glViewport(0, 0, w, h);
     }
 
+    // Update screen_ratio of cameras
+    auto const& cameras = window->_objects.cameras;
+    for (auto it = cameras.cbegin(); it != cameras.cend(); ++it) {
+        if (it->second) {
+            it->second->_screen_ratio = window->getScreenRatio();
+            it->second->_computeProjection();
+        }
+    }
+
     // Update scaling of Buttons adapting to screen ratio
     auto const& buttons = window->_objects.models.buttons;
     for (auto it = buttons.cbegin(); it != buttons.cend(); ++it) {
