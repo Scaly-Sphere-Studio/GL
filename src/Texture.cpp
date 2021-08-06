@@ -91,17 +91,10 @@ void Texture::_updatePlanesScaling()
         }
     }
     // Update texture scaling of all planes & buttons matching this texture
-    for (auto it = objects.models.planes.cbegin(); it != objects.models.planes.cend(); ++it) {
+    for (auto it = objects.planes.cbegin(); it != objects.planes.cend(); ++it) {
         Plane::Ptr const& plane = it->second;
         if (plane->_use_texture && plane->_texture_id == id) {
             plane->_updateTexScaling();
-        }
-    }
-    for (auto it = objects.models.buttons.cbegin(); it != objects.models.buttons.cend(); ++it) {
-        Button::Ptr const& button = it->second;
-        if (button->_use_texture && button->_texture_id == id) {
-            button->_updateTexScaling();
-            button->_updateWinScaling();
         }
     }
 }

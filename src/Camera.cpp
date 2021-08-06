@@ -17,8 +17,7 @@ Camera::Camera(std::weak_ptr<Window> weak_window)
 
 void Camera::setPosition(glm::vec3 position)
 {
-    glm::mat4 const center(glm::translate(glm::mat4(1), glm::vec3(-1)));
-    _position = glm::translate(center, position);
+    _position = position;
     _computeView();
 }
 
@@ -27,7 +26,7 @@ void Camera::move(glm::vec3 translation, bool use_rotation_axis)
     if (use_rotation_axis) {
         translation = glm::rotate(_rotation, translation);
     }
-    _position = glm::translate(_position, translation);
+    _position += translation;
     _computeView();
 }
 
@@ -72,9 +71,8 @@ void Camera::_computeView()
     static constexpr glm::vec3 up_vec(0, 1, 0);
     static constexpr glm::vec3 center_base(0, 0, -1);
 
-    glm::vec3 const eye = _position * glm::vec4(1);
-    glm::vec3 const center = eye + glm::rotate(_rotation, center_base);
-    _view = glm::lookAt(eye, center, up_vec);
+    glm::vec3 const relative_center = _position + glm::rotate(_rotation, center_base);
+    _view = glm::lookAt(_position, relative_center, up_vec);
 }
 
 void Camera::_computeProjection()

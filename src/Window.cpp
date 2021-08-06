@@ -149,9 +149,8 @@ __CATCH_AND_RETHROW_FUNC_EXC
 void Window::cleanObjects() noexcept
 {
     Context const context(_window.get());
-    _objects.models.classics.clear();
-    _objects.models.planes.clear();
-    _objects.models.buttons.clear();
+    _objects.models.clear();
+    _objects.planes.clear();
     _objects.textures.clear();
     _objects.shaders.clear();
 }
@@ -160,16 +159,12 @@ void Window::createModel(uint32_t id, ModelType type) try
 {
     switch (type) {
     case ModelType::Classic:
-        _objects.models.classics.try_emplace(id);
-        _objects.models.classics.at(id).reset(new Model(weak_from_this()));
+        _objects.models.try_emplace(id);
+        _objects.models.at(id).reset(new Model(weak_from_this()));
         break;
     case ModelType::Plane:
-        _objects.models.planes.try_emplace(id);
-        _objects.models.planes.at(id).reset(new Plane(weak_from_this()));
-        break;
-    case ModelType::Button:
-        _objects.models.buttons.try_emplace(id);
-        _objects.models.buttons.at(id).reset(new Button(weak_from_this()));
+        _objects.planes.try_emplace(id);
+        _objects.planes.at(id).reset(new Plane(weak_from_this()));
         break;
     }
 }
@@ -179,18 +174,13 @@ void Window::removeModel(uint32_t id, ModelType type)
 {
     switch (type) {
     case ModelType::Classic:
-        if (_objects.models.classics.count(id) != 0) {
-            _objects.models.classics.erase(_objects.models.classics.find(id));
+        if (_objects.models.count(id) != 0) {
+            _objects.models.erase(_objects.models.find(id));
         }
         break;
     case ModelType::Plane:
-        if (_objects.models.planes.count(id) != 0) {
-            _objects.models.planes.erase(_objects.models.planes.find(id));
-        }
-        break;
-    case ModelType::Button:
-        if (_objects.models.buttons.count(id) != 0) {
-            _objects.models.buttons.erase(_objects.models.buttons.find(id));
+        if (_objects.planes.count(id) != 0) {
+            _objects.planes.erase(_objects.planes.find(id));
         }
         break;
     }

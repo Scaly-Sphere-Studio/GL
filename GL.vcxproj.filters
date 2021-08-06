@@ -42,9 +42,6 @@
     <ClCompile Include="src\Model.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Button.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\_internal\callbacks.cpp">
       <Filter>src\_internal</Filter>
     </ClCompile>
@@ -72,9 +69,6 @@
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="inc\SSS\GL\Model.hpp">
-      <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\SSS\GL\Button.hpp">
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="inc\SSS\GL\_internal\callbacks.hpp">

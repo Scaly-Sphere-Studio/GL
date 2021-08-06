@@ -39,14 +39,6 @@ void window_resize_callback(GLFWwindow* ptr, int w, int h) try
         }
     }
 
-    // Update scaling of Buttons adapting to screen ratio
-    auto const& buttons = window->_objects.models.buttons;
-    for (auto it = buttons.cbegin(); it != buttons.cend(); ++it) {
-        if (it->second) {
-            it->second->_updateWinScaling();
-        }
-    }
-
     // Call user defined callback, if needed
     if (window->_resize_callback != nullptr) {
         window->_resize_callback(ptr, w, h);
@@ -94,7 +86,7 @@ void window_pos_callback(GLFWwindow* ptr, int x, int y) try
 }
 __CATCH_AND_RETHROW_FUNC_EXC
 
-// Used for clickable buttons and such
+// Used for clickable planes and such
 void mouse_position_callback(GLFWwindow* ptr, double x, double y)
 {
     if (LOG::internal_callbacks::mouse_position) {
@@ -107,9 +99,9 @@ void mouse_position_callback(GLFWwindow* ptr, double x, double y)
     x = (x / static_cast<double>(window->_w) * 2.0) - 1.0;
     y = ((y / static_cast<double>(window->_h) * 2.0) - 1.0) * -1.0;
 
-    // Update button hover status
-    auto const& buttons = window->_objects.models.buttons;
-    for (auto it = buttons.cbegin(); it != buttons.cend(); ++it) {
+    // Update plane hover status
+    auto const& planes = window->_objects.planes;
+    for (auto it = planes.cbegin(); it != planes.cend(); ++it) {
         if (it->second) {
             it->second->_updateHoverStatus(x, y);
         }
@@ -121,7 +113,7 @@ void mouse_position_callback(GLFWwindow* ptr, double x, double y)
     }
 }
 
-// Used for clickable buttons and such
+// Used for clickable planes and such
 void mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) try
 {
     if (LOG::internal_callbacks::mouse_button) {
@@ -135,8 +127,8 @@ void mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) tr
 
     // Call button functions, if needed
     if (action == GLFW_PRESS) {
-        auto const& buttons = window->_objects.models.buttons;
-        for (auto it = buttons.cbegin(); it != buttons.cend(); ++it) {
+        auto const& planes = window->_objects.planes;
+        for (auto it = planes.cbegin(); it != planes.cend(); ++it) {
             if (it->second && it->second->isHovered()) {
                 it->second->callFunction();
             }

@@ -37,8 +37,11 @@ public:
 
     glm::mat4 getMVP(glm::mat4 model) const;
 
+    inline glm::mat4 getView() const noexcept { return _view; };
+    inline glm::mat4 getProjection() const noexcept { return _projection; };
+
 private:
-    glm::mat4 _position{ glm::translate(glm::mat4(1), glm::vec3(-1)) };
+    glm::vec3 _position{ 0 };
     glm::quat _rotation{ 1, 0, 0, 0 };
     glm::mat4 _view{ 1 };
     void _computeView();

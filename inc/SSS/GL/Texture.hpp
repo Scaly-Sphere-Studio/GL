@@ -6,7 +6,7 @@ __SSS_GL_BEGIN
 
 class Texture : public _internal::WindowObject {
     friend class Window;
-    friend class Button;
+    friend class Plane;
 
 private:
     Texture(std::weak_ptr<Window> window);

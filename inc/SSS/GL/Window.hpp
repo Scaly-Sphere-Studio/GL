@@ -4,8 +4,8 @@
 #include "_internal/callbacks.hpp"
 #include "Model.hpp"
 #include "Plane.hpp"
-#include "Button.hpp"
 #include "Camera.hpp"
+#include "Shaders.hpp"
 
 __SSS_GL_BEGIN
 
@@ -77,11 +77,9 @@ public :
     // All context bound objects
     struct Objects {
         // Models
-        struct {
-            std::map<uint32_t, Model::Ptr> classics;
-            std::map<uint32_t, Plane::Ptr> planes;
-            std::map<uint32_t, Button::Ptr> buttons;
-        } models;
+        std::map<uint32_t, Model::Ptr> models;
+        // Planes
+        std::map<uint32_t, Plane::Ptr> planes;
         // Textures
         std::map<uint32_t, Texture::Ptr> textures;
         // Cameras
