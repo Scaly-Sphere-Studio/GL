@@ -93,10 +93,8 @@ Window::Window(Args const& args) try
     // Set VSYNC to false by default
     setVSYNC(false);
 
-    // Set projections
-    _setProjections();
-
     // Set window callbacks, after everything else is set
+    glfwSetWindowIconifyCallback(_window.get(), _internal::window_iconify_callback);
     glfwSetWindowSizeCallback(_window.get(), _internal::window_resize_callback);
     glfwSetWindowPosCallback(_window.get(), _internal::window_pos_callback);
     glfwSetCursorPosCallback(_window.get(), _internal::mouse_position_callback);
@@ -263,18 +261,20 @@ void Window::removeShaders(uint32_t id)
 // Logs fps if specified in LOG structure.
 void Window::render() try
 {
-    // Make context current for this scope
-    Context const context(_window.get());
-    // Render back buffer
-    glfwSwapBuffers(_window.get());
-    // Update fps, log if needed
-    if (_fps_timer.addFrame()) {
-        if (LOG::fps) {
-            __LOG_OBJ_MSG(toString(_fps_timer.get()) + "fps");
+    if (!_is_iconified) {
+        // Make context current for this scope
+        Context const context(_window.get());
+        // Render back buffer
+        glfwSwapBuffers(_window.get());
+        // Update fps, log if needed
+        if (_fps_timer.addFrame()) {
+            if (LOG::fps) {
+                __LOG_OBJ_MSG(toString(_fps_timer.get()) + "fps");
+            }
         }
+        // Clear back buffer
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
-    // Clear back buffer
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // Poll events
     glfwPollEvents();
 }
@@ -336,35 +336,10 @@ void Window::setFullscreen(bool state, int screen_id)
     }
 }
 
-void Window::setFOV(float radians)
-{
-    _fov = radians;
-    _setProjections();
-}
-
-void Window::setProjectionRange(float z_near, float z_far)
-{
-    _z_near = z_near;
-    _z_far = z_far;
-    _setProjections();
-}
-
 void Window::_setMainMonitor(_internal::Monitor const& monitor)
 {
     _main_monitor = monitor;
 }
-
-void Window::_setProjections() try
-{
-    float const ratio = getScreenRatio();
-    // Set perspective projection
-    _perspe_mat4 = glm::perspective(_fov, ratio, _z_near, _z_far);
-    // Set ortho projection
-    float x = ratio > 1.f ? ratio : 1.f;
-    float y = ratio > 1.f ? 1.f : 1.f / ratio;
-    _ortho_mat4 = glm::ortho(-x, x, -y, y, _z_near, _z_far);
-}
-__CATCH_AND_RETHROW_METHOD_EXC
 
 Context::Context(std::weak_ptr<Window> ptr)
 {

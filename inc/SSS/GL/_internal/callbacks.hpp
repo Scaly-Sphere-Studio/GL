@@ -17,6 +17,8 @@ namespace LOG {
 
 __INTERNAL_BEGIN
 
+
+void window_iconify_callback(GLFWwindow* ptr, int state);
 // Resizes the internal width and height of correspondig Window instance
 void window_resize_callback(GLFWwindow* ptr, int w, int h);
 // Determines current monitor of the window

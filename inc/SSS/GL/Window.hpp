@@ -21,6 +21,7 @@ __INTERNAL_END
     
 class Window : public std::enable_shared_from_this<Window> {
     
+    friend void _internal::window_iconify_callback(GLFWwindow* ptr, int state);
     friend void _internal::window_resize_callback(GLFWwindow* ptr, int w, int h);
     friend void _internal::window_pos_callback(GLFWwindow* ptr, int x, int y);
     friend void _internal::mouse_position_callback(GLFWwindow* ptr, double x, double y);
@@ -135,7 +136,10 @@ public:
     void setCallback(_Func(*set)(GLFWwindow*, _Func), _Func callback)
     {
         void const* ptr(set);
-        if (ptr == (void*)(&glfwSetWindowSizeCallback)) {
+        if (ptr == (void*)(&glfwSetWindowIconifyCallback)) {
+            _iconify_callback = GLFWwindowiconifyfun(callback);
+        }
+        else if (ptr == (void*)(&glfwSetWindowSizeCallback)) {
             _resize_callback = GLFWwindowsizefun(callback);
         }
         else if (ptr == (void*)(&glfwSetWindowPosCallback)) {
@@ -155,9 +159,6 @@ public:
         }
     };
 
-    void setFOV(float radians);
-    void setProjectionRange(float z_near, float z_far);
-
     using KeyInputs = std::array<bool, GLFW_KEY_LAST + 1>;
     inline KeyInputs const& getKeyInputs() const noexcept { return _key_inputs; }
 
@@ -167,11 +168,10 @@ public:
     // -> See internal callback window_pos_callback();
     inline GLFWmonitor* getMonitor() const noexcept { return _main_monitor.ptr; }
 
-    inline glm::mat4 getPerspective() const noexcept { return _perspe_mat4; }
-    inline glm::mat4 getOrtho() const noexcept { return _ortho_mat4; }
-
     inline float getScreenRatio() const noexcept
         { return static_cast<float>(_w) / static_cast<float>(_h); }
+    
+    inline bool isIconified() const noexcept { return _is_iconified; };
 
 private:
 // --- Private variables ---
@@ -182,25 +182,21 @@ private:
     // Windowed to Fullscreen variables
     int _windowed_x{ 0 };   // Old x (left) pos
     int _windowed_y{ 0 };   // Old y (up) pos
-    
+    // Iconify state
+    bool _is_iconified{ false };
+
     // GLFWwindow ptr
     _internal::GLFWwindow_Ptr _window;    
     // Main monitor the window is on
     _internal::Monitor _main_monitor;
 
-    float _fov{ glm::radians(70.f) };
-    float _z_near{ 0.1f }, _z_far{ 100.f };
-    // Perspective projection, set by window dimensions and user given FOV
-    glm::mat4 _perspe_mat4;
-    // Ortho projection, set by window dimensions
-    glm::mat4 _ortho_mat4;
-
     // Internal callbacks that are called before calling within themselves user callbacks
-    GLFWwindowsizefun   _resize_callback{ nullptr };            // Window resize
-    GLFWwindowposfun    _pos_callback{ nullptr };               // Window position
-    GLFWkeyfun          _key_callback{ nullptr };               // Window keyboard key
-    GLFWcursorposfun    _mouse_position_callback{ nullptr };    // Window mouse position
-    GLFWmousebuttonfun  _mouse_button_callback{ nullptr };      // Window mouse button
+    GLFWwindowiconifyfun _iconify_callback{ nullptr };          // Window iconify
+    GLFWwindowsizefun    _resize_callback{ nullptr };           // Window resize
+    GLFWwindowposfun     _pos_callback{ nullptr };              // Window position
+    GLFWkeyfun           _key_callback{ nullptr };              // Window keyboard key
+    GLFWcursorposfun     _mouse_position_callback{ nullptr };   // Window mouse position
+    GLFWmousebuttonfun   _mouse_button_callback{ nullptr };     // Window mouse button
 
     // Array of keyboard keys being currently pressed
     KeyInputs _key_inputs;
@@ -210,9 +206,6 @@ private:
 
     // Sets the window's main monitor
     void _setMainMonitor(_internal::Monitor const& monitor);
-
-    // Calculates both projetions based on internal variables
-    void _setProjections();
 };
 
 class Context {
