@@ -222,6 +222,19 @@ void Window::pollTextureThreads() try
                 // Set thread as handled.
                 tex->_loading_thread.setAsHandled();
             }
+            // If the texture is of Text type, update the TextArea
+            if (tex->_type == Texture::Type::Text) {
+                tex->_text_area->update();
+                if (tex->_text_area->changesPending()) {
+                    int const w = tex->_w, h = tex->_h;
+                    tex->_text_area->getDimensions(tex->_w, tex->_h);
+                    if (w != tex->_w || h != tex->_h) {
+                        tex->_updatePlanesScaling();
+                    }
+                    tex->_raw_texture.edit(tex->_text_area->getPixels(), tex->_w, tex->_h);
+                    tex->_text_area->changesHandled();
+                }
+            }
         }
     }
 }
@@ -241,10 +254,10 @@ void Window::removeCamera(uint32_t id)
     }
 }
 
-void Window::createShaders(uint32_t id, std::string const& vert_fp, std::string const& frag_fp) try
+void Window::createShaders(uint32_t id) try
 {
     _objects.shaders.try_emplace(id);
-    _objects.shaders.at(id).reset(new Program(weak_from_this(), vert_fp, frag_fp));
+    _objects.shaders.at(id).reset(new Shaders(weak_from_this()));
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
@@ -252,6 +265,13 @@ void Window::removeShaders(uint32_t id)
 {
     if (_objects.shaders.count(id) != 0) {
         _objects.shaders.erase(_objects.shaders.find(id));
+    }
+}
+
+void Window::removeRenderer(uint32_t id)
+{
+    if (_objects.renderers.count(id) != 0) {
+        _objects.renderers.erase(_objects.renderers.find(id));
     }
 }
 
@@ -264,6 +284,13 @@ void Window::render() try
     if (!_is_iconified) {
         // Make context current for this scope
         Context const context(_window.get());
+        // Render all active renderers
+        for (auto it = _objects.renderers.cbegin(); it != _objects.renderers.cend(); ++it) {
+            Renderer::Ptr const& renderer = it->second;
+            if (!renderer || !renderer->isActive())
+                continue;
+            renderer->render();
+        }
         // Render back buffer
         glfwSwapBuffers(_window.get());
         // Update fps, log if needed

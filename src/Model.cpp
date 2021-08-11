@@ -6,10 +6,6 @@ __SSS_GL_BEGIN
 Model::Model(std::weak_ptr<Window> window) try
     : _internal::WindowObject(window)
 {
-    Context const context(_window);
-    _vao.reset(new VAO(_window));
-    _vbo.reset(new VBO(_window));
-    _ibo.reset(new IBO(_window));
     resetTransformations(Transformation::All);
 }
 __CATCH_AND_RETHROW_METHOD_EXC

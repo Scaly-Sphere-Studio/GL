@@ -26,6 +26,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\SSS\GL.hpp" />
+    <ClInclude Include="inc\SSS\GL\Renderer.hpp" />
     <ClInclude Include="inc\SSS\GL\Camera.hpp" />
     <ClInclude Include="inc\SSS\GL\Model.hpp" />
     <ClInclude Include="inc\SSS\GL\Shaders.hpp" />
@@ -37,6 +38,7 @@
     <ClInclude Include="inc\SSS\GL\_internal\pointers.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\_internal\callbacks.cpp" />
     <ClCompile Include="src\_internal\pointers.cpp" />
     <ClCompile Include="src\Window.cpp" />

@@ -54,6 +54,9 @@
     <ClCompile Include="src\Camera.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Renderer.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\SSS\GL\Window.hpp">
@@ -84,6 +87,9 @@
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="inc\SSS\GL\Camera.hpp">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\SSS\GL\Renderer.hpp">
       <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>

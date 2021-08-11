@@ -3,13 +3,24 @@
 #include "_internal/callbacks.hpp"
 #include "Model.hpp"
 #include "Texture.hpp"
+#include "Shaders.hpp"
+#include "Renderer.hpp"
 
 __SSS_GL_BEGIN
+
+class PlaneRenderer : public Renderer {
+    friend class Window;
+protected:
+    PlaneRenderer(std::weak_ptr<Window> window);
+public:
+    virtual void render() const;
+};
 
 class Plane : public Model {
     friend void _internal::mouse_position_callback(GLFWwindow* ptr, double x, double y);
     friend class Window;
     friend class Texture;
+    friend class PlaneRenderer;
 
 protected:
     Plane(std::weak_ptr<Window> window);
@@ -18,11 +29,11 @@ public:
     virtual ~Plane();
 
     using Ptr = std::unique_ptr<Plane>;
+    using Renderer = PlaneRenderer;
     
     void useTexture(uint32_t texture_id);
 
     virtual glm::mat4 getModelMat4();
-    void draw() const;
 
     // Format to be used in setFunction();
     using ButtonFunction = void(*)();

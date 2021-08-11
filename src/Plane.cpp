@@ -3,10 +3,48 @@
 
 __SSS_GL_BEGIN
 
-Plane::Plane(std::weak_ptr<Window> window) try
-    : Model(window)
+static constexpr uint32_t glsl_max_array_size = 128;
+
+PlaneRenderer::PlaneRenderer(std::weak_ptr<Window> window) try
+    : Renderer(window)
 {
     Context const context(_window);
+
+    std::string const vertex = "\
+#version 330 core\n\
+layout(location = 0) in vec3 a_Pos;\n\
+layout(location = 1) in vec2 a_UV;\n\
+\n\
+uniform mat4 u_MVPs[" + std::to_string(glsl_max_array_size) + "];\n\
+\n\
+out vec2 UV;\n\
+flat out int instanceID;\n\
+\n\
+void main()\n\
+{\n\
+    gl_Position = u_MVPs[gl_InstanceID] * vec4(a_Pos, 1);\n\
+    UV = a_UV;\n\
+    instanceID = gl_InstanceID;\n\
+}";
+    std::string const fragment = "\
+#version 330 core\n\
+out vec4 FragColor;\n\
+\n\
+in vec2 UV;\n\
+flat in int instanceID;\n\
+\n\
+uniform sampler2D u_Textures[" + std::to_string(glsl_max_array_size) + "];\n\
+\n\
+void main()\n\
+{\n\
+    FragColor = texture(u_Textures[instanceID], UV);\n\
+}";
+
+    _shaders->loadFromData(vertex, fragment);
+
+    _vao->bind();
+    _vbo->bind();
+    _ibo->bind();
 
     constexpr float vertices[] = {
         // positions          // texture coords (1 - y)
@@ -15,22 +53,90 @@ Plane::Plane(std::weak_ptr<Window> window) try
          0.5f, -0.5f, 0.0f,   1.0f, 1.f - 0.0f,   // bottom right
          0.5f,  0.5f, 0.0f,   1.0f, 1.f - 1.0f    // top right
     };
-    constexpr unsigned int indices[] = {
-        0, 1, 2,  // first triangle
-        0, 2, 3   // second triangle
-    };
-
-    _vao->bind();
-    _vbo->bind();
-    _ibo->bind();
-
     _vbo->edit(sizeof(vertices), vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-
-    _ibo->edit(sizeof(indices), indices, GL_STATIC_DRAW);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+
+    constexpr unsigned int indices[] = {
+        0, 1, 2,  // first triangle
+        2, 3, 0   // second triangle
+    };
+    _ibo->edit(sizeof(indices), indices, GL_STATIC_DRAW);
+}
+__CATCH_AND_RETHROW_METHOD_EXC
+
+void PlaneRenderer::render() const try
+{
+    Window::Shared const window = _window.lock();
+    if (!window) {
+        return;
+    }
+    Context const context(_window);
+    Window::Objects const& objects = window->getObjects();
+    _shaders->use();
+    _vao->bind();
+
+    std::array<glm::mat4, glsl_max_array_size> MVPs;
+    static constexpr std::array<GLint, glsl_max_array_size> texture_IDs = {
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+        16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+        32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+        48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,
+        64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79,
+        80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95,
+        96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111,
+        112, 113, 114, 115, 116, 117, 118, 119, 110, 121, 122, 123, 124, 125, 126, 127
+    };
+    uint32_t count = 0;
+    for (RenderObject const& render_object : *this) {
+        // Ensure we don't try to draw more than we can in one go
+        if (count == glsl_max_array_size) {
+            // Set Texture IDs & MVP uniforms
+            _shaders->setUniform1iv("u_Textures", count, &texture_IDs[0]);
+            _shaders->setUniformMat4fv("u_MVPs", count, GL_FALSE, &MVPs[0][0][0]);
+            // Draw all required instances
+            glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr, count);
+            count = 0;
+        }
+        
+        // Retrieve Plane, Camera, and Texture
+        if (objects.planes.count(render_object.object_id) == 0)
+            continue;
+        Plane::Ptr const& plane = objects.planes.at(render_object.object_id);
+        if (!plane)
+            continue;
+        if (objects.cameras.count(render_object.camera_id) == 0)
+            continue;
+        Camera::Ptr const& camera = objects.cameras.at(render_object.camera_id);
+        if (!camera)
+            continue;
+        if (objects.textures.count(plane->_texture_id) == 0)
+            continue;
+        Texture::Ptr const& texture = objects.textures.at(plane->_texture_id);
+        if (!camera)
+            continue;
+
+        // Compute and store MVP (set uniform later)
+        MVPs[count] = camera->getMVP(plane->getModelMat4());
+        // Bind another active texture (set uniform IDs later)
+        glActiveTexture(GL_TEXTURE0 + count);
+        texture->bind();
+
+        ++count;
+    }
+    // Set Texture IDs & MVP uniforms
+    _shaders->setUniform1iv("u_Textures", count, &texture_IDs[0]);
+    _shaders->setUniformMat4fv("u_MVPs", count, GL_FALSE, &MVPs[0][0][0]);
+    // Draw all required instances
+    glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr, count);
+}
+__CATCH_AND_RETHROW_METHOD_EXC
+
+Plane::Plane(std::weak_ptr<Window> window) try
+    : Model(window)
+{
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
@@ -54,22 +160,6 @@ glm::mat4 Plane::getModelMat4()
     }
     return _model_mat4;
 }
-
-void Plane::draw() const try
-{
-    Window::Shared const window = _window.lock();
-    if (!window) {
-        return;
-    }
-    Context const context(_window);
-    _vao->bind();
-    // Bind texture if needed
-    if (_use_texture) {
-        window->getObjects().textures.at(_texture_id)->bind();
-    }
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
-}
-__CATCH_AND_RETHROW_METHOD_EXC
 
 // Sets the function to be called when the button is clicked.
 // The function MUST be of the format void (*)();
