@@ -68,5 +68,3 @@ private:
 };
 
 __SSS_GL_END
-
-bool SSS::GL::Texture::_LoadingThread::LOG::run_state{ true };

@@ -7,13 +7,8 @@ Renderer::Renderer(std::weak_ptr<Window> window)
 {
     _shaders.reset(new Shaders(_window));
     _vao.reset(new VAO(_window));
-}
-
-void RenderRoutine::render() const
-{
-    for (Renderer const& renderer : *this) {
-        renderer.render();
-    }
+    _vbo.reset(new VBO(_window));
+    _ibo.reset(new IBO(_window));
 }
 
 __SSS_GL_END

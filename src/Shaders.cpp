@@ -132,7 +132,13 @@ GLint Shaders::getUniformLocation(std::string const& name)
 	return glGetUniformLocation(_id, name.c_str());
 }
 
-void Shaders::setUniformMat4(std::string const& name, GLsizei count, GLboolean transpose, GLfloat const* value)
+void Shaders::setUniform1iv(std::string const& name, GLsizei count, const GLint* value)
+{
+	glUniform1iv(getUniformLocation(name), count, value);
+}
+
+void Shaders::setUniformMat4fv(std::string const& name, GLsizei count,
+	GLboolean transpose, GLfloat const* value)
 {
 	glUniformMatrix4fv(getUniformLocation(name), count, transpose, value);
 }

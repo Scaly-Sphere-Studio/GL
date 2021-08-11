@@ -18,26 +18,31 @@ class Renderer :
     public _internal::WindowObject,
     public std::deque<RenderObject>
 {
-public:
-    using Ptr = std::unique_ptr<Renderer>;
-    Renderer(std::weak_ptr<Window> window);             // Constructor
 protected:
+    Renderer(std::weak_ptr<Window> window);             // Constructor
+public:
     Renderer()                              = delete;   // Constructor (default)
-    ~Renderer()                             = default;  // Destructor
+    virtual ~Renderer()                     = default;  // Destructor
     Renderer(const Renderer&)               = delete;   // Copy constructor
     Renderer(Renderer&&)                    = delete;   // Move constructor
     Renderer& operator=(const Renderer&)    = delete;   // Copy assignment
     Renderer& operator=(Renderer&&)         = delete;   // Move assignment
-public:
-    virtual void render() const = 0;
+    
+    using Ptr = std::unique_ptr<Renderer>;
+
 protected:
     Shaders::Ptr _shaders;
     VAO::Ptr _vao;
-};
-
-class RenderRoutine : public std::deque<Renderer> {
+    VBO::Ptr _vbo;
+    IBO::Ptr _ibo;
 public:
-    void render() const;
+    virtual void render() const = 0;
+
+protected:
+    bool _is_active{ true };
+public:
+    inline void setActivity(bool state) noexcept { _is_active = state; };
+    inline bool isActive() const noexcept { return _is_active; };
 };
 
 __SSS_GL_END

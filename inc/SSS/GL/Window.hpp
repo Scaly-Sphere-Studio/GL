@@ -6,6 +6,7 @@
 #include "Plane.hpp"
 #include "Camera.hpp"
 #include "Shaders.hpp"
+#include "Renderer.hpp"
 
 __SSS_GL_BEGIN
 
@@ -85,11 +86,12 @@ public :
         Objects& operator=(const Objects&)  = delete;   // Copy assignment
         Objects& operator=(Objects&&)       = delete;   // Move assignment
         // Objects
-        std::map<uint32_t, Model::Ptr> models;      // Models
-        std::map<uint32_t, Plane::Ptr> planes;      // Planes
-        std::map<uint32_t, Texture::Ptr> textures;  // Textures
-        std::map<uint32_t, Camera::Ptr> cameras;    // Cameras
-        std::map<uint32_t, Shaders::Ptr> shaders;   // Shaders
+        std::map<uint32_t, Model::Ptr> models;          // Models
+        std::map<uint32_t, Plane::Ptr> planes;          // Planes
+        std::map<uint32_t, Texture::Ptr> textures;      // Textures
+        std::map<uint32_t, Camera::Ptr> cameras;        // Cameras
+        std::map<uint32_t, Shaders::Ptr> shaders;       // Shaders
+        std::map<uint32_t, Renderer::Ptr> renderers;    // Renderers
     };
 
 private:
@@ -111,6 +113,13 @@ public:
 
     void createShaders(uint32_t id);
     void removeShaders(uint32_t id);
+
+    template<class T = Renderer>
+    void createRenderer(uint32_t id) {
+        _objects.renderers.try_emplace(id);
+        _objects.renderers.at(id).reset(new T(weak_from_this()));
+    }
+    void removeRenderer(uint32_t id);
 
 // --- Public methods ---
 

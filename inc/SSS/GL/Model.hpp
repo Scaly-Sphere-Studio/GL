@@ -43,15 +43,11 @@ public:
     glm::mat4 getMVP();
 
 protected:
-
-    VAO::Ptr _vao;
-    VBO::Ptr _vbo;
-    IBO::Ptr _ibo;
-
+    // Model part of the MVP matrix, computed by scaling,
+    // rotation, and translation of the original vertices.
     glm::mat4 _scaling;
     glm::mat4 _rotation;
     glm::mat4 _translation;
-
     glm::mat4 _model_mat4;
     bool _should_compute_mat4{ true };
 

@@ -268,6 +268,13 @@ void Window::removeShaders(uint32_t id)
     }
 }
 
+void Window::removeRenderer(uint32_t id)
+{
+    if (_objects.renderers.count(id) != 0) {
+        _objects.renderers.erase(_objects.renderers.find(id));
+    }
+}
+
     // --- Public methods ---
 
 // Renders a frame & polls events.
@@ -277,6 +284,13 @@ void Window::render() try
     if (!_is_iconified) {
         // Make context current for this scope
         Context const context(_window.get());
+        // Render all active renderers
+        for (auto it = _objects.renderers.cbegin(); it != _objects.renderers.cend(); ++it) {
+            Renderer::Ptr const& renderer = it->second;
+            if (!renderer || !renderer->isActive())
+                continue;
+            renderer->render();
+        }
         // Render back buffer
         glfwSwapBuffers(_window.get());
         // Update fps, log if needed

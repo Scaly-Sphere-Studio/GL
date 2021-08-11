@@ -28,8 +28,9 @@ public:
     // Return the location of a uniform variable for this program
     GLint getUniformLocation(std::string const& name);
 
-    void setUniformMat4(std::string const& name,
-        GLsizei count, GLboolean transpose, GLfloat const* value);
+    void setUniform1iv(std::string const& name, GLsizei count, const GLint* value);
+    void setUniformMat4fv(std::string const& name, GLsizei count,
+        GLboolean transpose, GLfloat const* value);
 
 private:
     bool _loaded{ false };
