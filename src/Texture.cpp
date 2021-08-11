@@ -60,18 +60,6 @@ void Texture::useFile(std::string filepath)
 void Texture::bind()
 {
     Context const context(_window);
-    if (_type == Type::Text) {
-        _text_area->update();
-        if (_text_area->changesPending()) {
-            int const w = _w, h = _h;
-            _text_area->getDimensions(_w, _h);
-            if (w != _w || h != _h) {
-                _updatePlanesScaling();
-            }
-            _raw_texture.edit(_text_area->getPixels(), _w, _h);
-            _text_area->changesHandled();
-        }
-    }
     _raw_texture.bind();
 }
 

@@ -77,17 +77,6 @@ public :
 
     // All context bound objects
     struct Objects {
-        // Models
-        std::map<uint32_t, Model::Ptr> models;
-        // Planes
-        std::map<uint32_t, Plane::Ptr> planes;
-        // Textures
-        std::map<uint32_t, Texture::Ptr> textures;
-        // Cameras
-        std::map<uint32_t, Camera::Ptr> cameras;
-        // Shaders
-        std::map<uint32_t, Program::Ptr> shaders;
-
         // Rule of 5
         Objects()                           = default;  // Constructor
         ~Objects()                          = default;  // Destructor
@@ -95,6 +84,12 @@ public :
         Objects(Objects&&)                  = delete;   // Move constructor
         Objects& operator=(const Objects&)  = delete;   // Copy assignment
         Objects& operator=(Objects&&)       = delete;   // Move assignment
+        // Objects
+        std::map<uint32_t, Model::Ptr> models;      // Models
+        std::map<uint32_t, Plane::Ptr> planes;      // Planes
+        std::map<uint32_t, Texture::Ptr> textures;  // Textures
+        std::map<uint32_t, Camera::Ptr> cameras;    // Cameras
+        std::map<uint32_t, Shaders::Ptr> shaders;   // Shaders
     };
 
 private:
@@ -114,7 +109,7 @@ public:
     void createCamera(uint32_t id);
     void removeCamera(uint32_t id);
 
-    void createShaders(uint32_t id, std::string const& vert_fp, std::string const& frag_fp);
+    void createShaders(uint32_t id);
     void removeShaders(uint32_t id);
 
 // --- Public methods ---

@@ -222,6 +222,19 @@ void Window::pollTextureThreads() try
                 // Set thread as handled.
                 tex->_loading_thread.setAsHandled();
             }
+            // If the texture is of Text type, update the TextArea
+            if (tex->_type == Texture::Type::Text) {
+                tex->_text_area->update();
+                if (tex->_text_area->changesPending()) {
+                    int const w = tex->_w, h = tex->_h;
+                    tex->_text_area->getDimensions(tex->_w, tex->_h);
+                    if (w != tex->_w || h != tex->_h) {
+                        tex->_updatePlanesScaling();
+                    }
+                    tex->_raw_texture.edit(tex->_text_area->getPixels(), tex->_w, tex->_h);
+                    tex->_text_area->changesHandled();
+                }
+            }
         }
     }
 }
@@ -241,10 +254,10 @@ void Window::removeCamera(uint32_t id)
     }
 }
 
-void Window::createShaders(uint32_t id, std::string const& vert_fp, std::string const& frag_fp) try
+void Window::createShaders(uint32_t id) try
 {
     _objects.shaders.try_emplace(id);
-    _objects.shaders.at(id).reset(new Program(weak_from_this(), vert_fp, frag_fp));
+    _objects.shaders.at(id).reset(new Shaders(weak_from_this()));
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 

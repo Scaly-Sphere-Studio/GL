@@ -63,11 +63,21 @@ void Plane::draw() const try
     }
     Context const context(_window);
     _vao->bind();
+    Shaders::Ptr const& shader = window->getObjects().shaders.at(0);
     // Bind texture if needed
     if (_use_texture) {
-        window->getObjects().textures.at(_texture_id)->bind();
+
+        glUniform1i(shader->getUniformLocation("u_Textures[0]"), 0);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, window->getObjects().textures.at(0)->_raw_texture.id);
+
+        glUniform1i(shader->getUniformLocation("u_Textures[1]"), 1);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, window->getObjects().textures.at(2)->_raw_texture.id);
     }
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+    glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr, 2);
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
@@ -226,5 +236,141 @@ void Plane::_updateHoverStatus(double x, double y) try
     _hoverTriangle(C, D, A, P, false);
 }
 __CATCH_AND_RETHROW_METHOD_EXC;
+
+PlaneRenderer::PlaneRenderer(std::weak_ptr<Window> window)
+    : Renderer(window)
+{
+    Context const context(_window);
+
+    constexpr char vertex[] =
+"#version 330 core\n\
+layout(location = 0) in vec3 a_Pos;\n\
+layout(location = 1) in vec2 a_UV;\n\
+\n\
+uniform mat4 u_MVPs[128];\n\
+\n\
+out vec2 UV;\n\
+flat out int instanceID;\n\
+\n\
+void main()\n\
+{\n\
+    gl_Position = u_MVPs[gl_InstanceID] * vec4(a_Pos, 1);\n\
+    UV = a_UV;\n\
+    instanceID = gl_InstanceID;\n\
+}";
+    constexpr char fragment[] =
+"#version 330 core\n\
+out vec4 FragColor;\n\
+\n\
+in vec2 UV;\n\
+flat in int instanceID;\n\
+\n\
+uniform sampler2D u_Textures[128];\n\
+\n\
+void main()\n\
+{\n\
+    FragColor = texture(u_Textures[instanceID], UV);\n\
+}";
+
+    _shaders->loadFromData(vertex, fragment);
+
+    _vbo.reset(new VBO(window));
+    _ibo.reset(new IBO(window));
+
+    _vao->bind();
+    _vbo->bind();
+    _ibo->bind();
+
+    constexpr float vertices[] = {
+        // positions          // texture coords (1 - y)
+        -0.5f,  0.5f, 0.0f,   0.0f, 1.f - 1.0f,   // top left
+        -0.5f, -0.5f, 0.0f,   0.0f, 1.f - 0.0f,   // bottom left
+         0.5f, -0.5f, 0.0f,   1.0f, 1.f - 0.0f,   // bottom right
+         0.5f,  0.5f, 0.0f,   1.0f, 1.f - 1.0f    // top right
+    };
+    constexpr unsigned int indices[] = {
+        0, 1, 2,  // first triangle
+        2, 3, 0   // second triangle
+    };
+
+    _vbo->edit(sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    _ibo->edit(sizeof(indices), indices, GL_STATIC_DRAW);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+}
+
+void PlaneRenderer::render() const
+{
+    Window::Shared const window = _window.lock();
+    if (!window) {
+        return;
+    }
+    Context const context(_window);
+    Window::Objects const& objects = window->getObjects();
+    
+    _shaders->use();
+    _vao->bind();
+
+    constexpr uint32_t max_instances = 128;
+    std::array<glm::mat4, max_instances> MVPs;
+    static constexpr std::array<int32_t, max_instances> texture_IDs = {
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+        10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+        20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+        30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
+        40, 41, 42, 43, 44, 45, 46, 47, 48, 49,
+        50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
+        60, 61, 62, 63, 64, 65, 66, 67, 68, 69,
+        70, 71, 72, 73, 74, 75, 76, 77, 78, 79,
+        80, 81, 82, 83, 84, 85, 86, 87, 88, 89,
+        90, 91, 92, 93, 94, 95, 96, 97, 98, 99,
+        100, 101, 102, 103, 104, 105, 106, 107, 108, 109,
+        110, 111, 112, 113, 114, 115, 116, 117, 118, 119,
+        110, 121, 122, 123, 124, 125, 126, 127
+    };
+    uint32_t count = 0;
+    for (RenderObject const& render_object : *this) {
+        // Ensure we don't try to draw more than we can in one go
+        if (count == max_instances) {
+            // Bind Texture IDs & MVP
+            glUniform1iv(_shaders->getUniformLocation("u_Textures"), count, &texture_IDs[0]);
+            _shaders->setUniformMat4("u_MVPs", count, GL_FALSE, &MVPs[0][0][0]);
+            glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr, count);
+            count = 0;
+        }
+        
+        // Retrieve Plane, Camera, and Texture
+        if (objects.planes.count(render_object.object_id) == 0)
+            continue;
+        Plane::Ptr const& plane = objects.planes.at(render_object.object_id);
+        if (!plane)
+            continue;
+        if (objects.cameras.count(render_object.camera_id) == 0)
+            continue;
+        Camera::Ptr const& camera = objects.cameras.at(render_object.camera_id);
+        if (!camera)
+            continue;
+        if (objects.textures.count(plane->_texture_id) == 0)
+            continue;
+        Texture::Ptr const& texture = objects.textures.at(plane->_texture_id);
+        if (!camera)
+            continue;
+
+        // Compute MVP
+        MVPs[count] = camera->getMVP(plane->getModelMat4());
+        // Bind texture
+        glActiveTexture(GL_TEXTURE0 + count);
+        texture->bind();
+
+        ++count;
+    }
+    // Bind Texture IDs & MVP
+    glUniform1iv(_shaders->getUniformLocation("u_Textures"), count, &texture_IDs[0]);
+    _shaders->setUniformMat4("u_MVPs", count, GL_FALSE, &MVPs[0][0][0]);
+    glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr, count);
+}
 
 __SSS_GL_END

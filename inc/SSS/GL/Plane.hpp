@@ -3,6 +3,8 @@
 #include "_internal/callbacks.hpp"
 #include "Model.hpp"
 #include "Texture.hpp"
+#include "Shaders.hpp"
+#include "Renderer.hpp"
 
 __SSS_GL_BEGIN
 
@@ -10,6 +12,7 @@ class Plane : public Model {
     friend void _internal::mouse_position_callback(GLFWwindow* ptr, double x, double y);
     friend class Window;
     friend class Texture;
+    friend class PlaneRenderer;
 
 protected:
     Plane(std::weak_ptr<Window> window);
@@ -61,6 +64,16 @@ protected:
         glm::vec3 const& C, glm::vec3 const& P, bool is_abc);
     // Updates _is_hovered via the mouse position callback.
     void _updateHoverStatus(double x, double y);
+};
+
+class PlaneRenderer : public Renderer {
+public:
+    PlaneRenderer(std::weak_ptr<Window> window);
+    virtual void render() const;
+    
+private:
+    VBO::Ptr _vbo;
+    IBO::Ptr _ibo;
 };
 
 __SSS_GL_END

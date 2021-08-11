@@ -44,8 +44,7 @@ public:
     void bind();
 
     inline void getDimensions(int& w, int& h) const noexcept { w = _w; h = _h; };
-    inline TR::TextArea::Shared const& getTextArea() noexcept { return _text_area; };
-
+    inline TR::TextArea::Shared const& getTextArea() const noexcept { return _text_area; };
 private:
 
 // --- Image loading ---
