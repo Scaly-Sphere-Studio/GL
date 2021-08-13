@@ -113,13 +113,25 @@ void mouse_position_callback(GLFWwindow* ptr, double x, double y)
     x = (x / static_cast<double>(window->_w) * 2.0) - 1.0;
     y = ((y / static_cast<double>(window->_h) * 2.0) - 1.0) * -1.0;
 
-    // Update plane hover status
-    auto const& planes = window->_objects.planes;
-    for (auto it = planes.cbegin(); it != planes.cend(); ++it) {
-        if (it->second) {
-            it->second->_updateHoverStatus(x, y);
+    //// Update plane hover status
+    //auto const& planes = window->_objects.planes;
+    //for (auto it = planes.cbegin(); it != planes.cend(); ++it) {
+    //    if (it->second) {
+    //        it->second->_updateHoverStatus(x, y);
+    //    }
+    //}
+
+    auto const& renderers = window->_objects.renderers;
+    for (auto it = renderers.cbegin(); it != renderers.cend(); ++it) {
+        Renderer::Ptr const& renderer = it->second;
+        if (!renderer)
+            continue;
+        PlaneRenderer* ptr = dynamic_cast<PlaneRenderer*>(renderer.get());
+        if (ptr != nullptr) {
+            ptr->updateHoverStatus(x, y);
         }
     }
+
 
     // Call user defined callback, if needed
     if (window->_mouse_position_callback != nullptr) {
@@ -138,7 +150,6 @@ void mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) tr
     }
 
     Window::Shared const window = Window::get(ptr);
-
     // Call button functions, if needed
     if (action == GLFW_PRESS) {
         auto const& planes = window->_objects.planes;

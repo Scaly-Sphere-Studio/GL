@@ -60,40 +60,4 @@ glm::mat4 Model::getModelMat4()
     return _model_mat4;
 }
 
-void Model::useCamera(uint32_t camera_id) noexcept
-{
-    _camera_id = camera_id;
-    _use_camera = true;
-}
-
-glm::mat4 Model::getMVP()
-{
-    // If anything prevents the use of the Camera to compute
-    // the MVP matrix, the Model matrix will be returned instead
-
-    // Retrieve Model matrix
-    glm::mat4 const model_mat4 = getModelMat4();
-    // Ensure a camera is sets
-    if (!_use_camera) {
-        return model_mat4;
-    }
-    // Retrieve Window and ensure it still exists
-    Window::Shared const window = _window.lock();
-    if (!window) {
-        return model_mat4;
-    }
-    // Ensure the Window holds a Camera of given ID
-    Window::Objects const& objects = window->getObjects();
-    if (objects.cameras.count(_camera_id) == 0) {
-        return model_mat4;
-    }
-    // Ensure the Camera of given ID still exists
-    Camera::Ptr const& camera = objects.cameras.at(_camera_id);
-    if (!camera) {
-        return model_mat4;
-    }
-    // Compute MVP via Camera
-    return camera->getMVP(model_mat4);
-}
-
 __SSS_GL_END

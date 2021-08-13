@@ -3,8 +3,6 @@
 
 __SSS_GL_BEGIN
 
-static constexpr uint32_t glsl_max_array_size = 128;
-
 PlaneRenderer::PlaneRenderer(std::weak_ptr<Window> window) try
     : Renderer(window)
 {
@@ -15,14 +13,15 @@ PlaneRenderer::PlaneRenderer(std::weak_ptr<Window> window) try
 layout(location = 0) in vec3 a_Pos;\n\
 layout(location = 1) in vec2 a_UV;\n\
 \n\
-uniform mat4 u_MVPs[" + std::to_string(glsl_max_array_size) + "];\n\
+uniform mat4 u_Models[" + std::to_string(glsl_max_array_size) + "];\n\
+uniform mat4 u_VP;\n\
 \n\
 out vec2 UV;\n\
 flat out int instanceID;\n\
 \n\
 void main()\n\
 {\n\
-    gl_Position = u_MVPs[gl_InstanceID] * vec4(a_Pos, 1);\n\
+    gl_Position = u_VP * u_Models[gl_InstanceID] * vec4(a_Pos, 1);\n\
     UV = a_UV;\n\
     instanceID = gl_InstanceID;\n\
 }";
@@ -67,6 +66,33 @@ void main()\n\
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
+void PlaneRenderer::_renderPart(Mat4_array const& Models, uint32_t& count, bool reset_depth) const
+{
+    static constexpr std::array<GLint, 128> texture_IDs = {
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+        16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+        32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+        48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,
+        64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79,
+        80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95,
+        96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111,
+        112, 113, 114, 115, 116, 117, 118, 119, 110, 121, 122, 123, 124, 125, 126, 127
+    };
+
+    if (count != 0) {
+        // Set Texture IDs & MVP uniforms
+        _shaders->setUniform1iv("u_Textures", count, &texture_IDs[0]);
+        _shaders->setUniformMat4fv("u_Models", count, GL_FALSE, &Models[0][0][0]);
+        // Draw all required instances
+        glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr, count);
+        count = 0;
+    }
+    // Clear depth buffer if asked to
+    if (reset_depth) {
+        glClear(GL_DEPTH_BUFFER_BIT);
+    }
+}
+
 void PlaneRenderer::render() const try
 {
     Window::Shared const window = _window.lock();
@@ -78,61 +104,87 @@ void PlaneRenderer::render() const try
     _shaders->use();
     _vao->bind();
 
-    std::array<glm::mat4, glsl_max_array_size> MVPs;
-    static constexpr std::array<GLint, glsl_max_array_size> texture_IDs = {
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
-        16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
-        32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
-        48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,
-        64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79,
-        80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95,
-        96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111,
-        112, 113, 114, 115, 116, 117, 118, 119, 110, 121, 122, 123, 124, 125, 126, 127
-    };
+    Mat4_array Models;
     uint32_t count = 0;
-    for (RenderObject const& render_object : *this) {
-        // Ensure we don't try to draw more than we can in one go
-        if (count == glsl_max_array_size) {
-            // Set Texture IDs & MVP uniforms
-            _shaders->setUniform1iv("u_Textures", count, &texture_IDs[0]);
-            _shaders->setUniformMat4fv("u_MVPs", count, GL_FALSE, &MVPs[0][0][0]);
-            // Draw all required instances
-            glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr, count);
-            count = 0;
+    bool reset_depth_after = false;
+    // Loop over each RenderChunk
+    for (auto it1 = cbegin(); it1 != cend(); ++it1) {
+        // Retrieve chunk
+        RenderChunk const& chunk = it1->second;
+        // Check if we need to reset the depth buffer after the
+        // previous loop and/or before the next loop.
+        // Either way, the cached instances need to be drawn before.
+        bool const reset_depth = reset_depth_after || chunk.reset_depth_before;
+        if (count == glsl_max_array_size || reset_depth) {
+            _renderPart(Models, count, reset_depth);
         }
-        
-        // Retrieve Plane, Camera, and Texture
-        if (objects.planes.count(render_object.object_id) == 0)
+        reset_depth_after = chunk.reset_depth_after;
+
+        // Retrieve Camera
+        if (objects.cameras.count(chunk.camera_ID) == 0)
             continue;
-        Plane::Ptr const& plane = objects.planes.at(render_object.object_id);
-        if (!plane)
-            continue;
-        if (objects.cameras.count(render_object.camera_id) == 0)
-            continue;
-        Camera::Ptr const& camera = objects.cameras.at(render_object.camera_id);
+        Camera::Ptr const& camera = objects.cameras.at(chunk.camera_ID);
         if (!camera)
             continue;
-        if (objects.textures.count(plane->_texture_id) == 0)
-            continue;
-        Texture::Ptr const& texture = objects.textures.at(plane->_texture_id);
-        if (!camera)
-            continue;
+        glm::mat4 const vp = camera->getProjection() * camera->getView();
+        _shaders->setUniformMat4fv("u_VP", 1, GL_FALSE, glm::value_ptr(vp));
 
-        // Compute and store MVP (set uniform later)
-        MVPs[count] = camera->getMVP(plane->getModelMat4());
-        // Bind another active texture (set uniform IDs later)
-        glActiveTexture(GL_TEXTURE0 + count);
-        texture->bind();
+        // Loop over each plane in chunk
+        for (auto it2 = chunk.objects.cbegin(); it2 != chunk.objects.cend(); ++it2) {
+            if (count == glsl_max_array_size) {
+                _renderPart(Models, count, false);
+            }
+            // Retrieve Plane and Texture
+            if (objects.planes.count(it2->second) == 0)
+                continue;
+            Plane::Ptr const& plane = objects.planes.at(it2->second);
+            if (!plane)
+                continue;
+            if (objects.textures.count(plane->_texture_id) == 0)
+                continue;
+            Texture::Ptr const& texture = objects.textures.at(plane->_texture_id);
+            if (!texture)
+                continue;
 
-        ++count;
+            // Compute and store MVP (set uniform later)
+            Models[count] = plane->getModelMat4();
+            // Bind another active texture (set uniform IDs later)
+            glActiveTexture(GL_TEXTURE0 + count);
+            texture->bind();
+
+            ++count;
+        }
     }
-    // Set Texture IDs & MVP uniforms
-    _shaders->setUniform1iv("u_Textures", count, &texture_IDs[0]);
-    _shaders->setUniformMat4fv("u_MVPs", count, GL_FALSE, &MVPs[0][0][0]);
-    // Draw all required instances
-    glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr, count);
+    _renderPart(Models, count, reset_depth_after);
 }
 __CATCH_AND_RETHROW_METHOD_EXC
+
+void PlaneRenderer::updateHoverStatus(double x, double y) const
+{
+    //// Retrieve window and its objects
+    //Window::Shared const window = _window.lock();
+    //if (!window) {
+    //    return;
+    //}
+    //Window::Objects const& objects = window->getObjects();
+    //// Retrieve Camera
+    //if (objects.cameras.count(_cam_id) == 0)
+    //    return;
+    //Camera::Ptr const& camera = objects.cameras.at(_cam_id);
+    //if (!camera)
+    //    return;
+    //// Loop over each plane rendered via this camera
+    //for (uint32_t id : *this) {
+    //    // Retrieve Plane
+    //    if (objects.planes.count(id) == 0)
+    //        continue;
+    //    Plane::Ptr const& plane = objects.planes.at(id);
+    //    if (!plane)
+    //        continue;
+    //    // Update hover status
+    //    plane->_updateHoverStatus(camera, x, y);
+    //}
+}
 
 Plane::Plane(std::weak_ptr<Window> window) try
     : Model(window)
@@ -285,10 +337,10 @@ bool Plane::_hoverTriangle(glm::vec3 const& A, glm::vec3 const& B,
 }
 
 // Updates _is_hovered via the mouse position callback.
-void Plane::_updateHoverStatus(double x, double y) try
+void Plane::_updateHoverStatus(Camera::Ptr const& camera, double x, double y) try
 {
-    // Skip if not used as a button
-    if (!_use_as_button) {
+    // Skip if not used as a button, or if the given camera is nullptr
+    if (!_use_as_button || !camera) {
         return;
     }
 
@@ -296,7 +348,7 @@ void Plane::_updateHoverStatus(double x, double y) try
     _is_hovered = false;
 
     // Plane MVP matrix
-    glm::mat4 const mvp = getMVP();
+    glm::mat4 const mvp = camera->getMVP(getModelMat4());
     // Plane's coordinates
     glm::vec4 const A4 = mvp * glm::vec4(-0.5, 0.5, 0, 1);   // Top left
     glm::vec4 const B4 = mvp * glm::vec4(-0.5, -0.5, 0, 1);  // Bottom left

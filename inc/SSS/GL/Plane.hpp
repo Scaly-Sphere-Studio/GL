@@ -3,7 +3,7 @@
 #include "_internal/callbacks.hpp"
 #include "Model.hpp"
 #include "Texture.hpp"
-#include "Shaders.hpp"
+#include "Camera.hpp"
 #include "Renderer.hpp"
 
 __SSS_GL_BEGIN
@@ -11,9 +11,16 @@ __SSS_GL_BEGIN
 class PlaneRenderer : public Renderer {
     friend class Window;
 protected:
+    static constexpr uint32_t glsl_max_array_size = 128;
+
     PlaneRenderer(std::weak_ptr<Window> window);
+
+    using Mat4_array = std::array<glm::mat4, glsl_max_array_size>;
+    void _renderPart(Mat4_array const& Models, uint32_t& count, bool reset_depth) const;
+
 public:
     virtual void render() const;
+    void updateHoverStatus(double x, double y) const;
 };
 
 class Plane : public Model {
@@ -71,7 +78,7 @@ protected:
     bool _hoverTriangle(glm::vec3 const& A, glm::vec3 const& B,
         glm::vec3 const& C, glm::vec3 const& P, bool is_abc);
     // Updates _is_hovered via the mouse position callback.
-    void _updateHoverStatus(double x, double y);
+    void _updateHoverStatus(Camera::Ptr const& camera, double x, double y);
 };
 
 __SSS_GL_END

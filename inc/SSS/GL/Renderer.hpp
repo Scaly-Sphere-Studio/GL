@@ -5,18 +5,16 @@
 
 __SSS_GL_BEGIN
 
-struct RenderObject {
-    RenderObject() = delete;
-    RenderObject(uint32_t object_id_, uint32_t camera_id_)
-        : object_id(object_id_), camera_id(camera_id_)
-    {};
-    uint32_t object_id;
-    uint32_t camera_id;
+struct RenderChunk {
+    bool reset_depth_before{ false };
+    bool reset_depth_after{ false };
+    uint32_t camera_ID{ 0 };
+    std::map<uint32_t, uint32_t> objects;
 };
 
 class Renderer :
     public _internal::WindowObject,
-    public std::deque<RenderObject>
+    public std::map<uint32_t, RenderChunk>
 {
 protected:
     Renderer(std::weak_ptr<Window> window);             // Constructor

@@ -150,7 +150,9 @@ void Window::cleanObjects() noexcept
     _objects.models.clear();
     _objects.planes.clear();
     _objects.textures.clear();
+    _objects.cameras.clear();
     _objects.shaders.clear();
+    _objects.renderers.clear();
 }
 
 void Window::createModel(uint32_t id, ModelType type) try
