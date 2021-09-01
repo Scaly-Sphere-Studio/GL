@@ -283,9 +283,12 @@ void Window::removeRenderer(uint32_t id)
 // Logs fps if specified in LOG structure.
 void Window::render() try
 {
+    std::chrono::steady_clock::time_point const now = std::chrono::steady_clock::now();
     if (!_is_iconified) {
         // Make context current for this scope
         Context const context(_window.get());
+        // Update hovering status
+        _updateHoveredButton(now);
         // Render all active renderers
         for (auto it = _objects.renderers.cbegin(); it != _objects.renderers.cend(); ++it) {
             Renderer::Ptr const& renderer = it->second;
@@ -304,10 +307,60 @@ void Window::render() try
         // Clear back buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
-    // Poll events
+    // Poll events & update timepoint
     glfwPollEvents();
+    _last_render_time = now;
 }
 __CATCH_AND_RETHROW_METHOD_EXC
+
+void Window::_updateHoveredButton(std::chrono::steady_clock::time_point const& now)
+{
+    static constexpr std::chrono::milliseconds threshold(50);
+    static constexpr std::chrono::nanoseconds zero(0);
+
+    // Compute and add the time since last render to the waiting time.
+    // Ensure that the user "going back in time" does not break this function.
+    std::chrono::nanoseconds const delta_time = now - _last_render_time;
+    if (delta_time < zero) {
+        _hover_waiting_time = threshold;
+    }
+    else {
+        _hover_waiting_time += delta_time;
+    }
+    // If waited enough, compute function
+    if (_hover_waiting_time >= threshold) {
+        // Retrieve mouse coordinates, return if outside window
+        double x, y;
+        if (glfwGetInputMode(_window.get(), GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
+            // If the cursor is disabled (Camera mode), then its relative position is at
+            // the center of the window, which, on -1/+1 coordinates, is 0/0.
+            x = 0;
+            y = 0;
+        }
+        else {
+            glfwGetCursorPos(_window.get(), &x, &y);
+            // Ensure cursor is inside the window
+            if (x < 0.0 || x >= static_cast<double>(_w)
+                || y < 0.0 || y >= static_cast<double>(_h)) {
+                return;
+            }
+            // Normalize to -1/+1 coordinates
+            x = (x / static_cast<double>(_w) * 2.0) - 1.0;
+            y = ((y / static_cast<double>(_h) * 2.0) - 1.0) * -1.0;
+        }
+        // Loop over each renderer, and if they are a PlaneRenderer, update their hovering.
+        for (auto it = _objects.renderers.cbegin(); it != _objects.renderers.cend(); ++it) {
+            Renderer::Ptr const& renderer = it->second;
+            if (!renderer)
+                continue;
+            PlaneRenderer* ptr = dynamic_cast<PlaneRenderer*>(renderer.get());
+            if (ptr != nullptr) {
+                ptr->updateHoverStatus(x, y);
+            }
+        }
+        _hover_waiting_time = zero;
+    }
+}
 
 // Wether the user requested to close the window.
 // NOTE: this simply is a call to glfwWindowShouldClose

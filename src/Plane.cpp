@@ -95,6 +95,9 @@ void PlaneRenderer::_renderPart(Mat4_array const& Models, uint32_t& count, bool 
 
 void PlaneRenderer::render() const try
 {
+    if (!_is_active) {
+        return;
+    }
     Window::Shared const window = _window.lock();
     if (!window) {
         return;
@@ -161,29 +164,37 @@ __CATCH_AND_RETHROW_METHOD_EXC
 
 void PlaneRenderer::updateHoverStatus(double x, double y) const
 {
-    //// Retrieve window and its objects
-    //Window::Shared const window = _window.lock();
-    //if (!window) {
-    //    return;
-    //}
-    //Window::Objects const& objects = window->getObjects();
-    //// Retrieve Camera
-    //if (objects.cameras.count(_cam_id) == 0)
-    //    return;
-    //Camera::Ptr const& camera = objects.cameras.at(_cam_id);
-    //if (!camera)
-    //    return;
-    //// Loop over each plane rendered via this camera
-    //for (uint32_t id : *this) {
-    //    // Retrieve Plane
-    //    if (objects.planes.count(id) == 0)
-    //        continue;
-    //    Plane::Ptr const& plane = objects.planes.at(id);
-    //    if (!plane)
-    //        continue;
-    //    // Update hover status
-    //    plane->_updateHoverStatus(camera, x, y);
-    //}
+    if (!_is_active) {
+        return;
+    }
+    // Retrieve window and its objects
+    Window::Shared const window = _window.lock();
+    if (!window) {
+        return;
+    }
+    Window::Objects const& objects = window->getObjects();
+    // Loop over each RenderChunk
+    for (auto it1 = cbegin(); it1 != cend(); ++it1) {
+        // Retrieve chunk
+        RenderChunk const& chunk = it1->second;
+        // Retrieve Camera
+        if (objects.cameras.count(chunk.camera_ID) == 0)
+            continue;
+        Camera::Ptr const& camera = objects.cameras.at(chunk.camera_ID);
+        if (!camera)
+            continue;
+        // Loop over each plane in chunk
+        for (auto it2 = chunk.objects.cbegin(); it2 != chunk.objects.cend(); ++it2) {
+            // Retrieve Plane
+            if (objects.planes.count(it2->second) == 0)
+                continue;
+            Plane::Ptr const& plane = objects.planes.at(it2->second);
+            if (!plane)
+                continue;
+            // Update hover status
+            plane->_updateHoverStatus(camera, x, y);
+        }
+    }
 }
 
 Plane::Plane(std::weak_ptr<Window> window) try
