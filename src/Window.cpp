@@ -327,26 +327,24 @@ void Window::_updateHoveredButton(std::chrono::steady_clock::time_point const& n
     else {
         _hover_waiting_time += delta_time;
     }
-    // If waited enough, compute function
+    // If waited enough, retrieve mouse coordinates and check for plane hovering
+    // Return if mouse is outside window
     if (_hover_waiting_time >= threshold) {
-        // Retrieve mouse coordinates, return if outside window
-        double x, y;
-        if (glfwGetInputMode(_window.get(), GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
-            // If the cursor is disabled (Camera mode), then its relative position is at
-            // the center of the window, which, on -1/+1 coordinates, is 0/0.
-            x = 0;
-            y = 0;
-        }
-        else {
-            glfwGetCursorPos(_window.get(), &x, &y);
+        // If the cursor is disabled (Camera mode), then its relative position is at
+        // the center of the window, which, on -1/+1 coordinates, is 0/0.
+        float x = 0.f, y = 0.f;
+        if (glfwGetInputMode(_window.get(), GLFW_CURSOR) != GLFW_CURSOR_DISABLED) {
+            // Retrieve mouse coordinates, ranging from 0 to width/height
+            double x_offset, y_offset;
+            glfwGetCursorPos(_window.get(), &x_offset, &y_offset);
             // Ensure cursor is inside the window
-            if (x < 0.0 || x >= static_cast<double>(_w)
-                || y < 0.0 || y >= static_cast<double>(_h)) {
+            double const w = static_cast<double>(_w), h = static_cast<double>(_h);
+            if (x_offset < 0.0 || x_offset >= w || y_offset < 0.0 || y_offset >= h) {
                 return;
             }
             // Normalize to -1/+1 coordinates
-            x = (x / static_cast<double>(_w) * 2.0) - 1.0;
-            y = ((y / static_cast<double>(_h) * 2.0) - 1.0) * -1.0;
+            x = static_cast<float>((x_offset / w * 2.0) - 1.0);
+            y = static_cast<float>(((y_offset / h * 2.0) - 1.0) * -1.0);
         }
         // Loop over each renderer, and if they are a PlaneRenderer, update their hovering.
         for (auto it = _objects.renderers.cbegin(); it != _objects.renderers.cend(); ++it) {
@@ -355,7 +353,7 @@ void Window::_updateHoveredButton(std::chrono::steady_clock::time_point const& n
                 continue;
             PlaneRenderer* ptr = dynamic_cast<PlaneRenderer*>(renderer.get());
             if (ptr != nullptr) {
-                ptr->updateHoverStatus(x, y);
+                ptr->_updateHoverStatus(x, y);
             }
         }
         _hover_waiting_time = zero;

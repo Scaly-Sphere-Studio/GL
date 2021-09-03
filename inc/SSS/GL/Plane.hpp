@@ -20,7 +20,9 @@ protected:
 
 public:
     virtual void render() const;
-    void updateHoverStatus(double x, double y) const;
+
+private:
+    void _updateHoverStatus(float x, float y) const;
 };
 
 class Plane : public Model {
@@ -75,10 +77,10 @@ protected:
     int _relative_y{ 0 };
 
     // Called from _updateHoverStatus
-    bool _hoverTriangle(glm::vec3 const& A, glm::vec3 const& B,
-        glm::vec3 const& C, glm::vec3 const& P, bool is_abc);
+    bool _hoverTriangle(glm::mat4 const& mvp, glm::vec4 const& A,
+        glm::vec4 const& B, glm::vec4 const& C, float x, float y);
     // Updates _is_hovered via the mouse position callback.
-    void _updateHoverStatus(Camera::Ptr const& camera, double x, double y);
+    void _updateHoverStatus(Camera::Ptr const& camera, float x, float y);
 };
 
 __SSS_GL_END

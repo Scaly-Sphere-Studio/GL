@@ -162,7 +162,7 @@ void PlaneRenderer::render() const try
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
-void PlaneRenderer::updateHoverStatus(double x, double y) const
+void PlaneRenderer::_updateHoverStatus(float x, float y) const
 {
     if (!_is_active) {
         return;
@@ -289,8 +289,8 @@ void Plane::_updateTexScaling()
     }
 }
 
-bool Plane::_hoverTriangle(glm::vec3 const& A, glm::vec3 const& B,
-    glm::vec3 const& C, glm::vec3 const& P, bool is_abc)
+bool Plane::_hoverTriangle(glm::mat4 const& mvp, glm::vec4 const& A,
+    glm::vec4 const& B, glm::vec4 const& C, float x, float y)
 {
     // Skip if one (or more) of the points is behind the camera
     if (A.z > 1.f || B.z > 1.f || C.z > 1.f) {
@@ -299,32 +299,34 @@ bool Plane::_hoverTriangle(glm::vec3 const& A, glm::vec3 const& B,
 
     // Check if P is inside the triangle ABC via barycentric coordinates
     float const denominator = ((B.y - C.y) * (A.x - C.x) + (C.x - B.x) * (A.y - C.y));
-    float const a = ((B.y - C.y) * (P.x - C.x) + (C.x - B.x) * (P.y - C.y)) / denominator;
-    float const b = ((C.y - A.y) * (P.x - C.x) + (A.x - C.x) * (P.y - C.y)) / denominator;
+    float const a = ((B.y - C.y) * (x - C.x) + (C.x - B.x) * (y - C.y)) / denominator;
+    float const b = ((C.y - A.y) * (x - C.x) + (A.x - C.x) * (y - C.y)) / denominator;
     float const c = 1.f - a - b;
     if (!(0.f <= a && a <= 1.f && 0.f <= b && b <= 1.f && 0.f <= c && c <= 1.f)) {
         return false;
     }
+    // Compute relative Z (not the real scene Z, as it's computed via
+    // normalized vertices)
+    double const z = a * A.z + b * B.z + c * C.z;
 
-    // End function if no texture provided or if the Plane isn't drawn as a rectangle
-    if (!_use_texture || !(A.x == B.x && B.y == C.y)) {
+    // End function if no texture provided
+    if (!_use_texture) {
         _is_hovered = true;
         return true;
     }
 
+    // Inverse and normalize relative x/y in a -0.5/+0.5 range
+    glm::vec4 P = glm::inverse(mvp) * glm::vec4(x, y, z, 1);
+    P /= P.w;
+    // Convert x/y in a 0/1 range, and inverse y (openGL y VS texture y)
+    P.x += 0.5f;
+    P.y += 0.5f;
+    P.y = 1.f - P.y;
     // Get the relative x & y position the cursor is hovering over.
-    // Inverse x & y based on if the triangle is ABC or CDA
-    _relative_x = static_cast<int>(c * static_cast<float>(_tex_w));
-    _relative_y = static_cast<int>(a * static_cast<float>(_tex_h));
-    if (is_abc) {
-        _relative_y = _tex_h - _relative_y;
-    }
-    else {
-        _relative_x = _tex_w - _relative_x;
-    }
+    _relative_x = static_cast<int>(P.x * static_cast<float>(_tex_w));
+    _relative_y = static_cast<int>(P.y * static_cast<float>(_tex_h));
 
-    // Retrieve window, ensure it exists. Then retrieve the texture
-    // and ensure it exists too. Skip if the texture is Text.
+    // Retrieve window & texture. Skip if the texture is Text.
     Window::Shared const window = _window.lock();
     if (!window) {
         return true;
@@ -338,7 +340,7 @@ bool Plane::_hoverTriangle(glm::vec3 const& A, glm::vec3 const& B,
         return true;
     }
 
-    // Update status if the position is inside the texture
+    // Update status if the position is on an opaque pixel
     size_t const pixel = static_cast<size_t>(_relative_y * _tex_w + _relative_x);
     if (pixel < texture->_pixels.size()) {
         _is_hovered = texture->_pixels.at(pixel).bytes.a != 0;
@@ -348,7 +350,7 @@ bool Plane::_hoverTriangle(glm::vec3 const& A, glm::vec3 const& B,
 }
 
 // Updates _is_hovered via the mouse position callback.
-void Plane::_updateHoverStatus(Camera::Ptr const& camera, double x, double y) try
+void Plane::_updateHoverStatus(Camera::Ptr const& camera, float x, float y) try
 {
     // Skip if not used as a button, or if the given camera is nullptr
     if (!_use_as_button || !camera) {
@@ -366,17 +368,13 @@ void Plane::_updateHoverStatus(Camera::Ptr const& camera, double x, double y) tr
     glm::vec4 const C4 = mvp * glm::vec4(0.5, -0.5, 0, 1);   // Bottom right
     glm::vec4 const D4 = mvp * glm::vec4(0.5, 0.5, 0, 1);    // Top right
     // Normalize in screen coordinates
-    glm::vec3 const A = A4 / A4.w;
-    glm::vec3 const B = B4 / B4.w;
-    glm::vec3 const C = C4 / C4.w;
-    glm::vec3 const D = D4 / D4.w;
-    // Mouse coordinates
-    glm::vec3 const P(x, y, 0);
+    glm::vec4 const A = A4 / A4.w;
+    glm::vec4 const B = B4 / B4.w;
+    glm::vec4 const C = C4 / C4.w;
+    glm::vec4 const D = D4 / D4.w;
 
-    if (_hoverTriangle(A, B, C, P, true)) {
-        return;
-    }
-    _hoverTriangle(C, D, A, P, false);
+    // Test for ABC and CDA
+    _hoverTriangle(mvp, A, B, C, x, y) || _hoverTriangle(mvp, C, D, A, x, y);
 }
 __CATCH_AND_RETHROW_METHOD_EXC;
 
