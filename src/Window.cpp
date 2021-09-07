@@ -288,7 +288,7 @@ void Window::render() try
         // Make context current for this scope
         Context const context(_window.get());
         // Update hovering status
-        _updateHoveredButton(now);
+        _updateHoveredModel(now);
         // Render all active renderers
         for (auto it = _objects.renderers.cbegin(); it != _objects.renderers.cend(); ++it) {
             Renderer::Ptr const& renderer = it->second;
@@ -313,7 +313,7 @@ void Window::render() try
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
-void Window::_updateHoveredButton(std::chrono::steady_clock::time_point const& now)
+void Window::_updateHoveredModel(std::chrono::steady_clock::time_point const& now)
 {
     static constexpr std::chrono::milliseconds threshold(50);
     static constexpr std::chrono::nanoseconds zero(0);
@@ -330,6 +330,8 @@ void Window::_updateHoveredButton(std::chrono::steady_clock::time_point const& n
     // If waited enough, retrieve mouse coordinates and check for plane hovering
     // Return if mouse is outside window
     if (_hover_waiting_time >= threshold) {
+        // Reset hovering
+        _something_is_hovered = false;
         // If the cursor is disabled (Camera mode), then its relative position is at
         // the center of the window, which, on -1/+1 coordinates, is 0/0.
         float x = 0.f, y = 0.f;
@@ -346,14 +348,20 @@ void Window::_updateHoveredButton(std::chrono::steady_clock::time_point const& n
             x = static_cast<float>((x_offset / w * 2.0) - 1.0);
             y = static_cast<float>(((y_offset / h * 2.0) - 1.0) * -1.0);
         }
+        double z = DBL_MAX;
         // Loop over each renderer, and if they are a PlaneRenderer, update their hovering.
-        for (auto it = _objects.renderers.cbegin(); it != _objects.renderers.cend(); ++it) {
+        for (auto it = _objects.renderers.crbegin(); it != _objects.renderers.crend(); ++it) {
             Renderer::Ptr const& renderer = it->second;
             if (!renderer)
                 continue;
             PlaneRenderer* ptr = dynamic_cast<PlaneRenderer*>(renderer.get());
-            if (ptr != nullptr) {
-                ptr->_updateHoverStatus(x, y);
+            if (ptr != nullptr && ptr->_findNearestModel(x, y)) {
+                _something_is_hovered = true;
+                if (ptr->_hovered_z < z) {
+                    z = ptr->_hovered_z;
+                    _hovered_model_id = ptr->_hovered_plane;
+                    _hovered_model_type = ModelType::Plane;
+                }
             }
         }
         _hover_waiting_time = zero;

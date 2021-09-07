@@ -162,18 +162,21 @@ void PlaneRenderer::render() const try
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
-void PlaneRenderer::_updateHoverStatus(float x, float y) const
+bool PlaneRenderer::_findNearestModel(float x, float y)
 {
+    _hovered_plane = 0;
+    _hovered_z = 0;
     if (!_is_active) {
-        return;
+        return false;
     }
     // Retrieve window and its objects
     Window::Shared const window = _window.lock();
     if (!window) {
-        return;
+        return false;
     }
     Window::Objects const& objects = window->getObjects();
     // Loop over each RenderChunk
+    bool result = false;
     for (auto it1 = cbegin(); it1 != cend(); ++it1) {
         // Retrieve chunk
         RenderChunk const& chunk = it1->second;
@@ -191,10 +194,19 @@ void PlaneRenderer::_updateHoverStatus(float x, float y) const
             Plane::Ptr const& plane = objects.planes.at(it2->second);
             if (!plane)
                 continue;
-            // Update hover status
-            plane->_updateHoverStatus(camera, x, y);
+            // Check if plane is hovered and retrieve its relative depth
+            double z = DBL_MAX;
+            if (plane->_isHovered(camera, x, y, z)) {
+                result = true;
+                // Update hovered stats if plane is nearer
+                if (z < _hovered_z) {
+                    _hovered_z = z;
+                    _hovered_plane = it2->second;
+                }
+            }
         }
     }
+    return result;
 }
 
 Plane::Plane(std::weak_ptr<Window> window) try
@@ -290,7 +302,8 @@ void Plane::_updateTexScaling()
 }
 
 bool Plane::_hoverTriangle(glm::mat4 const& mvp, glm::vec4 const& A,
-    glm::vec4 const& B, glm::vec4 const& C, float x, float y)
+    glm::vec4 const& B, glm::vec4 const& C, float x, float y,
+    double& z, bool& is_hovered)
 {
     // Skip if one (or more) of the points is behind the camera
     if (A.z > 1.f || B.z > 1.f || C.z > 1.f) {
@@ -307,11 +320,11 @@ bool Plane::_hoverTriangle(glm::mat4 const& mvp, glm::vec4 const& A,
     }
     // Compute relative Z (not the real scene Z, as it's computed via
     // normalized vertices)
-    double const z = a * A.z + b * B.z + c * C.z;
+    z = a * A.z + b * B.z + c * C.z;
 
     // End function if no texture provided
     if (!_use_texture) {
-        _is_hovered = true;
+        is_hovered = true;
         return true;
     }
 
@@ -336,29 +349,27 @@ bool Plane::_hoverTriangle(glm::mat4 const& mvp, glm::vec4 const& A,
         return true;
     }
     if (texture->getType() == Texture::Type::Text) {
-        _is_hovered = true;
+        is_hovered = true;
         return true;
     }
 
     // Update status if the position is on an opaque pixel
     size_t const pixel = static_cast<size_t>(_relative_y * _tex_w + _relative_x);
     if (pixel < texture->_pixels.size()) {
-        _is_hovered = texture->_pixels.at(pixel).bytes.a != 0;
+        is_hovered = texture->_pixels.at(pixel).bytes.a != 0;
     }
 
     return true;
 }
 
 // Updates _is_hovered via the mouse position callback.
-void Plane::_updateHoverStatus(Camera::Ptr const& camera, float x, float y) try
+bool Plane::_isHovered(Camera::Ptr const& camera, float x, float y, double &z) try
 {
     // Skip if not used as a button, or if the given camera is nullptr
     if (!_use_as_button || !camera) {
-        return;
+        return false;
     }
 
-    // Reset hover status
-    _is_hovered = false;
 
     // Plane MVP matrix
     glm::mat4 const mvp = camera->getMVP(getModelMat4());
@@ -373,8 +384,11 @@ void Plane::_updateHoverStatus(Camera::Ptr const& camera, float x, float y) try
     glm::vec4 const C = C4 / C4.w;
     glm::vec4 const D = D4 / D4.w;
 
-    // Test for ABC and CDA
-    _hoverTriangle(mvp, A, B, C, x, y) || _hoverTriangle(mvp, C, D, A, x, y);
+    // Test for ABC or CDA
+    bool is_hovered = false;
+    _hoverTriangle(mvp, A, B, C, x, y, z, is_hovered)
+        || _hoverTriangle(mvp, C, D, A, x, y, z, is_hovered);
+    return is_hovered;
 }
 __CATCH_AND_RETHROW_METHOD_EXC;
 
