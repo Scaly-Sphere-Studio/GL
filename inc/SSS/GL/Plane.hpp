@@ -24,11 +24,11 @@ public:
 private:
     bool _findNearestModel(float x, float y);
     uint32_t _hovered_plane{ 0 };
-    double _hovered_z{ 0.f };
+    double _hovered_z{ DBL_MAX };
 };
 
 class Plane : public Model {
-    friend void _internal::mouse_position_callback(GLFWwindow* ptr, double x, double y);
+    friend void _internal::mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods);
     friend class Window;
     friend class Texture;
     friend class PlaneRenderer;
@@ -50,13 +50,10 @@ public:
     inline bool isButton() const noexcept { return _use_as_button; };
     
     // Format to be used in setFunction();
-    using ButtonFunction = void(*)();
+    using ButtonFunction = void(*)(uint32_t);
     // Sets the function to be called when the button is clicked.
     // The function MUST be of the format void (*)();
     void setFunction(ButtonFunction func);
-    // Calls the function set via setFunction();
-    // Called whenever the button is clicked.
-    void callFunction();
 
 protected:
     uint32_t _texture_id{ 0 };
@@ -73,6 +70,9 @@ protected:
     // Mouse hovering relative position, updated via Window::render every x ms.
     int _relative_x{ 0 };
     int _relative_y{ 0 };
+    // Calls the function set via setFunction();
+    // Called whenever the button is clicked.
+    void _callFunction(uint32_t id);
 
     // Called from _isHovered
     bool _hoverTriangle(glm::mat4 const& mvp, glm::vec4 const& A,

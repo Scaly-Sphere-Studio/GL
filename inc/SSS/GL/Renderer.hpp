@@ -7,7 +7,6 @@ __SSS_GL_BEGIN
 
 struct RenderChunk {
     bool reset_depth_before{ false };
-    bool reset_depth_after{ false };
     uint32_t camera_ID{ 0 };
     std::map<uint32_t, uint32_t> objects;
 };

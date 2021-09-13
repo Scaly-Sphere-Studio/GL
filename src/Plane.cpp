@@ -109,19 +109,16 @@ void PlaneRenderer::render() const try
 
     Mat4_array Models;
     uint32_t count = 0;
-    bool reset_depth_after = false;
     // Loop over each RenderChunk
     for (auto it1 = cbegin(); it1 != cend(); ++it1) {
         // Retrieve chunk
         RenderChunk const& chunk = it1->second;
-        // Check if we need to reset the depth buffer after the
-        // previous loop and/or before the next loop.
-        // Either way, the cached instances need to be drawn before.
-        bool const reset_depth = reset_depth_after || chunk.reset_depth_before;
-        if (count == glsl_max_array_size || reset_depth) {
-            _renderPart(Models, count, reset_depth);
+        // Check if we can't cache more instances and need to make a draw call.
+        // Also check if we need to reset the depth buffer before the next loop,
+        // in which case the cached instances need to be drawn.
+        if (count == glsl_max_array_size || chunk.reset_depth_before) {
+            _renderPart(Models, count, chunk.reset_depth_before);
         }
-        reset_depth_after = chunk.reset_depth_after;
 
         // Retrieve Camera
         if (objects.cameras.count(chunk.camera_ID) == 0)
@@ -158,14 +155,14 @@ void PlaneRenderer::render() const try
             ++count;
         }
     }
-    _renderPart(Models, count, reset_depth_after);
+    _renderPart(Models, count, false);
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
 bool PlaneRenderer::_findNearestModel(float x, float y)
 {
     _hovered_plane = 0;
-    _hovered_z = 0;
+    _hovered_z = DBL_MAX;
     if (!_is_active) {
         return false;
     }
@@ -177,7 +174,7 @@ bool PlaneRenderer::_findNearestModel(float x, float y)
     Window::Objects const& objects = window->getObjects();
     // Loop over each RenderChunk
     bool result = false;
-    for (auto it1 = cbegin(); it1 != cend(); ++it1) {
+    for (auto it1 = crbegin(); it1 != crend(); ++it1) {
         // Retrieve chunk
         RenderChunk const& chunk = it1->second;
         // Retrieve Camera
@@ -204,6 +201,9 @@ bool PlaneRenderer::_findNearestModel(float x, float y)
                     _hovered_plane = it2->second;
                 }
             }
+        }
+        if (result && chunk.reset_depth_before) {
+            return result;
         }
     }
     return result;
@@ -246,7 +246,7 @@ __CATCH_AND_RETHROW_METHOD_EXC
 
 // Calls the function set via setFunction();
 // Called whenever the button is clicked.
-void Plane::callFunction() try
+void Plane::_callFunction(uint32_t id) try
 {
     if (!_use_as_button) {
         return;
@@ -259,7 +259,7 @@ void Plane::callFunction() try
         }
     }
     if (_f != nullptr) {
-        _f();
+        _f(id);
     }
 }
 __CATCH_AND_RETHROW_METHOD_EXC
@@ -321,7 +321,13 @@ bool Plane::_hoverTriangle(glm::mat4 const& mvp, glm::vec4 const& A,
     // Compute relative Z (not the real scene Z, as it's computed via
     // normalized vertices)
     z = a * A.z + b * B.z + c * C.z;
-
+    // If z < -1.f, then it is behind the camera
+    if (z < -1.f) {
+        return true;
+    }
+    if (_window.lock()->getKeyInputs()[GLFW_KEY_F2]) {
+        log_msg(toString(z));
+    }
     // End function if no texture provided
     if (!_use_texture) {
         is_hovered = true;
@@ -369,7 +375,6 @@ bool Plane::_isHovered(Camera::Ptr const& camera, float x, float y, double &z) t
     if (!_use_as_button || !camera) {
         return false;
     }
-
 
     // Plane MVP matrix
     glm::mat4 const mvp = camera->getMVP(getModelMat4());

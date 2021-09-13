@@ -327,7 +327,7 @@ void Window::_updateHoveredModel(std::chrono::steady_clock::time_point const& no
     else {
         _hover_waiting_time += delta_time;
     }
-    // If waited enough, retrieve mouse coordinates and check for plane hovering
+    // If waited enough, retrieve mouse coordinates and check for model hovering
     // Return if mouse is outside window
     if (_hover_waiting_time >= threshold) {
         // Reset hovering
@@ -349,19 +349,34 @@ void Window::_updateHoveredModel(std::chrono::steady_clock::time_point const& no
             y = static_cast<float>(((y_offset / h * 2.0) - 1.0) * -1.0);
         }
         double z = DBL_MAX;
-        // Loop over each renderer, and if they are a PlaneRenderer, update their hovering.
+        // Loop over each renderer and find their "nearest" models at mouse coordinates
         for (auto it = _objects.renderers.crbegin(); it != _objects.renderers.crend(); ++it) {
             Renderer::Ptr const& renderer = it->second;
             if (!renderer)
                 continue;
             PlaneRenderer* ptr = dynamic_cast<PlaneRenderer*>(renderer.get());
+            // Find nearest model
             if (ptr != nullptr && ptr->_findNearestModel(x, y)) {
+                // If a model was found, update hover status
                 _something_is_hovered = true;
                 if (ptr->_hovered_z < z) {
                     z = ptr->_hovered_z;
                     _hovered_model_id = ptr->_hovered_plane;
                     _hovered_model_type = ModelType::Plane;
                 }
+                // If the depth buffer was reset at least once by the renderer, previous
+                // tested models will always be on top of all not-yet-tested models,
+                // which means we must skip further tests. This is why we're testing
+                // renderers in their reverse order.
+                bool depth_buffer_was_reset = false;
+                for (auto it = ptr->cbegin(); it != ptr->cend(); ++it) {
+                    if (it->second.reset_depth_before) {
+                        depth_buffer_was_reset = true;
+                        break;
+                    }
+                }
+                if (depth_buffer_was_reset)
+                    break;
             }
         }
         _hover_waiting_time = zero;
