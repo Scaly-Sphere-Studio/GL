@@ -16,15 +16,17 @@ protected:
     PlaneRenderer(std::weak_ptr<Window> window);
 
     using Mat4_array = std::array<glm::mat4, glsl_max_array_size>;
-    void _renderPart(Mat4_array const& Models, uint32_t& count, bool reset_depth) const;
+    void _renderPart(uint32_t& count, bool reset_depth) const;
 
 public:
-    virtual void render() const;
+    virtual void render();
 
 private:
     bool _findNearestModel(float x, float y);
     uint32_t _hovered_plane{ 0 };
     double _hovered_z{ DBL_MAX };
+    Mat4_array _VPs;
+    Mat4_array _Models;
 };
 
 class Plane : public Model {
@@ -46,11 +48,16 @@ public:
 
     virtual glm::mat4 getModelMat4();
 
-    inline void useAsButton(bool state) noexcept { _use_as_button = state; };
-    inline bool isButton() const noexcept { return _use_as_button; };
+    enum class Hitbox {
+        None,   // No hitbox.
+        Alpha,  // Hitbox if alpha > 0.
+        Full    // Hitbox if within plane coordinates.
+    };
+    inline void setHitbox(Hitbox hitbox) noexcept { _hitbox = hitbox; };
+    inline Hitbox getHitbox() const noexcept { return _hitbox; };
     
     // Format to be used in setFunction();
-    using ButtonFunction = void(*)(uint32_t);
+    using ButtonFunction = void(*)(GLFWwindow*, uint32_t, int, int, int);
     // Sets the function to be called when the button is clicked.
     // The function MUST be of the format void (*)();
     void setFunction(ButtonFunction func);
@@ -63,8 +70,8 @@ protected:
     
     void _updateTexScaling();
 
-    // Whether the Plane should be treated as a button
-    bool _use_as_button{ false };
+    // Type of hitbox
+    Hitbox _hitbox{ Hitbox::None };
     // Function called when the button is clicked.
     ButtonFunction _f{ nullptr };
     // Mouse hovering relative position, updated via Window::render every x ms.
@@ -72,14 +79,14 @@ protected:
     int _relative_y{ 0 };
     // Calls the function set via setFunction();
     // Called whenever the button is clicked.
-    void _callFunction(uint32_t id);
+    void _callFunction(GLFWwindow* ptr, uint32_t id, int button, int action, int mods);
 
     // Called from _isHovered
     bool _hoverTriangle(glm::mat4 const& mvp, glm::vec4 const& A,
         glm::vec4 const& B, glm::vec4 const& C, float x, float y,
         double &z, bool& is_hovered);
     // Returns true and updates z if Plane is hovered
-    bool _isHovered(Camera::Ptr const& camera, float x, float y, double &z);
+    bool _isHovered(glm::mat4 const& VP, float x, float y, double &z);
 };
 
 __SSS_GL_END

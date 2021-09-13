@@ -127,22 +127,20 @@ void mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) tr
 
     Window::Shared const window = Window::get(ptr);
     // Call button function, if needed
-    if (action == GLFW_PRESS) {
-        if (window->_something_is_hovered) {
-            uint32_t id = window->_hovered_model_id;
-            switch (window->_hovered_model_type) {
-            case ModelType::Plane: {
-                if (window->_objects.planes.count(id) == 0)
-                    break;
-                Plane::Ptr const& plane = window->_objects.planes.at(id);
-                if (plane && plane->isButton()) {
-                    plane->_callFunction(id);
-                }
+    if (window->_something_is_hovered) {
+        uint32_t const id = window->_hovered_model_id;
+        switch (window->_hovered_model_type) {
+        case ModelType::Plane: {
+            if (window->_objects.planes.count(id) == 0)
                 break;
+            Plane::Ptr const& plane = window->_objects.planes.at(id);
+            if (plane) {
+                plane->_callFunction(ptr, id, button, action, mods);
             }
-            default:
-                break;
-            }
+            break;
+        }
+        default:
+            break;
         }
     }
     

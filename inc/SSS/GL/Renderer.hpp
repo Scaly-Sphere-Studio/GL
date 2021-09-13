@@ -7,6 +7,7 @@ __SSS_GL_BEGIN
 
 struct RenderChunk {
     bool reset_depth_before{ false };
+    bool use_camera{ true };
     uint32_t camera_ID{ 0 };
     std::map<uint32_t, uint32_t> objects;
 };
@@ -33,7 +34,7 @@ protected:
     VBO::Ptr _vbo;
     IBO::Ptr _ibo;
 public:
-    virtual void render() const = 0;
+    virtual void render() = 0;
 
 protected:
     bool _is_active{ true };
