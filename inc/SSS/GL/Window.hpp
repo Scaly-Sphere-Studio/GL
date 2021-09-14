@@ -126,6 +126,15 @@ public:
     // Renders a frame & polls events.
     // Logs fps if specified in LOG structure.
     void render();
+private:
+    std::chrono::steady_clock::time_point _last_render_time;
+    std::chrono::steady_clock::duration _hover_waiting_time;
+    bool _something_is_hovered{ false };
+    uint32_t _hovered_model_id{ 0 };
+    ModelType _hovered_model_type{ ModelType::Classic };
+    void _updateHoveredModel(std::chrono::steady_clock::time_point const& now);
+
+public:
 
     // Wether the user requested to close the window.
     // NOTE: this simply is a call to glfwWindowShouldClose

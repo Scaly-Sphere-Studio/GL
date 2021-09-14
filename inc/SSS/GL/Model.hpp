@@ -39,9 +39,6 @@ public:
 
     virtual glm::mat4 getModelMat4();
 
-    void useCamera(uint32_t camera_id) noexcept;
-    glm::mat4 getMVP();
-
 protected:
     // Model part of the MVP matrix, computed by scaling,
     // rotation, and translation of the original vertices.
@@ -50,9 +47,6 @@ protected:
     glm::mat4 _translation;
     glm::mat4 _model_mat4;
     bool _should_compute_mat4{ true };
-
-    uint32_t _camera_id{ 0 };
-    bool _use_camera{ false };
 };
 
 __SSS_GL_END

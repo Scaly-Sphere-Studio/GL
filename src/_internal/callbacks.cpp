@@ -109,18 +109,6 @@ void mouse_position_callback(GLFWwindow* ptr, double x, double y)
 
     Window::Shared const window = Window::get(ptr);
 
-    // Get mouse coordinates in -1; 1 range
-    x = (x / static_cast<double>(window->_w) * 2.0) - 1.0;
-    y = ((y / static_cast<double>(window->_h) * 2.0) - 1.0) * -1.0;
-
-    // Update plane hover status
-    auto const& planes = window->_objects.planes;
-    for (auto it = planes.cbegin(); it != planes.cend(); ++it) {
-        if (it->second) {
-            it->second->_updateHoverStatus(x, y);
-        }
-    }
-
     // Call user defined callback, if needed
     if (window->_mouse_position_callback != nullptr) {
         window->_mouse_position_callback(ptr, x, y);
@@ -138,17 +126,24 @@ void mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) tr
     }
 
     Window::Shared const window = Window::get(ptr);
-
-    // Call button functions, if needed
-    if (action == GLFW_PRESS) {
-        auto const& planes = window->_objects.planes;
-        for (auto it = planes.cbegin(); it != planes.cend(); ++it) {
-            if (it->second && it->second->isHovered()) {
-                it->second->callFunction();
+    // Call button function, if needed
+    if (window->_something_is_hovered) {
+        uint32_t const id = window->_hovered_model_id;
+        switch (window->_hovered_model_type) {
+        case ModelType::Plane: {
+            if (window->_objects.planes.count(id) == 0)
+                break;
+            Plane::Ptr const& plane = window->_objects.planes.at(id);
+            if (plane) {
+                plane->_callFunction(ptr, id, button, action, mods);
             }
+            break;
+        }
+        default:
+            break;
         }
     }
-
+    
     // Call user defined callback, if needed
     if (window->_mouse_button_callback != nullptr) {
         window->_mouse_button_callback(ptr, button, action, mods);

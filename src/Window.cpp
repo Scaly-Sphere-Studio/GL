@@ -150,7 +150,9 @@ void Window::cleanObjects() noexcept
     _objects.models.clear();
     _objects.planes.clear();
     _objects.textures.clear();
+    _objects.cameras.clear();
     _objects.shaders.clear();
+    _objects.renderers.clear();
 }
 
 void Window::createModel(uint32_t id, ModelType type) try
@@ -281,9 +283,12 @@ void Window::removeRenderer(uint32_t id)
 // Logs fps if specified in LOG structure.
 void Window::render() try
 {
+    std::chrono::steady_clock::time_point const now = std::chrono::steady_clock::now();
     if (!_is_iconified) {
         // Make context current for this scope
         Context const context(_window.get());
+        // Update hovering status
+        _updateHoveredModel(now);
         // Render all active renderers
         for (auto it = _objects.renderers.cbegin(); it != _objects.renderers.cend(); ++it) {
             Renderer::Ptr const& renderer = it->second;
@@ -302,10 +307,81 @@ void Window::render() try
         // Clear back buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
-    // Poll events
+    // Poll events & update timepoint
     glfwPollEvents();
+    _last_render_time = now;
 }
 __CATCH_AND_RETHROW_METHOD_EXC
+
+void Window::_updateHoveredModel(std::chrono::steady_clock::time_point const& now)
+{
+    static constexpr std::chrono::milliseconds threshold(50);
+    static constexpr std::chrono::nanoseconds zero(0);
+
+    // Compute and add the time since last render to the waiting time.
+    // Ensure that the user "going back in time" does not break this function.
+    std::chrono::nanoseconds const delta_time = now - _last_render_time;
+    if (delta_time < zero) {
+        _hover_waiting_time = threshold;
+    }
+    else {
+        _hover_waiting_time += delta_time;
+    }
+    // If waited enough, retrieve mouse coordinates and check for model hovering
+    // Return if mouse is outside window
+    if (_hover_waiting_time >= threshold) {
+        // Reset hovering
+        _something_is_hovered = false;
+        // If the cursor is disabled (Camera mode), then its relative position is at
+        // the center of the window, which, on -1/+1 coordinates, is 0/0.
+        float x = 0.f, y = 0.f;
+        if (glfwGetInputMode(_window.get(), GLFW_CURSOR) != GLFW_CURSOR_DISABLED) {
+            // Retrieve mouse coordinates, ranging from 0 to width/height
+            double x_offset, y_offset;
+            glfwGetCursorPos(_window.get(), &x_offset, &y_offset);
+            // Ensure cursor is inside the window
+            double const w = static_cast<double>(_w), h = static_cast<double>(_h);
+            if (x_offset < 0.0 || x_offset >= w || y_offset < 0.0 || y_offset >= h) {
+                return;
+            }
+            // Normalize to -1/+1 coordinates
+            x = static_cast<float>((x_offset / w * 2.0) - 1.0);
+            y = static_cast<float>(((y_offset / h * 2.0) - 1.0) * -1.0);
+        }
+        double z = DBL_MAX;
+        // Loop over each renderer and find their "nearest" models at mouse coordinates
+        for (auto it = _objects.renderers.crbegin(); it != _objects.renderers.crend(); ++it) {
+            Renderer::Ptr const& renderer = it->second;
+            if (!renderer)
+                continue;
+            PlaneRenderer* ptr = dynamic_cast<PlaneRenderer*>(renderer.get());
+            // Find nearest model
+            if (ptr != nullptr && ptr->_findNearestModel(x, y)) {
+                // If a model was found, update hover status
+                _something_is_hovered = true;
+                if (ptr->_hovered_z < z) {
+                    z = ptr->_hovered_z;
+                    _hovered_model_id = ptr->_hovered_plane;
+                    _hovered_model_type = ModelType::Plane;
+                }
+                // If the depth buffer was reset at least once by the renderer, previous
+                // tested models will always be on top of all not-yet-tested models,
+                // which means we must skip further tests. This is why we're testing
+                // renderers in their reverse order.
+                bool depth_buffer_was_reset = false;
+                for (auto it = ptr->cbegin(); it != ptr->cend(); ++it) {
+                    if (it->second.reset_depth_before) {
+                        depth_buffer_was_reset = true;
+                        break;
+                    }
+                }
+                if (depth_buffer_was_reset)
+                    break;
+            }
+        }
+        _hover_waiting_time = zero;
+    }
+}
 
 // Wether the user requested to close the window.
 // NOTE: this simply is a call to glfwWindowShouldClose
