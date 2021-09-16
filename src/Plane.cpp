@@ -247,7 +247,6 @@ glm::mat4 Plane::getModelMat4()
 }
 
 // Sets the function to be called when the button is clicked.
-// The function MUST be of the format void (*)();
 void Plane::setFunction(ButtonFunction func) try
 {
     _f = func;
@@ -258,13 +257,6 @@ __CATCH_AND_RETHROW_METHOD_EXC
 // Called whenever the button is clicked.
 void Plane::_callFunction(GLFWwindow* ptr, uint32_t id, int button, int action, int mods) try
 {
-    Window::Shared const window = _window.lock();
-    if (window && _use_texture) {
-        Texture::Ptr const& texture = window->getObjects().textures.at(_texture_id);
-        if (texture->getType() == Texture::Type::Text) {
-            texture->getTextArea()->placeCursor(_relative_x, _relative_y);
-        }
-    }
     if (_f != nullptr) {
         _f(ptr, id, button, action, mods);
     }
@@ -350,21 +342,35 @@ bool Plane::_hoverTriangle(glm::mat4 const& mvp, glm::vec4 const& A,
         return true;
     }
 
-    // Retrieve window & texture.
+    // Retrieve Texture.
     Window::Shared const window = _window.lock();
     if (!window) {
         return true;
     }
-    Texture::Ptr const& texture = window->getObjects().textures.at(_texture_id);
+    Window::Objects const& objects = window->getObjects();
+    if (objects.textures.count(_texture_id) == 0) {
+        return true;
+    }
+    Texture::Ptr const& texture = objects.textures.at(_texture_id);
     if (!texture) {
         return true;
     }
 
     // Update status if the position is on an opaque pixel
-    // TODO: make this work for Text textures
     size_t const pixel = static_cast<size_t>(_relative_y * _tex_w + _relative_x);
-    if (pixel < texture->_pixels.size()) {
-        is_hovered = texture->_pixels.at(pixel).bytes.a != 0;
+    if (texture->_type == Texture::Type::Raw) {
+        if (pixel < texture->_pixels.size()) {
+            is_hovered = texture->_pixels.at(pixel).bytes.a != 0;
+        }
+    }
+    else if (texture->_type == Texture::Type::Text) {
+        int w, h;
+        texture->_text_area->getDimensions(w, h);
+        size_t const size = static_cast<size_t>(w) * static_cast<size_t>(h);
+        if (pixel < size) {
+            void const* pixels = texture->_text_area->getPixels();
+            is_hovered = static_cast<RGBA32 const*>(pixels)[pixel].bytes.a != 0;
+        }
     }
 
     return true;

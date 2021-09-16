@@ -126,6 +126,10 @@ void mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) tr
     }
 
     Window::Shared const window = Window::get(ptr);
+    // If the cursor is currently moving, update hovering
+    if (window->_cursor_is_moving) {
+        window->_updateHoveredModel();
+    }
     // Call button function, if needed
     if (window->_something_is_hovered) {
         uint32_t const id = window->_hovered_model_id;

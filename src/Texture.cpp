@@ -23,8 +23,6 @@ Texture::Texture(std::weak_ptr<Window> window) try
     _raw_texture.parameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     _raw_texture.parameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
-    _text_area = TR::TextArea::create(0, 0);
-
     if (LOG::constructor) {
         __LOG_CONSTRUCTOR
     }
@@ -40,13 +38,15 @@ Texture::~Texture()
 
 void Texture::edit(void const* pixels, int width, int height) try
 {
+    _type = Type::Raw;
     // Update size info
-    _w = width;
-    _h = height;
+    _raw_w = width;
+    _raw_h = height;
     // Give the image to the OpenGL texture
-    _raw_texture.edit(pixels, _w, _h);
-    // Clear previous pixel storage
-    _pixels.clear();
+    _raw_texture.edit(pixels, _raw_w, _raw_h);
+    // Replace previous pixel storage
+    uint32_t const* ptr = reinterpret_cast<uint32_t const*>(pixels);
+    _pixels = RGBA32::Pixels(ptr, ptr + (_raw_w * _raw_h));
 
     _updatePlanesScaling();
 }
@@ -54,13 +54,40 @@ __CATCH_AND_RETHROW_METHOD_EXC
 
 void Texture::useFile(std::string filepath)
 {
+    _type = Type::Raw;
     _loading_thread.run(filepath);
 }
 
-void Texture::bind()
+void Texture::setType(Type type) noexcept
 {
-    Context const context(_window);
-    _raw_texture.bind();
+    if (type == _type) {
+        return;
+    }
+    _type = type;
+    if (type == Type::Raw) {
+        if (_pixels.empty()) {
+            return;
+        }
+        _updatePlanesScaling();
+        _raw_texture.edit(&_pixels.at(0), _raw_w, _raw_h);
+    }
+    else if (type == Type::Text) {
+        _text_area->getDimensions(_text_w, _text_h);
+        _updatePlanesScaling();
+        _raw_texture.edit(_text_area->getPixels(), _text_w, _text_h);
+    }
+}
+
+void Texture::getDimensions(int& w, int& h) const noexcept
+{
+    if (_type == Type::Raw) {
+        w = _raw_w;
+        h = _raw_h;
+    }
+    else if (_type == Type::Text) {
+        w = _text_w;
+        h = _text_h;
+    }
 }
 
 void Texture::_updatePlanesScaling()
@@ -91,12 +118,12 @@ void Texture::_LoadingThread::_function(std::string filepath)
 {
     // Load image
     SSS::C_Ptr <uint32_t, void(*)(void*), stbi_image_free>
-        raw_pixels((uint32_t*)(stbi_load(
+        raw_pixels(reinterpret_cast<uint32_t*>(stbi_load(
             filepath.c_str(),   // Filepath to picture
             &_w,                // Width, to query
             &_h,                // Height, to query
             nullptr,            // Byte composition, to query if not requested
-            4                   // Byte composition, to request
+            4                   // Byte composition, to request (here RGBA32)
         )));
     // Throw if error
     if (raw_pixels == nullptr) {

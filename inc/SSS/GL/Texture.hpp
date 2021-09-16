@@ -22,14 +22,14 @@ public:
     using Ptr = std::unique_ptr<Texture>;
     
     enum class Type {
-        Raw,    // Raw editing
-        File,   // File loading
+        Raw,    // Raw editing & file loading
         Text    // TextArea logic
     };
 
 private:
     _internal::Texture _raw_texture;
-    int _w{ 0 }, _h{ 0 };
+    int _raw_w{ 0 }, _raw_h{ 0 };
+    int _text_w{ 0 }, _text_h{ 0 };
     RGBA32::Pixels _pixels;
     TR::TextArea::Shared _text_area;
     Type _type{ Type::Raw };
@@ -38,13 +38,16 @@ public:
     void edit(void const* pixels, int width, int height);
     void useFile(std::string filepath);
 
-    inline void setType(Type type) noexcept { _type = type; };
+    void setType(Type type) noexcept;
     inline Type getType() const noexcept { return _type; };
 
-    void bind();
+    inline void bind() const { _raw_texture.bind(); };
 
-    inline void getDimensions(int& w, int& h) const noexcept { w = _w; h = _h; };
+    inline void setTextArea(TR::TextArea::Shared text_area) noexcept { _text_area = text_area; };
     inline TR::TextArea::Shared const& getTextArea() const noexcept { return _text_area; };
+    
+    void getDimensions(int& w, int& h) const noexcept;
+
 private:
 
 // --- Image loading ---
