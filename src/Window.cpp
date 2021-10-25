@@ -14,7 +14,7 @@ bool Window::LOG::fps{ true };
 // Window ptr
 std::vector<std::weak_ptr<Window>> Window::_instances{};
 // Connected monitors
-std::vector<_internal::Monitor> Window::_monitors{};
+std::vector<GLFWmonitor*> Window::_monitors{};
 
     // --- Constructor & destructor ---
 
@@ -34,14 +34,9 @@ Window::Window(Args const& args) try
     }
 
     // Set main monitor
-    if (args.monitor_id < 0 || static_cast<size_t>(args.monitor_id) >= _monitors.size()) {
-        _setMainMonitor(_monitors[0]);
-    }
-    else {
-        _setMainMonitor(_monitors[args.monitor_id]);
-    }
+    _setMainMonitor(args.monitor_id);
     // Retrieve video size of monitor and adjust size parameters
-    GLFWvidmode const* mode = glfwGetVideoMode(_main_monitor.ptr);
+    GLFWvidmode const* mode = glfwGetVideoMode(_main_monitor);
     _w = args.w < mode->width ? args.w : mode->width;
     _h = args.h < mode->height ? args.h : mode->height;
 
@@ -54,7 +49,7 @@ Window::Window(Args const& args) try
         _w,
         _h,
         args.title.c_str(),
-        args.fullscreen ? _main_monitor.ptr : nullptr,
+        args.fullscreen ? _main_monitor : nullptr,
         nullptr
     ));
     // Throw if an error occured
@@ -63,9 +58,10 @@ Window::Window(Args const& args) try
         glfwGetError(&msg);
         throw_exc(msg);
     }
+    _title = args.title;
     // Center window on given monitor
     int x, y;
-    glfwGetMonitorPos(_main_monitor.ptr, &x, &y);
+    glfwGetMonitorPos(_main_monitor, &x, &y);
     if (args.fullscreen) {
         // Retrieve actual width & height
         glfwGetWindowSize(_window.get(), &_w, &_h);
@@ -292,9 +288,8 @@ void Window::removeRenderer(uint32_t id)
 
     // --- Public methods ---
 
-// Renders a frame & polls events.
-// Logs fps if specified in LOG structure.
-void Window::render() try
+// Draws objects inside renderers on the back buffer.
+void Window::drawObjects()
 {
     std::chrono::steady_clock::time_point const now = std::chrono::steady_clock::now();
     if (!_is_iconified) {
@@ -309,6 +304,17 @@ void Window::render() try
                 continue;
             renderer->render();
         }
+    }
+    _last_render_time = now;
+}
+
+// Renders back buffer, clears front buffer, polls events.
+// Logs fps if specified in LOG structure.
+void Window::printFrame() try
+{
+    if (!_is_iconified) {
+        // Make context current for this scope
+        Context const context(_window.get());
         // Render back buffer
         glfwSwapBuffers(_window.get());
         // Update fps, log if needed
@@ -320,9 +326,8 @@ void Window::render() try
         // Clear back buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
-    // Poll events & update timepoint
+    // Poll events
     glfwPollEvents();
-    _last_render_time = now;
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
@@ -438,7 +443,8 @@ void Window::setVSYNC(bool state)
 // -> screen_id of -1 (default) takes the monitor the window is on
 void Window::setFullscreen(bool state, int screen_id)
 {
-    GLFWmonitor* currentMonitor = glfwGetWindowMonitor(_window.get());
+    // Retrieve current fullscreen monitor (nullptr when windowed)
+    GLFWmonitor* fullscreenMonitor = glfwGetWindowMonitor(_window.get());
     
     if (state) {
         // Ensure given ID is in range
@@ -447,24 +453,22 @@ void Window::setFullscreen(bool state, int screen_id)
             return;
         }
         // Select monitor
-        _internal::Monitor const& monitor =
-            screen_id < 0 ? _main_monitor : _monitors[screen_id];
+        GLFWmonitor* monitor = screen_id < 0 ? _main_monitor : _monitors[screen_id];
         // Ensure window isn't already fullscreen on given ID
-        if (currentMonitor == monitor.ptr) {
+        if (fullscreenMonitor == monitor) {
             __LOG_METHOD_WRN("window is already fullscreen on given screen");
             return;
         }
         // Store current size & pos, if currently in windowed mode
-        if (currentMonitor == nullptr) {
+        if (fullscreenMonitor == nullptr) {
             glfwGetWindowPos(_window.get(), &_windowed_x, &_windowed_y);
         }
         // Set window in fullscreen
-        glfwSetWindowMonitor(_window.get(), monitor.ptr,
-            0, 0, _w, _h, GLFW_DONT_CARE);
+        glfwSetWindowMonitor(_window.get(), monitor, 0, 0, _w, _h, GLFW_DONT_CARE);
     }
     else {
         // Ensure the window isn't arealdy windowed
-        if (currentMonitor == nullptr) {
+        if (fullscreenMonitor == nullptr) {
             __LOG_METHOD_WRN("window is already windowed.");
             return;
         }
@@ -474,9 +478,19 @@ void Window::setFullscreen(bool state, int screen_id)
     }
 }
 
-void Window::_setMainMonitor(_internal::Monitor const& monitor)
+void Window::setTitle(std::string const& title)
 {
-    _main_monitor = monitor;
+    _title = title;
+    glfwSetWindowTitle(_window.get(), title.c_str());
+}
+
+void Window::_setMainMonitor(int id)
+{
+    if (id < 0 || id >= _monitors.size()) {
+        id = 0;
+    }
+    _main_monitor_id = id;
+    _main_monitor = _monitors[id];
 }
 
 Context::Context(std::weak_ptr<Window> ptr)

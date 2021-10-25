@@ -9,16 +9,6 @@
 #include "Renderer.hpp"
 
 __SSS_GL_BEGIN
-
-__INTERNAL_BEGIN
-struct Monitor {
-    GLFWmonitor* ptr;   // GLFW pointer
-    float w;    // Width, in inches
-    float h;    // Height, in inches
-};
-__INTERNAL_END
-
-    // --- Window class ---
     
 class Window : public std::enable_shared_from_this<Window> {
     
@@ -59,7 +49,7 @@ private:
     // All Window instances
     static std::vector<Weak> _instances;
     // All connected monitors
-    static std::vector<_internal::Monitor> _monitors;
+    static std::vector<GLFWmonitor*> _monitors;
 
     // Constructor, creates a window
     // Private, to be called via Window::create();
@@ -123,9 +113,11 @@ public:
 
 // --- Public methods ---
 
-    // Renders a frame & polls events.
+    // Draws objects inside renderers on the back buffer.
+    void drawObjects();
+    // Renders back buffer, clears front buffer, polls events.
     // Logs fps if specified in LOG structure.
-    void render();
+    void printFrame();
 private:
     std::chrono::steady_clock::time_point _last_render_time;
     std::chrono::steady_clock::duration _hover_waiting_time;
@@ -182,16 +174,30 @@ public:
     inline GLFWwindow* getGLFWwindow() const { return _window.get(); };
     // Returns the monitor on which the windowed is considered to be.
     // -> See internal callback window_pos_callback();
-    inline GLFWmonitor* getMonitor() const noexcept { return _main_monitor.ptr; }
+    inline GLFWmonitor* getMonitor() const noexcept { return _main_monitor; }
 
+    void setTitle(std::string const& title);
+    inline std::string getTitle() const noexcept { return _title; };
+
+    inline void setDimensions(int w, int h) { glfwSetWindowSize(_window.get(), w, h); };
+    inline void getDimensions(int& w, int& h) const noexcept { w = _w; h = _h; };
     inline float getScreenRatio() const noexcept
         { return static_cast<float>(_w) / static_cast<float>(_h); }
-    
+
+    inline void setPosition(int x0, int y0) { glfwSetWindowPos(_window.get(), x0, y0); };
+    inline void getPosition(int& x0, int& y0) const noexcept
+        { glfwGetWindowPos(_window.get(), &x0, &y0); };
+
+    inline bool isFullscreen() const noexcept
+        { return glfwGetWindowMonitor(_window.get()) != nullptr; };
+
     inline bool isIconified() const noexcept { return _is_iconified; };
 
 private:
 // --- Private variables ---
 
+    // Window title
+    std::string _title;
     // Window size
     int _w; // Width
     int _h; // Height
@@ -204,7 +210,8 @@ private:
     // GLFWwindow ptr
     _internal::GLFWwindow_Ptr _window;    
     // Main monitor the window is on
-    _internal::Monitor _main_monitor;
+    GLFWmonitor* _main_monitor;
+    int _main_monitor_id{ 0 };
 
     // Internal callbacks that are called before calling within themselves user callbacks
     GLFWwindowiconifyfun _iconify_callback{ nullptr };          // Window iconify
@@ -221,7 +228,7 @@ private:
     FPS_Timer _fps_timer;
 
     // Sets the window's main monitor
-    void _setMainMonitor(_internal::Monitor const& monitor);
+    void _setMainMonitor(int id);
 };
 
 class Context {
