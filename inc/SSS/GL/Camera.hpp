@@ -24,16 +24,22 @@ public:
 
     void setPosition(glm::vec3 position);
     void move(glm::vec3 translation, bool use_rotation_axis = true);
-    void setRotation(float radians, glm::vec3 axis);
-    void rotate(float radians, glm::vec3 axis);
+    inline glm::vec3 getPosition() const noexcept { return _position; };
+
+    void setRotation(glm::vec2 angles);
+    void rotate(glm::vec2 angles);
+    inline glm::vec2 getRotation() const noexcept { return _rot_angles; };
 
     enum class Projection {
         Ortho,
         Perspective
     };
     void setProjectionType(Projection type);
-    void setFOV(float radians);
+    inline Projection getProjectionType() const noexcept { return _projection_type; };
+    void setFOV(float degrees);
+    inline float getFOV() const noexcept { return _fov; };
     void setRange(float z_near, float z_far);
+    inline void getRange(float& z_near, float& z_far) const noexcept { z_near = _z_near; z_far = _z_far; };
 
     glm::mat4 getMVP(glm::mat4 model) const;
 
@@ -42,12 +48,12 @@ public:
 
 private:
     glm::vec3 _position{ 0 };
-    glm::quat _rotation{ 1, 0, 0, 0 };
+    glm::vec2 _rot_angles{ 0 };
     glm::mat4 _view{ 1 };
     void _computeView();
 
     float _screen_ratio{ 1.f };
-    float _fov{ glm::radians(70.f) };
+    float _fov{ 70.f };
     float _z_near{ 0.1f }, _z_far{ 100.f };
     Projection _projection_type{ Projection::Ortho };
     glm::mat4 _projection{ 1 };
