@@ -229,7 +229,7 @@ Plane::~Plane()
 {
 }
 
-void Plane::useTexture(uint32_t texture_id)
+void Plane::setTextureID(uint32_t texture_id)
 {
     _texture_id = texture_id;
     _use_texture = true;
@@ -244,6 +244,12 @@ glm::mat4 Plane::getModelMat4()
         _should_compute_mat4 = false;
     }
     return _model_mat4;
+}
+
+void Plane::getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles, glm::vec3& translation)
+{
+    Model::getAllTransformations(scaling, rot_angles, translation);
+    scaling /= _tex_scaling;
 }
 
 // Sets the function to be called when the button is clicked.

@@ -44,9 +44,13 @@ public:
     using Ptr = std::unique_ptr<Plane>;
     using Renderer = PlaneRenderer;
     
-    void useTexture(uint32_t texture_id);
+    void setTextureID(uint32_t texture_id);
+    inline uint32_t getTextureID() const noexcept { return _texture_id; };
 
     virtual glm::mat4 getModelMat4();
+    virtual void getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles,
+        glm::vec3& translation);
+    inline glm::vec3 getTexScaling() const noexcept { return _tex_scaling; };
 
     enum class Hitbox {
         None,   // No hitbox.

@@ -43,10 +43,11 @@ public:
 
     inline void bind() const { _raw_texture.bind(); };
 
-    inline void setTextArea(TR::TextArea::Shared text_area) noexcept { _text_area = text_area; };
+    void setTextArea(TR::TextArea::Shared text_area);
     inline TR::TextArea::Shared const& getTextArea() const noexcept { return _text_area; };
     
     void getDimensions(int& w, int& h) const noexcept;
+    GLuint getTexID() const noexcept { return _raw_texture.id; };
 
 private:
 
@@ -68,6 +69,7 @@ private:
     friend _LoadingThread;
 
     void _updatePlanesScaling();
+    void _internal_edit(void const* pixels, int w, int h);
 };
 
 __SSS_GL_END

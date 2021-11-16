@@ -10,15 +10,6 @@ enum class ModelType {
     Plane,      // Plane class
 };
 
-enum class Transformation {
-    None        = 0,
-    Scaling     = 1 << 0,
-    Rotation    = 1 << 1,
-    Translation = 1 << 2,
-    All         = Scaling | Rotation | Translation,
-};
-__ENABLE_BITMASK_OPERATORS(Transformation);
-
 class Model : public _internal::WindowObject {
     friend class Window;
 
@@ -30,14 +21,20 @@ public:
 
     using Ptr = std::unique_ptr<Model>;
 
+    void setScaling(glm::vec3 scaling);
+    void setScaling(float scaling = 1.f);
     void scale(glm::vec3 scaling);
     void scale(float scaling);
-    void rotate(float radians, glm::vec3 axis);
+
+    void setRotation(glm::vec3 angles = glm::vec3(0.f));
+    void rotate(glm::vec3 angles);
+
+    void setTranslation(glm::vec3 position = glm::vec3(0.f));
     void translate(glm::vec3 translation);
 
-    void resetTransformations(Transformation transformations);
-
     virtual glm::mat4 getModelMat4();
+    virtual void getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles,
+        glm::vec3& translation);
 
 protected:
     // Model part of the MVP matrix, computed by scaling,

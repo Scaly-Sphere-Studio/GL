@@ -78,6 +78,19 @@ void Texture::setType(Type type) noexcept
     }
 }
 
+void Texture::setTextArea(TR::TextArea::Shared text_area)
+{
+    if (text_area == _text_area) {
+        return;
+    }
+    _text_area = text_area;
+    if (_type == Type::Text) {
+        int w, h;
+        text_area->getDimensions(w, h);
+        _internal_edit(text_area->getPixels(), w, h);
+    }
+}
+
 void Texture::getDimensions(int& w, int& h) const noexcept
 {
     if (_type == Type::Raw) {
@@ -112,6 +125,25 @@ void Texture::_updatePlanesScaling()
             plane->_updateTexScaling();
         }
     }
+}
+
+void Texture::_internal_edit(void const* pixels, int w, int h)
+{
+    if (_type == Type::Raw) {
+        if (w != _raw_w || h != _raw_h) {
+            _raw_w = w;
+            _raw_h = h;
+            _updatePlanesScaling();
+        }
+    }
+    else if (_type == Type::Text) {
+        if (w != _text_w || h != _text_h) {
+            _text_w = w;
+            _text_h = h;
+            _updatePlanesScaling();
+        }
+    }
+    _raw_texture.edit(pixels, w, h);
 }
 
 void Texture::_LoadingThread::_function(std::string filepath)

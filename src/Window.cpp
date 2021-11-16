@@ -219,14 +219,8 @@ void Window::pollTextureThreads() try
                 // Move pixel vector from thread to texture instance, so that future
                 // threads can run without affecting those pixels.
                 tex->_pixels = std::move(thread._pixels);
-                // Check if dimensions changed
-                if (tex->_raw_w != thread._w || tex->_raw_h != thread._h) {
-                    tex->_raw_w = thread._w;
-                    tex->_raw_h = thread._h;
-                    tex->_updatePlanesScaling();
-                }
-                // Edit OpenGL texture & set thread as handled
-                tex->_raw_texture.edit(&tex->_pixels[0], tex->_raw_w, tex->_raw_h);
+                // Update dimensions if needed, edit OpenGL texture
+                tex->_internal_edit(&tex->_pixels[0], thread._w, thread._h);
                 thread.setAsHandled();
             }
             else if (tex->_type == Texture::Type::Text) {
@@ -236,14 +230,12 @@ void Window::pollTextureThreads() try
                 if (!tex->_text_area->changesPending()) {
                     continue;
                 }
-                // Check if dimensions changed
-                int const w = tex->_text_w, h = tex->_text_h;
-                tex->_text_area->getDimensions(tex->_text_w, tex->_text_h);
-                if (w != tex->_text_w || h != tex->_text_h) {
-                    tex->_updatePlanesScaling();
-                }
-                // Edit OpenGL texture & set thread as handled
-                tex->_raw_texture.edit(tex->_text_area->getPixels(), tex->_text_w, tex->_text_h);
+                // Retrieve dimensions
+                int new_w, new_h;
+                tex->_text_area->getDimensions(new_w, new_h);
+                // Update dimensions if needed, edit OpenGL texture
+                tex->_internal_edit(tex->_text_area->getPixels(), new_w, new_h);
+                // Set thread as handled
                 tex->_text_area->changesHandled();
             }
         }
