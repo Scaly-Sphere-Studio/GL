@@ -110,9 +110,7 @@ void PlaneRenderer::render() try
 
     uint32_t count = 0;
     // Loop over each RenderChunk
-    for (auto it1 = cbegin(); it1 != cend(); ++it1) {
-        // Retrieve chunk
-        RenderChunk const& chunk = it1->second;
+    for (RenderChunk const& chunk : *this) {
         // Check if we can't cache more instances and need to make a draw call.
         // Also check if we need to reset the depth buffer before the next loop,
         // in which case the cached instances need to be drawn.
@@ -133,15 +131,15 @@ void PlaneRenderer::render() try
         }
 
         // Loop over each plane in chunk
-        for (auto it2 = chunk.objects.cbegin(); it2 != chunk.objects.cend(); ++it2) {
+        for (uint32_t const& object_id : chunk.objects) {
             // Check if we can't cache more instances and need to make a draw call.
             if (count == glsl_max_array_size) {
                 _renderPart(count, false);
             }
             // Retrieve Plane and Texture
-            if (objects.planes.count(it2->second) == 0)
+            if (objects.planes.count(object_id) == 0)
                 continue;
-            Plane::Ptr const& plane = objects.planes.at(it2->second);
+            Plane::Ptr const& plane = objects.planes.at(object_id);
             if (!plane)
                 continue;
             if (!plane->_use_texture || objects.textures.count(plane->_texture_id) == 0)
@@ -179,9 +177,7 @@ bool PlaneRenderer::_findNearestModel(float x, float y)
     Window::Objects const& objects = window->getObjects();
     // Loop over each RenderChunk
     bool result = false;
-    for (auto it1 = crbegin(); it1 != crend(); ++it1) {
-        // Retrieve chunk
-        RenderChunk const& chunk = it1->second;
+    for (RenderChunk const& chunk : *this) {
         // Retrieve VP for next loop
         glm::mat4 VP(1);
         if (chunk.use_camera) {
@@ -194,11 +190,11 @@ bool PlaneRenderer::_findNearestModel(float x, float y)
             VP = camera->getProjection() * camera->getView();
         }
         // Loop over each plane in chunk
-        for (auto it2 = chunk.objects.cbegin(); it2 != chunk.objects.cend(); ++it2) {
+        for (uint32_t const& object_id : chunk.objects) {
             // Retrieve Plane
-            if (objects.planes.count(it2->second) == 0)
+            if (objects.planes.count(object_id) == 0)
                 continue;
-            Plane::Ptr const& plane = objects.planes.at(it2->second);
+            Plane::Ptr const& plane = objects.planes.at(object_id);
             if (!plane)
                 continue;
             // Check if plane is hovered and retrieve its relative depth
@@ -208,7 +204,7 @@ bool PlaneRenderer::_findNearestModel(float x, float y)
                 // Update hovered stats if plane is nearer
                 if (z < _hovered_z) {
                     _hovered_z = z;
-                    _hovered_plane = it2->second;
+                    _hovered_plane = object_id;
                 }
             }
         }

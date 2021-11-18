@@ -6,15 +6,16 @@
 __SSS_GL_BEGIN
 
 struct RenderChunk {
+    std::string title;
     bool reset_depth_before{ false };
     bool use_camera{ true };
     uint32_t camera_ID{ 0 };
-    std::map<uint32_t, uint32_t> objects;
+    std::deque<uint32_t> objects;
 };
 
 class Renderer :
     public _internal::WindowObject,
-    public std::map<uint32_t, RenderChunk>
+    public std::deque<RenderChunk>
 {
 protected:
     Renderer(std::weak_ptr<Window> window);             // Constructor
@@ -27,6 +28,8 @@ public:
     Renderer& operator=(Renderer&&)         = delete;   // Move assignment
     
     using Ptr = std::unique_ptr<Renderer>;
+
+    std::string title;
 
 protected:
     Shaders::Ptr _shaders;

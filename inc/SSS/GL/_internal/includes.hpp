@@ -14,6 +14,7 @@
 
 // STL
 #include <array>
+#include <deque>
 #include <fstream>
 #include <mutex>
 #include <shared_mutex>

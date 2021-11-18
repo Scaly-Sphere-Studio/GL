@@ -369,7 +369,7 @@ void Window::_updateHoveredModel()
             // renderers in their reverse order.
             bool depth_buffer_was_reset = false;
             for (auto it = ptr->cbegin(); it != ptr->cend(); ++it) {
-                if (it->second.reset_depth_before) {
+                if (it->reset_depth_before) {
                     depth_buffer_was_reset = true;
                     break;
                 }
