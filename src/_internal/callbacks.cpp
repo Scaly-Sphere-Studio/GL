@@ -138,7 +138,7 @@ void mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) tr
                 break;
             Plane::Ptr const& plane = window->_objects.planes.at(id);
             if (plane) {
-                plane->_callFunction(ptr, id, button, action, mods);
+                plane->_callOnClickFunction(ptr, id, button, action, mods);
             }
             break;
         }

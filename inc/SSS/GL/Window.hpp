@@ -10,8 +10,11 @@
 
 __SSS_GL_BEGIN
     
+void pollEverything();
+
 class Window : public std::enable_shared_from_this<Window> {
     
+    friend void pollEverything();
     friend void _internal::window_iconify_callback(GLFWwindow* ptr, int state);
     friend void _internal::window_resize_callback(GLFWwindow* ptr, int w, int h);
     friend void _internal::window_pos_callback(GLFWwindow* ptr, int x, int y);
@@ -96,7 +99,6 @@ public:
 
     void createTexture(uint32_t id);
     void removeTexture(uint32_t id);
-    static void pollTextureThreads();
 
     void createCamera(uint32_t id);
     void removeCamera(uint32_t id);
@@ -119,6 +121,7 @@ public:
     // Logs fps if specified in LOG structure.
     void printFrame();
 private:
+    FPS_Timer _fps_timer;
     std::chrono::steady_clock::time_point _last_render_time;
     std::chrono::steady_clock::duration _hover_waiting_time;
     bool _cursor_is_moving{ false };
@@ -128,8 +131,10 @@ private:
     ModelType _hovered_model_type{ ModelType::Classic };
     void _updateHoveredModel();
     void _updateHoveredModelIfNeeded(std::chrono::steady_clock::time_point const& now);
+    void _callPassiveFunctions();
 
 public:
+    inline long long getFPS() { return _fps_timer.get(); };
 
     // Wether the user requested to close the window.
     // NOTE: this simply is a call to glfwWindowShouldClose
@@ -223,9 +228,6 @@ private:
 
     // Array of keyboard keys being currently pressed
     KeyInputs _key_inputs;
-
-    // FPS Timer
-    FPS_Timer _fps_timer;
 
     // Sets the window's main monitor
     void _setMainMonitor(int id);

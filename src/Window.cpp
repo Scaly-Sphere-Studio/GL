@@ -3,6 +3,71 @@
 
 __SSS_GL_BEGIN
 
+void pollEverything() try
+{
+    // Poll events
+    glfwPollEvents();
+
+    // Retrieve all Text Areas
+    TR::TextArea::Map const& text_areas = TR::TextArea::getTextAreas();
+    // Update every Text Area (this won't do anything if nothing is needed)
+    for (auto it = text_areas.cbegin(); it != text_areas.cend(); ++it) {
+        it->second->update();
+    }
+    // Loop over each Window instance
+    for (Window::Weak const& weak : Window::_instances) {
+        Window::Shared window = weak.lock();
+        if (!window) {
+            continue;
+        }
+        Context const context(window);
+        // Call all passive functions
+        window->_callPassiveFunctions();
+        // Loop over each Texture instance
+        auto const& textures = window->_objects.textures;
+        for (auto it = textures.cbegin(); it != textures.cend(); ++it) {
+            Texture::Ptr const& tex = it->second;
+            // Handle file loading threads, or text area threads
+            if (tex->_type == Texture::Type::Raw) {
+                // Skip if no thread is pending
+                auto& thread = tex->_loading_thread;
+                if (!thread.isPending()) {
+                    continue;
+                }
+                // Move pixel vector from thread to texture instance, so that future
+                // threads can run without affecting those pixels.
+                tex->_pixels = std::move(thread._pixels);
+                // Update dimensions if needed, edit OpenGL texture
+                tex->_internal_edit(&tex->_pixels[0], thread._w, thread._h);
+                thread.setAsHandled();
+            }
+            else if (tex->_type == Texture::Type::Text) {
+                TR::TextArea::Ptr const& text_area = tex->getTextArea();
+                // Skip if no TextArea is set
+                if (!text_area) {
+                    continue;
+                }
+                // Skip if no thread is pending
+                if (!text_area->changesPending()) {
+                    continue;
+                }
+                // Retrieve dimensions
+                int new_w, new_h;
+                text_area->getDimensions(new_w, new_h);
+                // Update dimensions if needed, edit OpenGL texture
+                tex->_internal_edit(text_area->getPixels(), new_w, new_h);
+            }
+        }
+    }
+    // Set all TextArea threds as handled, now that all textures are updated
+    for (auto it = text_areas.cbegin(); it != text_areas.cend(); ++it) {
+        if (it->second->changesPending()) {
+            it->second->changesHandled();
+        }
+    }
+}
+__CATCH_AND_RETHROW_FUNC_EXC
+
     // --- Static initializations ---
 
 // Default log options
@@ -196,53 +261,6 @@ void Window::removeTexture(uint32_t id)
     }
 }
 
-void Window::pollTextureThreads() try
-{
-    // Loop over each Context instance
-    for (Weak const& weak : _instances) {
-        Shared window = weak.lock();
-        if (!window) {
-            continue;
-        }
-        Context const context(window);
-        // Loop over each Texture instance
-        auto const& textures = window->_objects.textures;
-        for (auto it = textures.cbegin(); it != textures.cend(); ++it) {
-            Texture::Ptr const& tex = it->second;
-            // Handle file loading threads, or text area threads
-            if (tex->_type == Texture::Type::Raw) {
-                // Skip if no thread is pending
-                auto& thread = tex->_loading_thread;
-                if (!thread.isPending()) {
-                    continue;
-                }
-                // Move pixel vector from thread to texture instance, so that future
-                // threads can run without affecting those pixels.
-                tex->_pixels = std::move(thread._pixels);
-                // Update dimensions if needed, edit OpenGL texture
-                tex->_internal_edit(&tex->_pixels[0], thread._w, thread._h);
-                thread.setAsHandled();
-            }
-            else if (tex->_type == Texture::Type::Text) {
-                // Update the TextArea (this won't do anything if nothing is needed)
-                tex->_text_area->update();
-                // Skip if no thread is pending
-                if (!tex->_text_area->changesPending()) {
-                    continue;
-                }
-                // Retrieve dimensions
-                int new_w, new_h;
-                tex->_text_area->getDimensions(new_w, new_h);
-                // Update dimensions if needed, edit OpenGL texture
-                tex->_internal_edit(tex->_text_area->getPixels(), new_w, new_h);
-                // Set thread as handled
-                tex->_text_area->changesHandled();
-            }
-        }
-    }
-}
-__CATCH_AND_RETHROW_FUNC_EXC
-
 void Window::createCamera(uint32_t id) try
 {
     _objects.cameras.try_emplace(id);
@@ -283,12 +301,9 @@ void Window::removeRenderer(uint32_t id)
 // Draws objects inside renderers on the back buffer.
 void Window::drawObjects()
 {
-    std::chrono::steady_clock::time_point const now = std::chrono::steady_clock::now();
-    if (!_is_iconified) {
+    if (!_is_iconified && glfwGetWindowAttrib(_window.get(), GLFW_VISIBLE)) {
         // Make context current for this scope
         Context const context(_window.get());
-        // Update hovering status
-        _updateHoveredModelIfNeeded(now);
         // Render all active renderers
         for (auto it = _objects.renderers.cbegin(); it != _objects.renderers.cend(); ++it) {
             Renderer::Ptr const& renderer = it->second;
@@ -297,18 +312,20 @@ void Window::drawObjects()
             renderer->render();
         }
     }
-    _last_render_time = now;
 }
 
 // Renders back buffer, clears front buffer, polls events.
 // Logs fps if specified in LOG structure.
 void Window::printFrame() try
 {
-    if (!_is_iconified) {
+    std::chrono::steady_clock::time_point const now = std::chrono::steady_clock::now();
+    if (!_is_iconified && glfwGetWindowAttrib(_window.get(), GLFW_VISIBLE)) {
         // Make context current for this scope
         Context const context(_window.get());
         // Render back buffer
         glfwSwapBuffers(_window.get());
+        // Update hovering status
+        _updateHoveredModelIfNeeded(now);
         // Update fps, log if needed
         if (_fps_timer.addFrame()) {
             if (LOG::fps) {
@@ -318,8 +335,7 @@ void Window::printFrame() try
         // Clear back buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
-    // Poll events
-    glfwPollEvents();
+    _last_render_time = now;
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
@@ -412,6 +428,16 @@ void Window::_updateHoveredModelIfNeeded(std::chrono::steady_clock::time_point c
     // Return if mouse is outside window
     if (_hover_waiting_time >= threshold) {
         _updateHoveredModel();
+    }
+}
+
+void Window::_callPassiveFunctions()
+{
+    for (auto it = _objects.models.cbegin(); it != _objects.models.cend(); ++it) {
+        it->second->_callPassiveFunction(_window.get(), it->first);
+    }
+    for (auto it = _objects.planes.cbegin(); it != _objects.planes.cend(); ++it) {
+        it->second->_callPassiveFunction(_window.get(), it->first);
     }
 }
 

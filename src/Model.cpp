@@ -2,6 +2,13 @@
 #include "SSS/GL/Window.hpp"
 #include <glm/gtx/matrix_decompose.hpp>
 
+std::map<uint32_t, SSS::GL::Model::OnClickFunc> SSS::GL::Model::on_click_funcs {
+    { 0, nullptr }
+};
+std::map<uint32_t, SSS::GL::Model::PassiveFunc> SSS::GL::Model::passive_funcs {
+    { 0, nullptr }
+};
+
 __SSS_GL_BEGIN
 
 Model::Model(std::weak_ptr<Window> window) try
@@ -88,6 +95,30 @@ void Model::getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles, glm
     glm::decompose(getModelMat4(), scaling, rotation, translation, skew, perspective);
     // Get euler angles (in degrees) from quaternion
     rot_angles = glm::degrees(glm::eulerAngles(rotation));
+}
+
+// Called whenever the button is clicked (determined by Hitbox).
+void Model::_callOnClickFunction(GLFWwindow* ptr, uint32_t id, int button, int action, int mods) try
+{
+    if (on_click_funcs.count(_on_click_func_id) == 0) {
+        return;
+    }
+    OnClickFunc const f = on_click_funcs.at(_on_click_func_id);
+    if (f != nullptr) {
+        f(ptr, id, button, action, mods);
+    }
+}
+__CATCH_AND_RETHROW_METHOD_EXC
+
+void Model::_callPassiveFunction(GLFWwindow* ptr, uint32_t id)
+{
+    if (passive_funcs.count(_passive_func_id) == 0) {
+        return;
+    }
+    PassiveFunc const f = passive_funcs.at(_passive_func_id);
+    if (f != nullptr) {
+        f(ptr, id);
+    }
 }
 
 __SSS_GL_END

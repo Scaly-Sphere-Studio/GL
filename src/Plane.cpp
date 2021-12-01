@@ -175,9 +175,10 @@ bool PlaneRenderer::_findNearestModel(float x, float y)
         return false;
     }
     Window::Objects const& objects = window->getObjects();
-    // Loop over each RenderChunk
+    // Loop over each RenderChunk in reverse order
     bool result = false;
-    for (RenderChunk const& chunk : *this) {
+    for (auto it = crbegin(); it != crend(); ++it) {
+        RenderChunk const& chunk = *it;
         // Retrieve VP for next loop
         glm::mat4 VP(1);
         if (chunk.use_camera) {
@@ -247,23 +248,6 @@ void Plane::getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles, glm
     Model::getAllTransformations(scaling, rot_angles, translation);
     scaling /= _tex_scaling;
 }
-
-// Sets the function to be called when the button is clicked.
-void Plane::setFunction(ButtonFunction func) try
-{
-    _f = func;
-}
-__CATCH_AND_RETHROW_METHOD_EXC
-
-// Calls the function set via setFunction();
-// Called whenever the button is clicked.
-void Plane::_callFunction(GLFWwindow* ptr, uint32_t id, int button, int action, int mods) try
-{
-    if (_f != nullptr) {
-        _f(ptr, id, button, action, mods);
-    }
-}
-__CATCH_AND_RETHROW_METHOD_EXC
 
 void Plane::_updateTexScaling()
 {
@@ -366,12 +350,15 @@ bool Plane::_hoverTriangle(glm::mat4 const& mvp, glm::vec4 const& A,
         }
     }
     else if (texture->_type == Texture::Type::Text) {
-        int w, h;
-        texture->_text_area->getDimensions(w, h);
-        size_t const size = static_cast<size_t>(w) * static_cast<size_t>(h);
-        if (pixel < size) {
-            void const* pixels = texture->_text_area->getPixels();
-            is_hovered = static_cast<RGBA32 const*>(pixels)[pixel].bytes.a != 0;
+        TR::TextArea::Ptr const& text_area = texture->getTextArea();
+        if (text_area) {
+            int w, h;
+            text_area->getDimensions(w, h);
+            size_t const size = static_cast<size_t>(w) * static_cast<size_t>(h);
+            if (pixel < size) {
+                void const* pixels = text_area->getPixels();
+                is_hovered = static_cast<RGBA32 const*>(pixels)[pixel].bytes.a != 0;
+            }
         }
     }
 

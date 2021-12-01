@@ -5,6 +5,8 @@
 __SSS_GL_BEGIN
 
 class Texture : public _internal::WindowObject {
+
+    friend void pollEverything();
     friend class Window;
     friend class Plane;
 
@@ -31,7 +33,7 @@ private:
     int _raw_w{ 0 }, _raw_h{ 0 };
     int _text_w{ 0 }, _text_h{ 0 };
     RGBA32::Pixels _pixels;
-    TR::TextArea::Shared _text_area;
+    uint32_t _text_area_id{ 0 };
     Type _type{ Type::Raw };
 
 public:
@@ -43,8 +45,8 @@ public:
 
     inline void bind() const { _raw_texture.bind(); };
 
-    void setTextArea(TR::TextArea::Shared text_area);
-    inline TR::TextArea::Shared const& getTextArea() const noexcept { return _text_area; };
+    void setTextAreaID(uint32_t id);
+    TR::TextArea::Ptr const& getTextArea() const noexcept;
     
     void getDimensions(int& w, int& h) const noexcept;
     GLuint getTexID() const noexcept { return _raw_texture.id; };
@@ -55,7 +57,7 @@ private:
 
     // Loading thread which fills _raw_pixels using stb_image
     class _LoadingThread : public ThreadBase <std::string> {
-        friend class Window;
+        friend void pollEverything();
         // Export constructors
         using ThreadBase::ThreadBase;
     protected:
