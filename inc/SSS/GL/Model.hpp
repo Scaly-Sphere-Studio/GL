@@ -41,12 +41,14 @@ public:
     using OnClickFunc = void(*)(GLFWwindow*, uint32_t, int, int, int);
     // Sets the function (referenced by ID) to be called when the Plane is clicked.
     inline void setOnClickFuncID(uint32_t id) noexcept { _on_click_func_id = id; };
+    inline uint32_t getOnClickFuncID() const noexcept { return _on_click_func_id; };
     // Function format for passive calls every frame.
     // - GLFWwindow* is the glfw window pointer
     // - uint32_t is the Plane ID
     using PassiveFunc = void(*)(GLFWwindow*, uint32_t);
     // Sets the function (referenced by ID) to be called every frame.
     inline void setPassiveFuncID(uint32_t id) noexcept { _passive_func_id = id; };
+    inline uint32_t getPassiveFuncID() const noexcept { return _passive_func_id; };
 
     static std::map<uint32_t, OnClickFunc> on_click_funcs;
     static std::map<uint32_t, PassiveFunc> passive_funcs;

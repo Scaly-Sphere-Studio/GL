@@ -46,6 +46,7 @@ public:
     inline void bind() const { _raw_texture.bind(); };
 
     void setTextAreaID(uint32_t id);
+    inline uint32_t getTextAreaID() const noexcept { return _text_area_id; };
     TR::TextArea::Ptr const& getTextArea() const noexcept;
     
     void getDimensions(int& w, int& h) const noexcept;
