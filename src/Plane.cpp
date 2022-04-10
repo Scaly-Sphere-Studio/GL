@@ -350,7 +350,7 @@ bool Plane::_hoverTriangle(glm::mat4 const& mvp, glm::vec4 const& A,
         }
     }
     else if (texture->_type == Texture::Type::Text) {
-        TR::TextArea::Ptr const& text_area = texture->getTextArea();
+        TR::Area::Ptr const& text_area = texture->getTextArea();
         if (text_area) {
             int w, h;
             text_area->getDimensions(w, h);

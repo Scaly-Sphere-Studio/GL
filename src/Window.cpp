@@ -9,7 +9,7 @@ void pollEverything() try
     glfwPollEvents();
 
     // Retrieve all Text Areas
-    TR::TextArea::Map const& text_areas = TR::TextArea::getTextAreas();
+    TR::Area::Map const& text_areas = TR::Area::getMap();
     // Update every Text Area (this won't do anything if nothing is needed)
     for (auto it = text_areas.cbegin(); it != text_areas.cend(); ++it) {
         it->second->update();
@@ -42,13 +42,13 @@ void pollEverything() try
                 thread.setAsHandled();
             }
             else if (tex->_type == Texture::Type::Text) {
-                TR::TextArea::Ptr const& text_area = tex->getTextArea();
-                // Skip if no TextArea is set
+                TR::Area::Ptr const& text_area = tex->getTextArea();
+                // Skip if no Area is set
                 if (!text_area) {
                     continue;
                 }
                 // Skip if no thread is pending
-                if (!text_area->changesPending()) {
+                if (!text_area->hasChangesPending()) {
                     continue;
                 }
                 // Retrieve dimensions
@@ -59,10 +59,10 @@ void pollEverything() try
             }
         }
     }
-    // Set all TextArea threds as handled, now that all textures are updated
+    // Set all Area threds as handled, now that all textures are updated
     for (auto it = text_areas.cbegin(); it != text_areas.cend(); ++it) {
-        if (it->second->changesPending()) {
-            it->second->changesHandled();
+        if (it->second->hasChangesPending()) {
+            it->second->setChangesAsHandled();
         }
     }
 }
@@ -75,6 +75,7 @@ bool Window::LOG::constructor{ true };
 bool Window::LOG::destructor{ true };
 bool Window::LOG::glfw_init{ true };
 bool Window::LOG::fps{ true };
+bool Window::LOG::longest_frame{ true };
 
 // Window ptr
 std::vector<std::weak_ptr<Window>> Window::_instances{};
@@ -315,27 +316,51 @@ void Window::drawObjects()
 }
 
 // Renders back buffer, clears front buffer, polls events.
-// Logs fps if specified in LOG structure.
+// Logs fps and/or longest_frame if specified in LOG structure.
 void Window::printFrame() try
 {
-    std::chrono::steady_clock::time_point const now = std::chrono::steady_clock::now();
+    using clock = std::chrono::steady_clock;
+    // Render if visible
     if (!_is_iconified && glfwGetWindowAttrib(_window.get(), GLFW_VISIBLE)) {
         // Make context current for this scope
         Context const context(_window.get());
+
+        // Limit fps if needed
+        clock::time_point now = clock::now(); // Re-used later
+        for (; (now - _last_render_time) < _time_limit; now = clock::now());
+
         // Render back buffer
         glfwSwapBuffers(_window.get());
         // Update hovering status
         _updateHoveredModelIfNeeded(now);
+        // Update last render time
+        _last_render_time = now;
         // Update fps, log if needed
-        if (_fps_timer.addFrame()) {
-            if (LOG::fps) {
-                __LOG_OBJ_MSG(toString(_fps_timer.get()) + "fps");
+        if (_frame_timer.addFrame()) {
+            if (LOG::fps && LOG::longest_frame) {
+                char buff[64];
+                sprintf_s(buff, "% 4lldfps, longest frame: %lldms",
+                    _frame_timer.get(), _frame_timer.longestFrame());
+                __LOG_OBJ_MSG(buff);
+            }
+            else {
+                if (LOG::fps) {
+                    __LOG_OBJ_MSG(
+                        _frame_timer.getFormatted() + "fps");
+                }
+                if (LOG::longest_frame) {
+                    __LOG_OBJ_MSG(__CONTEXT_MSG(
+                        "Longest frame", _frame_timer.longestFrame()) + "ms");
+                }
             }
         }
         // Clear back buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
-    _last_render_time = now;
+    // Else, only update "render" time
+    else {
+        _last_render_time = clock::now();
+    }
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
@@ -448,13 +473,26 @@ bool Window::shouldClose() const noexcept
     return glfwWindowShouldClose(_window.get());
 }
 
+void Window::setFPSLimit(int fps_limit)
+{
+    _fps_limit = fps_limit;
+    if (_fps_limit != 0) {
+        _time_limit = std::chrono::nanoseconds
+        (1000000000ll / static_cast<long long>(fps_limit));
+    }
+    else {
+        _time_limit = std::chrono::nanoseconds(0);
+    }
+}
+
 // Enables or disables the VSYNC of the window
 void Window::setVSYNC(bool state)
 {
     // Make context current for this scope
     Context const context(_window.get());
     // Set VSYNC
-    glfwSwapInterval(state);
+    _vsync = state;
+    glfwSwapInterval(_vsync);
 }
 
 // Enables or disables fullscreen mode on given screen

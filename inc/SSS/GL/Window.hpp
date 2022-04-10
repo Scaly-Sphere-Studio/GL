@@ -33,6 +33,7 @@ public:
         static bool destructor;
         static bool glfw_init;
         static bool fps;
+        static bool longest_frame;
     };
 
     struct Args {
@@ -121,7 +122,7 @@ public:
     // Logs fps if specified in LOG structure.
     void printFrame();
 private:
-    FPS_Timer _fps_timer;
+    FrameTimer _frame_timer;
     std::chrono::steady_clock::time_point _last_render_time;
     std::chrono::steady_clock::duration _hover_waiting_time;
     bool _cursor_is_moving{ false };
@@ -134,16 +135,19 @@ private:
     void _callPassiveFunctions();
 
 public:
-    inline long long getFPS() { return _fps_timer.get(); };
+    inline long long getFPS() { return _frame_timer.get(); };
 
     // Wether the user requested to close the window.
     // NOTE: this simply is a call to glfwWindowShouldClose
     bool shouldClose() const noexcept;
 
+    void setFPSLimit(int fps_limit);
+    inline int getFPSLimit() const noexcept { return _fps_limit; };
+    
     // Enables or disables the VSYNC of the window
     void setVSYNC(bool state);
-    // Enables or disables fullscreen mode on given screen
-    void setFullscreen(bool state, int screen_id = -1);
+    inline bool getVSYNC() const noexcept { return _vsync; };
+    
     // Sets a corresponding callback
     template<typename _Func>
     void setCallback(_Func(*set)(GLFWwindow*, _Func), _Func callback)
@@ -193,6 +197,8 @@ public:
     inline void getPosition(int& x0, int& y0) const noexcept
         { glfwGetWindowPos(_window.get(), &x0, &y0); };
 
+    // Enables or disables fullscreen mode on given screen
+    void setFullscreen(bool state, int screen_id = -1);
     inline bool isFullscreen() const noexcept
         { return glfwGetWindowMonitor(_window.get()) != nullptr; };
 
@@ -209,6 +215,13 @@ private:
     // Windowed to Fullscreen variables
     int _windowed_x{ 0 };   // Old x (left) pos
     int _windowed_y{ 0 };   // Old y (up) pos
+
+
+    // FPS Limit (0 = disabled)
+    int _fps_limit{ 0 };
+    std::chrono::nanoseconds _time_limit{ 0 };
+    // VSYNC state
+    bool _vsync{ false };
     // Iconify state
     bool _is_iconified{ false };
 

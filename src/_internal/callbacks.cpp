@@ -118,9 +118,9 @@ void mouse_position_callback(GLFWwindow* ptr, double x, double y)
 void mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) try
 {
     if (LOG::internal_callbacks::mouse_button) {
-        __LOG_FUNC_MSG(context_msg("button", toString(button))
-            + "; " + context_msg("action", toString(action))
-            + "; " + context_msg("mods", toString(mods))
+        __LOG_FUNC_MSG(__CONTEXT_MSG("button", button)
+            + "; " + __CONTEXT_MSG("action", action)
+            + "; " + __CONTEXT_MSG("mods", mods)
         );
     }
 
@@ -158,10 +158,10 @@ __CATCH_AND_RETHROW_FUNC_EXC
 void key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods) try
 {
     if (LOG::internal_callbacks::key) {
-        __LOG_FUNC_MSG(context_msg("key", toString(key))
-            + "; " + context_msg("scancode", toString(scancode))
-            + "; " + context_msg("action", toString(action))
-            + "; " + context_msg("mods", toString(mods))
+        __LOG_FUNC_MSG(__CONTEXT_MSG("key", key)
+            + "; " + __CONTEXT_MSG("scancode", scancode)
+            + "; " + __CONTEXT_MSG("action", action)
+            + "; " + __CONTEXT_MSG("mods", mods)
         );
     }
 
@@ -183,7 +183,7 @@ __CATCH_AND_RETHROW_FUNC_EXC
 void monitor_callback(GLFWmonitor* ptr, int event) try
 {
     if (LOG::internal_callbacks::monitor) {
-        __LOG_FUNC_MSG(context_msg("event", toString(event)));
+        __LOG_FUNC_CTX_MSG("event", event);
     }
     // Ignore arguments
     ptr; event;

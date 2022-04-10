@@ -46,7 +46,7 @@ void Texture::edit(void const* pixels, int width, int height) try
     _raw_texture.edit(pixels, _raw_w, _raw_h);
     // Replace previous pixel storage
     uint32_t const* ptr = reinterpret_cast<uint32_t const*>(pixels);
-    _pixels = RGBA32::Pixels(ptr, ptr + (_raw_w * _raw_h));
+    _pixels = RGBA32::Vector(ptr, ptr + (_raw_w * _raw_h));
 
     _updatePlanesScaling();
 }
@@ -72,7 +72,7 @@ void Texture::setType(Type type) noexcept
         _raw_texture.edit(&_pixels.at(0), _raw_w, _raw_h);
     }
     else if (type == Type::Text) {
-        TR::TextArea::Ptr const& text_area = getTextArea();
+        TR::Area::Ptr const& text_area = getTextArea();
         if (!text_area) {
             _text_w = 0;
             _text_h = 0;
@@ -93,7 +93,7 @@ void Texture::setTextAreaID(uint32_t id)
         return;
     }
     _text_area_id = id;
-    TR::TextArea::Ptr const& text_area = getTextArea();
+    TR::Area::Ptr const& text_area = getTextArea();
     if (_type == Type::Text && text_area) {
         int w, h;
         text_area->getDimensions(w, h);
@@ -101,11 +101,11 @@ void Texture::setTextAreaID(uint32_t id)
     }
 }
 
-TR::TextArea::Ptr const& Texture::getTextArea() const noexcept
+TR::Area::Ptr const& Texture::getTextArea() const noexcept
 {
-    TR::TextArea::Map const& text_areas = TR::TextArea::getTextAreas();
+    TR::Area::Map const& text_areas = TR::Area::getMap();
     if (text_areas.count(_text_area_id) == 0) {
-        static const TR::TextArea::Ptr empty_ptr(nullptr);
+        static const TR::Area::Ptr empty_ptr(nullptr);
         return empty_ptr;
     }
     return text_areas.at(_text_area_id);
@@ -166,7 +166,7 @@ void Texture::_internal_edit(void const* pixels, int w, int h)
     _raw_texture.edit(pixels, w, h);
 }
 
-void Texture::_LoadingThread::_function(std::string filepath)
+void Texture::_AsyncLoading::_asyncFunction(std::string filepath)
 {
     // Load image
     SSS::C_Ptr <uint32_t, void(*)(void*), stbi_image_free>
@@ -182,8 +182,8 @@ void Texture::_LoadingThread::_function(std::string filepath)
         SSS::throw_exc(stbi_failure_reason());
     }
     // Fill vector
-    if (_is_canceled) return;
-    _pixels = RGBA32::Pixels(raw_pixels.get(), raw_pixels.get() + (_w * _h));
+    if (_beingCanceled()) return;
+    _pixels = RGBA32::Vector(raw_pixels.get(), raw_pixels.get() + (_w * _h));
 }
 
 __SSS_GL_END

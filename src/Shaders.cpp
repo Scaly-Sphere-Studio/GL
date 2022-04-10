@@ -10,7 +10,7 @@ static std::string readShaderFile(std::string const& filepath)
 	std::ifstream shader_stream(filepath, std::ios::in);
 	// Throw if file could not be open
 	if (!shader_stream.is_open()) {
-		throw_exc(__FUNC_MSG(context_msg("Could not open file", filepath)));
+		throw_exc(__FUNC_MSG(__CONTEXT_MSG("Could not open file", filepath)));
 	}
 	std::stringstream sstr;
 	sstr << shader_stream.rdbuf();
@@ -36,7 +36,7 @@ static void compileShader(GLuint shader_id, std::string const& shader_code)
 		std::vector<char> msg(log_length + 1);
 		glGetShaderInfoLog(shader_id, log_length, NULL, &msg[0]);
 		// Throw
-		throw_exc(__FUNC_MSG(context_msg("Could not compile shader", &msg[0])));
+		throw_exc(__FUNC_MSG(__CONTEXT_MSG("Could not compile shader", &msg[0])));
 	}
 }
 
@@ -45,11 +45,11 @@ static GLuint loadShaders(std::string const& vertex_data, std::string const& fra
 	// Create the shaders
 	GLuint vertex_shader_id = glCreateShader(GL_VERTEX_SHADER);
 	if (vertex_shader_id == 0) {
-		throw_exc(context_msg("Could not create vertex shader", std::to_string(glGetError())));
+		throw_exc(__CONTEXT_MSG("Could not create vertex shader", glGetError()));
 	}
 	GLuint fragment_shader_id = glCreateShader(GL_FRAGMENT_SHADER);
 	if (fragment_shader_id == 0) {
-		throw_exc(context_msg("Could not create fragment shader", std::to_string(glGetError())));
+		throw_exc(__CONTEXT_MSG("Could not create fragment shader", glGetError()));
 	}
 	// Compile the shaders
 	compileShader(vertex_shader_id, vertex_data);
@@ -58,7 +58,7 @@ static GLuint loadShaders(std::string const& vertex_data, std::string const& fra
 	// Link the program
 	GLuint program_id = glCreateProgram();
 	if (program_id == 0) {
-		throw_exc(context_msg("Could not create program", std::to_string(glGetError())));
+		throw_exc(__CONTEXT_MSG("Could not create program", glGetError()));
 	}
 	glAttachShader(program_id, vertex_shader_id);
 	glAttachShader(program_id, fragment_shader_id);
@@ -73,7 +73,7 @@ static GLuint loadShaders(std::string const& vertex_data, std::string const& fra
 		std::vector<char> msg(log_length + 1);
 		glGetProgramInfoLog(program_id, log_length, NULL, &msg[0]);
 		// Throw
-		throw_exc(__FUNC_MSG(context_msg("Could not link program", &msg[0])));
+		throw_exc(__FUNC_MSG(__CONTEXT_MSG("Could not link program", &msg[0])));
 	}
 
 	// Free shaders
