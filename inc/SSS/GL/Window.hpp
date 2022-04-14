@@ -219,7 +219,7 @@ private:
 
     // FPS Limit (0 = disabled)
     int _fps_limit{ 0 };
-    std::chrono::nanoseconds _time_limit{ 0 };
+    std::chrono::nanoseconds _min_frame_time{ 0 };
     // VSYNC state
     bool _vsync{ false };
     // Iconify state

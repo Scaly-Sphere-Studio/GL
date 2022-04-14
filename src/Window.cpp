@@ -326,8 +326,8 @@ void Window::printFrame() try
         Context const context(_window.get());
 
         // Limit fps if needed
-        clock::time_point now = clock::now(); // Re-used later
-        for (; (now - _last_render_time) < _time_limit; now = clock::now());
+        sleepUntil(_last_render_time + _min_frame_time);
+        clock::time_point const now = clock::now();
 
         // Render back buffer
         glfwSwapBuffers(_window.get());
@@ -476,12 +476,16 @@ bool Window::shouldClose() const noexcept
 void Window::setFPSLimit(int fps_limit)
 {
     _fps_limit = fps_limit;
-    if (_fps_limit != 0) {
-        _time_limit = std::chrono::nanoseconds
-        (1000000000ll / static_cast<long long>(fps_limit));
+    if (_fps_limit <= 0) {
+        _fps_limit = 0;
+        _min_frame_time = std::chrono::nanoseconds(0);
     }
     else {
-        _time_limit = std::chrono::nanoseconds(0);
+        if (_fps_limit > 1000) {
+            _fps_limit = 1000;
+        }
+        _min_frame_time = std::chrono::nanoseconds
+            (1000000000ll / static_cast<long long>(fps_limit));
     }
 }
 
