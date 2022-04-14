@@ -47,8 +47,8 @@ void pollEverything() try
                 if (!text_area) {
                     continue;
                 }
-                // Skip if no thread is pending
-                if (!text_area->hasChangesPending()) {
+                // Skip if no new pixels
+                if (!text_area->hasNewPixels()) {
                     continue;
                 }
                 // Retrieve dimensions
@@ -61,8 +61,8 @@ void pollEverything() try
     }
     // Set all Area threds as handled, now that all textures are updated
     for (auto it = text_areas.cbegin(); it != text_areas.cend(); ++it) {
-        if (it->second->hasChangesPending()) {
-            it->second->setChangesAsHandled();
+        if (it->second->hasNewPixels()) {
+            it->second->setPixelsAsRetrieved();
         }
     }
 }
