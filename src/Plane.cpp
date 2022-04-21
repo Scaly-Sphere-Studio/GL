@@ -356,7 +356,7 @@ bool Plane::_hoverTriangle(glm::mat4 const& mvp, glm::vec4 const& A,
             text_area->getDimensions(w, h);
             size_t const size = static_cast<size_t>(w) * static_cast<size_t>(h);
             if (pixel < size) {
-                void const* pixels = text_area->getPixels();
+                void const* pixels = text_area->pixelsGet();
                 is_hovered = static_cast<RGBA32 const*>(pixels)[pixel].bytes.a != 0;
             }
         }

@@ -48,21 +48,21 @@ void pollEverything() try
                     continue;
                 }
                 // Skip if no new pixels
-                if (!text_area->hasNewPixels()) {
+                if (!text_area->pixelsWereChanged()) {
                     continue;
                 }
                 // Retrieve dimensions
                 int new_w, new_h;
                 text_area->getDimensions(new_w, new_h);
                 // Update dimensions if needed, edit OpenGL texture
-                tex->_internal_edit(text_area->getPixels(), new_w, new_h);
+                tex->_internal_edit(text_area->pixelsGet(), new_w, new_h);
             }
         }
     }
     // Set all Area threds as handled, now that all textures are updated
     for (auto it = text_areas.cbegin(); it != text_areas.cend(); ++it) {
-        if (it->second->hasNewPixels()) {
-            it->second->setPixelsAsRetrieved();
+        if (it->second->pixelsWereChanged()) {
+            it->second->pixelsAreRetrieved();
         }
     }
 }
@@ -202,7 +202,7 @@ Window::Shared Window::get(GLFWwindow* ptr) try
             return window;
         }
     }
-    throw_exc(ERR_MSG::NOTHING_FOUND);
+    throw_exc("Found no window for given pointer.");
 }
 __CATCH_AND_RETHROW_FUNC_EXC
 
