@@ -1,13 +1,12 @@
 #pragma once
 
-#include <SSS/Commons/pointers.hpp>
-#include "includes.hpp"
+#include "_includes.hpp"
 
-__SSS_GL_BEGIN
+__SSS_GL_BEGIN;
 
 class Window; // Pre-declaration of Window class.
 
-__INTERNAL_BEGIN
+__INTERNAL_BEGIN;
 
 using GLFWwindow_Ptr = C_Ptr
     <GLFWwindow, void(*)(GLFWwindow*), glfwDestroyWindow>;
@@ -23,50 +22,47 @@ protected:
     std::weak_ptr<Window> _window;
 };
 
-struct AbstractObject : public WindowObject {
-    inline AbstractObject(std::weak_ptr<Window> window, GLuint given_id)
-        : WindowObject(window), id(given_id) {};
-    virtual void bind() const = 0;
-    GLuint const id;
-};
-
-struct Texture : public AbstractObject {
+struct Texture : public WindowObject {
     using Ptr = std::unique_ptr<Texture>;
     Texture(std::weak_ptr<Window> window, GLenum given_target);
     ~Texture();
-    virtual void bind() const;
+    void bind() const;
     void parameteri(GLenum pname, GLint param);
     void edit(const GLvoid* pixels, GLsizei width, GLsizei height,
         GLenum format = GL_RGBA, GLint internalformat = GL_RGBA,
         GLenum type = GL_UNSIGNED_BYTE, GLint level = 0);
     GLenum const target;
+    GLuint const id;
 };
 
-__INTERNAL_END
+__INTERNAL_END;
 
-struct VAO : public _internal::AbstractObject {
+struct VAO : public _internal::WindowObject {
     using Ptr = std::unique_ptr<VAO>;
     VAO(std::weak_ptr<Window> window);
     ~VAO();
-    virtual void bind() const;
+    void bind() const;
+    GLuint const id;
 };
 
-struct VBO : public _internal::AbstractObject {
+struct VBO : public _internal::WindowObject {
     using Ptr = std::unique_ptr<VBO>;
     VBO(std::weak_ptr<Window> window);
     ~VBO();
-    virtual void bind() const;
-    virtual void unbind() const;
+    void bind() const;
+    void unbind() const;
     void edit(GLsizeiptr size, const void* data, GLenum usage);
+    GLuint const id;
 };
 
-struct IBO : public _internal::AbstractObject {
+struct IBO : public _internal::WindowObject {
     using Ptr = std::unique_ptr<IBO>;
     IBO(std::weak_ptr<Window> window);
     ~IBO();
-    virtual void bind() const;
-    virtual void unbind() const;
+    void bind() const;
+    void unbind() const;
     void edit(GLsizeiptr size, const void* data, GLenum usage);
+    GLuint const id;
 };
 
-__SSS_GL_END
+__SSS_GL_END;

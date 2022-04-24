@@ -2,7 +2,7 @@
 
 #include "_internal/pointers.hpp"
 
-__SSS_GL_BEGIN
+__SSS_GL_BEGIN;
 
 class Texture : public _internal::WindowObject {
 
@@ -72,4 +72,4 @@ private:
     void _internal_edit(void const* pixels, int w, int h);
 };
 
-__SSS_GL_END
+__SSS_GL_END;

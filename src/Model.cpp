@@ -9,7 +9,7 @@ std::map<uint32_t, SSS::GL::Model::PassiveFunc> SSS::GL::Model::passive_funcs {
     { 0, nullptr }
 };
 
-__SSS_GL_BEGIN
+__SSS_GL_BEGIN;
 
 Model::Model(std::weak_ptr<Window> window) try
     : _internal::WindowObject(window)
@@ -121,4 +121,4 @@ void Model::_callPassiveFunction(GLFWwindow* ptr, uint32_t id)
     }
 }
 
-__SSS_GL_END
+__SSS_GL_END;

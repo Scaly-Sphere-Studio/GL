@@ -1,14 +1,13 @@
 #pragma once
 
-#include "_internal/pointers.hpp"
 #include "_internal/callbacks.hpp"
+#include "Renderer.hpp"
+#include "Texture.hpp"
+#include "Camera.hpp"
 #include "Model.hpp"
 #include "Plane.hpp"
-#include "Camera.hpp"
-#include "Shaders.hpp"
-#include "Renderer.hpp"
 
-__SSS_GL_BEGIN
+__SSS_GL_BEGIN;
     
 void pollEverything();
 
@@ -262,4 +261,4 @@ private:
     bool _equal{ true };
 };
 
-__SSS_GL_END
+__SSS_GL_END;

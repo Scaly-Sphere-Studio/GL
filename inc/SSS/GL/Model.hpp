@@ -1,9 +1,8 @@
 #pragma once
 
 #include "_internal/pointers.hpp"
-#include "Shaders.hpp"
 
-__SSS_GL_BEGIN
+__SSS_GL_BEGIN;
 
 enum class ModelType {
     Classic,    // Model class
@@ -72,5 +71,5 @@ protected:
     void _callPassiveFunction(GLFWwindow* ptr, uint32_t id);
 };
 
-__SSS_GL_END
+__SSS_GL_END;
 

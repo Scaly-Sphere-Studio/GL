@@ -1,12 +1,14 @@
 #pragma once
 
 #include "_internal/pointers.hpp"
-#include "_internal/callbacks.hpp"
 
-__SSS_GL_BEGIN
+__SSS_GL_BEGIN;
+__INTERNAL_BEGIN;
+void window_resize_callback(GLFWwindow*, int, int); // Pre-definition
+__INTERNAL_END;
 
 class Camera : _internal::WindowObject {
-    friend void _internal::window_resize_callback(GLFWwindow* ptr, int w, int h);
+    friend void _internal::window_resize_callback(GLFWwindow*, int, int);
     friend class Window;
 
 private:
@@ -60,4 +62,4 @@ private:
     void _computeProjection();
 };
 
-__SSS_GL_END
+__SSS_GL_END;

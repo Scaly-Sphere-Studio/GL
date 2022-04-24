@@ -1,7 +1,8 @@
 #include "SSS/GL/Plane.hpp"
 #include "SSS/GL/Window.hpp"
+#include "SSS/GL/Texture.hpp"
 
-__SSS_GL_BEGIN
+__SSS_GL_BEGIN;
 
 PlaneRenderer::PlaneRenderer(std::weak_ptr<Window> window) try
     : Renderer(window)
@@ -47,10 +48,10 @@ void main()\n\
 
     constexpr float vertices[] = {
         // positions          // texture coords (1 - y)
-        -0.5f,  0.5f, 0.0f,   0.0f, 1.f - 1.0f,   // top left
-        -0.5f, -0.5f, 0.0f,   0.0f, 1.f - 0.0f,   // bottom left
-         0.5f, -0.5f, 0.0f,   1.0f, 1.f - 0.0f,   // bottom right
-         0.5f,  0.5f, 0.0f,   1.0f, 1.f - 1.0f    // top right
+        -0.5f,  0.5f, 0.0f,   0.f, 1.f - 1.f,   // top left
+        -0.5f, -0.5f, 0.0f,   0.f, 1.f - 0.f,   // bottom left
+         0.5f, -0.5f, 0.0f,   1.f, 1.f - 0.f,   // bottom right
+         0.5f,  0.5f, 0.0f,   1.f, 1.f - 1.f    // top right
     };
     _vbo->edit(sizeof(vertices), vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
@@ -394,4 +395,4 @@ bool Plane::_isHovered(glm::mat4 const& VP, float x, float y, double &z) try
 }
 __CATCH_AND_RETHROW_METHOD_EXC;
 
-__SSS_GL_END
+__SSS_GL_END;

@@ -1,9 +1,8 @@
 #pragma once
 
-#include "_internal/includes.hpp"
 #include "_internal/pointers.hpp"
 
-__SSS_GL_BEGIN
+__SSS_GL_BEGIN;
 
 class Shaders : public _internal::WindowObject {
     friend class Window;
@@ -38,4 +37,4 @@ private:
     GLuint _id{ 0 };
 };
 
-__SSS_GL_END
+__SSS_GL_END;

@@ -1,7 +1,7 @@
 #include "SSS/GL/Camera.hpp"
 #include "SSS/GL/Window.hpp"
 
-__SSS_GL_BEGIN
+__SSS_GL_BEGIN;
 
 Camera::Camera(std::weak_ptr<Window> weak_window)
     : _internal::WindowObject(weak_window)
@@ -133,4 +133,4 @@ void Camera::_computeProjection()
     }
 }
 
-__SSS_GL_END
+__SSS_GL_END;

@@ -1,7 +1,7 @@
 #include "SSS/GL/Shaders.hpp"
 #include "SSS/GL/Window.hpp"
 
-__SSS_GL_BEGIN
+__SSS_GL_BEGIN;
 
 static std::string readShaderFile(std::string const& filepath)
 {
@@ -143,4 +143,4 @@ void Shaders::setUniformMat4fv(std::string const& name, GLsizei count,
 	glUniformMatrix4fv(getUniformLocation(name), count, transpose, value);
 }
 
-__SSS_GL_END
+__SSS_GL_END;

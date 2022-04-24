@@ -1,9 +1,8 @@
 #pragma once
 
-#include "_internal/pointers.hpp"
 #include "Shaders.hpp"
 
-__SSS_GL_BEGIN
+__SSS_GL_BEGIN;
 
 struct RenderChunk {
     std::string title;
@@ -46,4 +45,4 @@ public:
     inline bool isActive() const noexcept { return _is_active; };
 };
 
-__SSS_GL_END
+__SSS_GL_END;

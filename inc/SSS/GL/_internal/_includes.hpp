@@ -12,6 +12,7 @@
 #include <SSS/Commons.hpp>
 #include <SSS/Text-Rendering.hpp>
 
+/** \cond INCLUDE*/
 // STL
 #include <array>
 #include <deque>
@@ -19,6 +20,7 @@
 #include <mutex>
 #include <shared_mutex>
 #include <algorithm>
+/** \endcond*/
 
-#define __SSS_GL_BEGIN __SSS_BEGIN namespace GL {
-#define __SSS_GL_END __SSS_END }
+#define __SSS_GL_BEGIN __SSS_BEGIN; namespace GL {
+#define __SSS_GL_END __SSS_END; }

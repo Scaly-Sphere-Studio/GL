@@ -1,7 +1,7 @@
 #include "SSS/GL/_internal/callbacks.hpp"
 #include "SSS/GL/Window.hpp"
 
-__SSS_GL_BEGIN
+__SSS_GL_BEGIN;
 
 namespace LOG {
     bool internal_callbacks::window_resize{ false };
@@ -12,7 +12,7 @@ namespace LOG {
     bool internal_callbacks::monitor{ false };
 }
 
-__INTERNAL_BEGIN
+__INTERNAL_BEGIN;
 
 void window_iconify_callback(GLFWwindow* ptr, int state)
 {
@@ -201,5 +201,5 @@ void monitor_callback(GLFWmonitor* ptr, int event) try
 }
 __CATCH_AND_RETHROW_FUNC_EXC
 
-__INTERNAL_END
-__SSS_GL_END
+__INTERNAL_END;
+__SSS_GL_END;

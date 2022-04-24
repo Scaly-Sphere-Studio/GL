@@ -1,6 +1,6 @@
 #include "SSS/GL/Renderer.hpp"
 
-__SSS_GL_BEGIN
+__SSS_GL_BEGIN;
 
 Renderer::Renderer(std::weak_ptr<Window> window)
     : _internal::WindowObject(window)
@@ -11,4 +11,4 @@ Renderer::Renderer(std::weak_ptr<Window> window)
     _ibo.reset(new IBO(_window));
 }
 
-__SSS_GL_END
+__SSS_GL_END;

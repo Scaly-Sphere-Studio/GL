@@ -1,12 +1,14 @@
 #pragma once
 
-#include "_internal/callbacks.hpp"
 #include "Model.hpp"
-#include "Texture.hpp"
-#include "Camera.hpp"
 #include "Renderer.hpp"
 
-__SSS_GL_BEGIN
+__SSS_GL_BEGIN;
+
+__INTERNAL_BEGIN;
+void mouse_button_callback(GLFWwindow*, int, int, int); // Pre-definition
+__INTERNAL_END;
+
 
 class PlaneRenderer : public Renderer {
     friend class Window;
@@ -30,7 +32,7 @@ private:
 };
 
 class Plane : public Model {
-    friend void _internal::mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods);
+    friend void _internal::mouse_button_callback(GLFWwindow*, int, int, int);
     friend class Window;
     friend class Texture;
     friend class PlaneRenderer;
@@ -84,4 +86,4 @@ protected:
     bool _isHovered(glm::mat4 const& VP, float x, float y, double &z);
 };
 
-__SSS_GL_END
+__SSS_GL_END;

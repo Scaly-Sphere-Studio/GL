@@ -1,7 +1,7 @@
 #include "SSS/GL/Window.hpp"
 #include "SSS/GL/_internal/callbacks.hpp"
 
-__SSS_GL_BEGIN
+__SSS_GL_BEGIN;
 
 void pollEverything() try
 {
@@ -587,4 +587,4 @@ Context::~Context()
     glfwMakeContextCurrent(_previous);
 }
 
-__SSS_GL_END
+__SSS_GL_END;

@@ -21,6 +21,7 @@
   <ItemGroup>
     <None Include="CONTROL" />
     <None Include="DownloadVcpkgScripts.ps1" />
+    <None Include="Doxyfile" />
     <None Include="vcpkg_scripts\Install.ps1" />
     <None Include="vcpkg_scripts\Remove.ps1" />
   </ItemGroup>
@@ -34,7 +35,7 @@
     <ClInclude Include="inc\SSS\GL\Texture.hpp" />
     <ClInclude Include="inc\SSS\GL\Window.hpp" />
     <ClInclude Include="inc\SSS\GL\_internal\callbacks.hpp" />
-    <ClInclude Include="inc\SSS\GL\_internal\includes.hpp" />
+    <ClInclude Include="inc\SSS\GL\_internal\_includes.hpp" />
     <ClInclude Include="inc\SSS\GL\_internal\pointers.hpp" />
   </ItemGroup>
   <ItemGroup>

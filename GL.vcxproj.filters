@@ -28,6 +28,7 @@
     <None Include="vcpkg_scripts\Remove.ps1">
       <Filter>vcpkg_scripts</Filter>
     </None>
+    <None Include="Doxyfile" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Window.cpp">
@@ -80,7 +81,7 @@
     <ClInclude Include="inc\SSS\GL\_internal\pointers.hpp">
       <Filter>inc\_internal</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL\_internal\includes.hpp">
+    <ClInclude Include="inc\SSS\GL\_internal\_includes.hpp">
       <Filter>inc\_internal</Filter>
     </ClInclude>
     <ClInclude Include="inc\SSS\GL\Texture.hpp">

@@ -1,9 +1,10 @@
 #pragma once
 
-#include "includes.hpp"
+#include "_includes.hpp"
 
-__SSS_GL_BEGIN
+__SSS_GL_BEGIN;
 
+/** \cond TODO*/
 namespace LOG {
     struct internal_callbacks {
         static bool window_resize;
@@ -14,9 +15,9 @@ namespace LOG {
         static bool monitor;
     };
 };
+/** \endcond*/
 
-__INTERNAL_BEGIN
-
+__INTERNAL_BEGIN;
 
 void window_iconify_callback(GLFWwindow* ptr, int state);
 // Resizes the internal width and height of correspondig Window instance
@@ -32,5 +33,5 @@ void key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods);
 // Updates connected monitors
 void monitor_callback(GLFWmonitor* ptr, int event);
 
-__INTERNAL_END
-__SSS_GL_END
+__INTERNAL_END;
+__SSS_GL_END;

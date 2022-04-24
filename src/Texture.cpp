@@ -6,7 +6,7 @@
 #define STBI_FAILURE_USERMSG
 #include <stb_image.h>
 
-__SSS_GL_BEGIN
+__SSS_GL_BEGIN;
 
 // Init statics
 bool Texture::LOG::constructor{ false };
@@ -186,4 +186,4 @@ void Texture::_AsyncLoading::_asyncFunction(std::string filepath)
     _pixels = RGBA32::Vector(raw_pixels.get(), raw_pixels.get() + (_w * _h));
 }
 
-__SSS_GL_END
+__SSS_GL_END;
