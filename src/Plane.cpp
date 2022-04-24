@@ -8,7 +8,7 @@ Plane::Plane(std::weak_ptr<Window> window) try
     : Model(window)
 {
 }
-__CATCH_AND_RETHROW_METHOD_EXC
+__CATCH_AND_RETHROW_METHOD_EXC;
 
 Plane::~Plane()
 {

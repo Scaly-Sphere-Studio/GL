@@ -90,7 +90,7 @@ Shaders::Shaders(std::weak_ptr<Window> window) try
 	: _internal::WindowObject(window)
 {
 }
-__CATCH_AND_RETHROW_METHOD_EXC
+__CATCH_AND_RETHROW_METHOD_EXC;
 
 Shaders::~Shaders()
 {
@@ -105,7 +105,7 @@ void Shaders::loadFromFiles(std::string const& vertex_fp, std::string const& fra
 {
 	loadFromData(readShaderFile(vertex_fp), readShaderFile(fragment_fp));
 }
-__CATCH_AND_RETHROW_METHOD_EXC
+__CATCH_AND_RETHROW_METHOD_EXC;
 
 void Shaders::loadFromData(std::string const& vertex_data, std::string const& fragment_data) try
 {
@@ -113,7 +113,7 @@ void Shaders::loadFromData(std::string const& vertex_data, std::string const& fr
 	_id = loadShaders(vertex_data, fragment_data);
 	_loaded = true;
 }
-__CATCH_AND_RETHROW_METHOD_EXC
+__CATCH_AND_RETHROW_METHOD_EXC;
 
 void Shaders::use() const
 {

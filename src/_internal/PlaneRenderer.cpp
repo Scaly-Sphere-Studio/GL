@@ -67,7 +67,7 @@ void main()\n\
     };
     _ibo->edit(sizeof(indices), indices, GL_STATIC_DRAW);
 }
-__CATCH_AND_RETHROW_METHOD_EXC
+__CATCH_AND_RETHROW_METHOD_EXC;
 
 void PlaneRenderer::_renderPart(uint32_t& count, bool reset_depth) const
 {
@@ -163,7 +163,7 @@ void PlaneRenderer::render() try
     }
     _renderPart(count, false);
 }
-__CATCH_AND_RETHROW_METHOD_EXC
+__CATCH_AND_RETHROW_METHOD_EXC;
 
 bool PlaneRenderer::_findNearestModel(float x, float y)
 {

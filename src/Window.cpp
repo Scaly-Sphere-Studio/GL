@@ -66,7 +66,7 @@ void pollEverything() try
         }
     }
 }
-__CATCH_AND_RETHROW_FUNC_EXC
+__CATCH_AND_RETHROW_FUNC_EXC;
 
     // --- Static initializations ---
 
@@ -164,10 +164,10 @@ Window::Window(Args const& args) try
     glfwSetKeyCallback(_window.get(), _internal::key_callback);
 
     if (LOG::constructor) {
-        __LOG_CONSTRUCTOR
+        __LOG_CONSTRUCTOR;
     }
 }
-__CATCH_AND_RETHROW_METHOD_EXC
+__CATCH_AND_RETHROW_METHOD_EXC;
 
 // Destructor
 Window::~Window()
@@ -184,7 +184,7 @@ Window::~Window()
         }
     }
     if (LOG::destructor) {
-        __LOG_DESTRUCTOR
+        __LOG_DESTRUCTOR;
     }
 }
 
@@ -192,7 +192,7 @@ Window::Shared Window::create(Args const& args) try
 {
     return (Shared)_instances.emplace_back(Shared(new Window(args)));
 }
-__CATCH_AND_RETHROW_FUNC_EXC
+__CATCH_AND_RETHROW_FUNC_EXC;
 
 Window::Shared Window::get(GLFWwindow* ptr) try
 {
@@ -204,7 +204,7 @@ Window::Shared Window::get(GLFWwindow* ptr) try
     }
     throw_exc("Found no window for given pointer.");
 }
-__CATCH_AND_RETHROW_FUNC_EXC
+__CATCH_AND_RETHROW_FUNC_EXC;
 
 void Window::cleanObjects() noexcept
 {
@@ -230,7 +230,7 @@ void Window::createModel(uint32_t id, ModelType type) try
         break;
     }
 }
-__CATCH_AND_RETHROW_METHOD_EXC
+__CATCH_AND_RETHROW_METHOD_EXC;
 
 void Window::removeModel(uint32_t id, ModelType type)
 {
@@ -253,7 +253,7 @@ void Window::createTexture(uint32_t id) try
     _objects.textures.try_emplace(id);
     _objects.textures.at(id).reset(new Texture(weak_from_this()));
 }
-__CATCH_AND_RETHROW_METHOD_EXC
+__CATCH_AND_RETHROW_METHOD_EXC;
 
 void Window::removeTexture(uint32_t id)
 {
@@ -267,7 +267,7 @@ void Window::createCamera(uint32_t id) try
     _objects.cameras.try_emplace(id);
     _objects.cameras.at(id).reset(new Camera(weak_from_this()));
 }
-__CATCH_AND_RETHROW_FUNC_EXC
+__CATCH_AND_RETHROW_FUNC_EXC;
 
 void Window::removeCamera(uint32_t id)
 {
@@ -281,7 +281,7 @@ void Window::createShaders(uint32_t id) try
     _objects.shaders.try_emplace(id);
     _objects.shaders.at(id).reset(new Shaders(weak_from_this()));
 }
-__CATCH_AND_RETHROW_METHOD_EXC
+__CATCH_AND_RETHROW_METHOD_EXC;
 
 void Window::removeShaders(uint32_t id)
 {
@@ -345,8 +345,7 @@ void Window::printFrame() try
             }
             else {
                 if (LOG::fps) {
-                    __LOG_OBJ_MSG(
-                        _frame_timer.getFormatted() + "fps");
+                    __LOG_OBJ_MSG(_frame_timer.getFormatted() + "fps");
                 }
                 if (LOG::longest_frame) {
                     __LOG_OBJ_MSG(__CONTEXT_MSG(
@@ -362,7 +361,7 @@ void Window::printFrame() try
         _last_render_time = clock::now();
     }
 }
-__CATCH_AND_RETHROW_METHOD_EXC
+__CATCH_AND_RETHROW_METHOD_EXC;
 
 void Window::_updateHoveredModel()
 {

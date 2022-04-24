@@ -24,15 +24,15 @@ Texture::Texture(std::weak_ptr<Window> window) try
     _raw_texture.parameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
     if (LOG::constructor) {
-        __LOG_CONSTRUCTOR
+        __LOG_CONSTRUCTOR;
     }
 }
-__CATCH_AND_RETHROW_METHOD_EXC
+__CATCH_AND_RETHROW_METHOD_EXC;
 
 Texture::~Texture()
 {
     if (LOG::destructor) {
-        __LOG_DESTRUCTOR
+        __LOG_DESTRUCTOR;
     }
 }
 
@@ -50,7 +50,7 @@ void Texture::edit(void const* pixels, int width, int height) try
 
     _updatePlanesScaling();
 }
-__CATCH_AND_RETHROW_METHOD_EXC
+__CATCH_AND_RETHROW_METHOD_EXC;
 
 void Texture::useFile(std::string filepath)
 {

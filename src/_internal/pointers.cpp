@@ -20,7 +20,7 @@ RawTexture::RawTexture(std::weak_ptr<Window> window, GLenum given_target) try
         }())
 {
 }
-__CATCH_AND_RETHROW_METHOD_EXC
+__CATCH_AND_RETHROW_METHOD_EXC;
 
     RawTexture::~RawTexture()
 {
@@ -65,7 +65,7 @@ VAO::VAO(std::weak_ptr<Window> window) try
         }())
 {
 }
-__CATCH_AND_RETHROW_METHOD_EXC
+__CATCH_AND_RETHROW_METHOD_EXC;
 
 VAO::~VAO()
 {
@@ -89,7 +89,7 @@ VBO::VBO(std::weak_ptr<Window> window) try
         }())
 {
 }
-__CATCH_AND_RETHROW_METHOD_EXC
+__CATCH_AND_RETHROW_METHOD_EXC;
 
 VBO::~VBO()
 {
@@ -126,7 +126,7 @@ IBO::IBO(std::weak_ptr<Window> window) try
         }())
 {
 }
-__CATCH_AND_RETHROW_METHOD_EXC
+__CATCH_AND_RETHROW_METHOD_EXC;
 
 IBO::~IBO()
 {

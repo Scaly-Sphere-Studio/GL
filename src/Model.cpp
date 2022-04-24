@@ -18,7 +18,7 @@ Model::Model(std::weak_ptr<Window> window) try
     setRotation();
     setTranslation();
 }
-__CATCH_AND_RETHROW_METHOD_EXC
+__CATCH_AND_RETHROW_METHOD_EXC;
 
 Model::~Model()
 {
@@ -108,7 +108,7 @@ void Model::_callOnClickFunction(GLFWwindow* ptr, uint32_t id, int button, int a
         f(ptr, id, button, action, mods);
     }
 }
-__CATCH_AND_RETHROW_METHOD_EXC
+__CATCH_AND_RETHROW_METHOD_EXC;
 
 void Model::_callPassiveFunction(GLFWwindow* ptr, uint32_t id)
 {
