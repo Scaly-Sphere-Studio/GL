@@ -46,7 +46,7 @@
     <ClCompile Include="src\_internal\callbacks.cpp">
       <Filter>src\_internal</Filter>
     </ClCompile>
-    <ClCompile Include="src\_internal\pointers.cpp">
+    <ClCompile Include="src\_internal\basics.cpp">
       <Filter>src\_internal</Filter>
     </ClCompile>
     <ClCompile Include="src\Texture.cpp">
@@ -81,9 +81,6 @@
     <ClInclude Include="inc\SSS\GL\_internal\callbacks.hpp">
       <Filter>inc\_internal</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL\_internal\pointers.hpp">
-      <Filter>inc\_internal</Filter>
-    </ClInclude>
     <ClInclude Include="inc\SSS\GL\_internal\_includes.hpp">
       <Filter>inc\_internal</Filter>
     </ClInclude>
@@ -97,6 +94,9 @@
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="inc\SSS\GL\_internal\PlaneRenderer.hpp">
+      <Filter>inc\_internal</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\SSS\GL\_internal\basics.hpp">
       <Filter>inc\_internal</Filter>
     </ClInclude>
   </ItemGroup>

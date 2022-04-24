@@ -4,7 +4,6 @@
 
 __SSS_GL_BEGIN;
 
-
 class Renderer : public _internal::WindowObject {
 protected:
     Renderer(std::weak_ptr<Window> window);             // Constructor
@@ -31,9 +30,9 @@ public:
 
 protected:
     Shaders::Ptr _shaders;
-    VAO::Ptr _vao;
-    VBO::Ptr _vbo;
-    IBO::Ptr _ibo;
+    Basic::VAO::Ptr _vao;
+    Basic::VBO::Ptr _vbo;
+    Basic::IBO::Ptr _ibo;
 public:
     virtual void render() = 0;
 

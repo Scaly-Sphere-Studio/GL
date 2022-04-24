@@ -85,7 +85,7 @@ std::vector<GLFWmonitor*> Window::_monitors{};
     // --- Constructor & destructor ---
 
 // Constructor, creates a window
-Window::Window(Args const& args) try
+Window::Window(CreateArgs const& args) try
 {
     // Init GLFW
     if (_instances.empty()) {
@@ -188,7 +188,7 @@ Window::~Window()
     }
 }
 
-Window::Shared Window::create(Args const& args) try
+Window::Shared Window::create(CreateArgs const& args) try
 {
     return (Shared)_instances.emplace_back(Shared(new Window(args)));
 }

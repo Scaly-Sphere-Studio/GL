@@ -26,6 +26,7 @@ class Window : public std::enable_shared_from_this<Window> {
 public:
 // --- Log options ---
     
+    /** \cond TODO*/
     struct LOG {
         static bool constructor;
         static bool destructor;
@@ -33,8 +34,9 @@ public:
         static bool fps;
         static bool longest_frame;
     };
+    /** \endcond*/
 
-    struct Args {
+    struct CreateArgs {
         int w{ 720 };
         int h{ 720 };
         std::string title{ "Untitled" };
@@ -55,7 +57,7 @@ private:
 
     // Constructor, creates a window
     // Private, to be called via Window::create();
-    Window(Args const& args);
+    Window(CreateArgs const& args);
 
 public :
     // Rule of 5
@@ -65,7 +67,7 @@ public :
     Window& operator=(const Window&)    = delete;   // Copy assignment
     Window& operator=(Window&&)         = delete;   // Move assignment
 
-    static Shared create(Args const& args);
+    static Shared create(CreateArgs const& args);
     static Shared get(GLFWwindow* ptr);
 
     // All context bound objects
@@ -224,7 +226,7 @@ private:
     bool _is_iconified{ false };
 
     // GLFWwindow ptr
-    _internal::GLFWwindow_Ptr _window;    
+    C_Ptr <GLFWwindow, void(*)(GLFWwindow*), glfwDestroyWindow> _window;
     // Main monitor the window is on
     GLFWmonitor* _main_monitor;
     int _main_monitor_id{ 0 };

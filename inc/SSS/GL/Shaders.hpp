@@ -1,6 +1,6 @@
 #pragma once
 
-#include "_internal/pointers.hpp"
+#include "_internal/basics.hpp"
 
 __SSS_GL_BEGIN;
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "_internal/pointers.hpp"
+#include "_internal/basics.hpp"
 
 __SSS_GL_BEGIN;
 
@@ -61,15 +61,17 @@ protected:
     glm::mat4 _model_mat4;
     bool _should_compute_mat4{ true };
 
+private:
     // Function (referenced by ID) called when the Model is clicked.
     uint32_t _on_click_func_id{ 0 };
-    // Called whenever the button is clicked (determined by Hitbox).
-    void _callOnClickFunction(GLFWwindow* ptr, uint32_t id, int button, int action, int mods);
     // Function (referenced by ID) called every frame.
     uint32_t _passive_func_id{ 0 };
+
+protected:
+    // Called whenever the button is clicked (determined by Hitbox).
+    void _callOnClickFunction(GLFWwindow* ptr, uint32_t id, int button, int action, int mods);
     // Called every frame.
     void _callPassiveFunction(GLFWwindow* ptr, uint32_t id);
 };
 
 __SSS_GL_END;
-

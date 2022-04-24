@@ -1,6 +1,6 @@
 #pragma once
 
-#include "_internal/pointers.hpp"
+#include "_internal/basics.hpp"
 
 __SSS_GL_BEGIN;
 
@@ -16,10 +16,12 @@ private:
 public:
     ~Texture();
 
+    /** \cond TODO*/
     struct LOG {
         static bool constructor;
         static bool destructor;
     };
+    /** \endcond*/
 
     using Ptr = std::unique_ptr<Texture>;
     
@@ -29,7 +31,7 @@ public:
     };
 
 private:
-    _internal::RawTexture _raw_texture;
+    Basic::Texture _raw_texture;
     int _raw_w{ 0 }, _raw_h{ 0 };
     int _text_w{ 0 }, _text_h{ 0 };
     RGBA32::Vector _pixels;
