@@ -4,18 +4,8 @@
 
 __SSS_GL_BEGIN;
 
-struct RenderChunk {
-    std::string title;
-    bool reset_depth_before{ false };
-    bool use_camera{ true };
-    uint32_t camera_ID{ 0 };
-    std::deque<uint32_t> objects;
-};
 
-class Renderer :
-    public _internal::WindowObject,
-    public std::deque<RenderChunk>
-{
+class Renderer : public _internal::WindowObject {
 protected:
     Renderer(std::weak_ptr<Window> window);             // Constructor
 public:
@@ -26,8 +16,17 @@ public:
     Renderer& operator=(const Renderer&)    = delete;   // Copy assignment
     Renderer& operator=(Renderer&&)         = delete;   // Move assignment
     
+    struct Chunk {
+        std::string title;
+        bool reset_depth_before{ false };
+        bool use_camera{ true };
+        uint32_t camera_ID{ 0 };
+        std::deque<uint32_t> objects;
+    };
+    
     using Ptr = std::unique_ptr<Renderer>;
 
+    std::deque<Chunk> chunks;
     std::string title;
 
 protected:
@@ -38,7 +37,7 @@ protected:
 public:
     virtual void render() = 0;
 
-protected:
+private:
     bool _is_active{ true };
 public:
     inline void setActivity(bool state) noexcept { _is_active = state; };

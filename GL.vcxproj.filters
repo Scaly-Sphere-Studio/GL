@@ -58,6 +58,9 @@
     <ClCompile Include="src\Renderer.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\_internal\PlaneRenderer.cpp">
+      <Filter>src\_internal</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\SSS\GL\Window.hpp">
@@ -92,6 +95,9 @@
     </ClInclude>
     <ClInclude Include="inc\SSS\GL\Renderer.hpp">
       <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\SSS\GL\_internal\PlaneRenderer.hpp">
+      <Filter>inc\_internal</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

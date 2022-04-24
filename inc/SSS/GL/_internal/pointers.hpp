@@ -22,10 +22,10 @@ protected:
     std::weak_ptr<Window> _window;
 };
 
-struct Texture : public WindowObject {
-    using Ptr = std::unique_ptr<Texture>;
-    Texture(std::weak_ptr<Window> window, GLenum given_target);
-    ~Texture();
+struct RawTexture : public WindowObject {
+    using Ptr = std::unique_ptr<RawTexture>;
+    RawTexture(std::weak_ptr<Window> window, GLenum given_target);
+    ~RawTexture();
     void bind() const;
     void parameteri(GLenum pname, GLint param);
     void edit(const GLvoid* pixels, GLsizei width, GLsizei height,

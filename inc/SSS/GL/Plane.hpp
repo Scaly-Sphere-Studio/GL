@@ -1,41 +1,19 @@
 #pragma once
 
 #include "Model.hpp"
-#include "Renderer.hpp"
 
 __SSS_GL_BEGIN;
 
 __INTERNAL_BEGIN;
-void mouse_button_callback(GLFWwindow*, int, int, int); // Pre-definition
+void mouse_button_callback(GLFWwindow*, int, int, int); // Pre-declaration
+class PlaneRenderer;
 __INTERNAL_END;
-
-
-class PlaneRenderer : public Renderer {
-    friend class Window;
-protected:
-    static constexpr uint32_t glsl_max_array_size = 128;
-
-    PlaneRenderer(std::weak_ptr<Window> window);
-
-    using Mat4_array = std::array<glm::mat4, glsl_max_array_size>;
-    void _renderPart(uint32_t& count, bool reset_depth) const;
-
-public:
-    virtual void render();
-
-private:
-    bool _findNearestModel(float x, float y);
-    uint32_t _hovered_plane{ 0 };
-    double _hovered_z{ DBL_MAX };
-    Mat4_array _VPs;
-    Mat4_array _Models;
-};
 
 class Plane : public Model {
     friend void _internal::mouse_button_callback(GLFWwindow*, int, int, int);
+    friend class _internal::PlaneRenderer;
     friend class Window;
     friend class Texture;
-    friend class PlaneRenderer;
 
 protected:
     Plane(std::weak_ptr<Window> window);
@@ -44,7 +22,7 @@ public:
     virtual ~Plane();
 
     using Ptr = std::unique_ptr<Plane>;
-    using Renderer = PlaneRenderer;
+    using Renderer = _internal::PlaneRenderer;
     
     void setTextureID(uint32_t texture_id);
     inline uint32_t getTextureID() const noexcept { return _texture_id; };

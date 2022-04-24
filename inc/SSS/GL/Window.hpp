@@ -1,11 +1,10 @@
 #pragma once
 
 #include "_internal/callbacks.hpp"
-#include "Renderer.hpp"
 #include "Texture.hpp"
 #include "Camera.hpp"
-#include "Model.hpp"
 #include "Plane.hpp"
+#include "_internal/PlaneRenderer.hpp"
 
 __SSS_GL_BEGIN;
     

@@ -29,7 +29,7 @@ public:
     };
 
 private:
-    _internal::Texture _raw_texture;
+    _internal::RawTexture _raw_texture;
     int _raw_w{ 0 }, _raw_h{ 0 };
     int _text_w{ 0 }, _text_h{ 0 };
     RGBA32::Vector _pixels;

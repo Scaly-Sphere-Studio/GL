@@ -9,7 +9,7 @@ WindowObject::WindowObject(std::weak_ptr<Window> window)
 {
 }
 
-Texture::Texture(std::weak_ptr<Window> window, GLenum given_target) try
+RawTexture::RawTexture(std::weak_ptr<Window> window, GLenum given_target) try
     :   _internal::WindowObject(window),
         target(given_target),
         id([&]()->GLuint {
@@ -22,26 +22,26 @@ Texture::Texture(std::weak_ptr<Window> window, GLenum given_target) try
 }
 __CATCH_AND_RETHROW_METHOD_EXC
 
-    Texture::~Texture()
+    RawTexture::~RawTexture()
 {
     Context const context(_window);
     glDeleteTextures(1, &id);
 }
 
-void Texture::bind() const
+void RawTexture::bind() const
 {
     Context const context(_window);
     glBindTexture(target, id);
 }
 
-void Texture::parameteri(GLenum pname, GLint param)
+void RawTexture::parameteri(GLenum pname, GLint param)
 {
     Context const context(_window);
     bind();
     glTexParameteri(target, pname, param);
 }
 
-void Texture::edit(const GLvoid* pixels, GLsizei width, GLsizei height,
+void RawTexture::edit(const GLvoid* pixels, GLsizei width, GLsizei height,
     GLenum format, GLint internalformat, GLenum type, GLint level)
 {
     if (pixels == nullptr) {

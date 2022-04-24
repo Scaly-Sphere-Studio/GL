@@ -388,28 +388,29 @@ void Window::_updateHoveredModel()
     }
 
     double z = DBL_MAX;
-    // Loop over each renderer and find their "nearest" models at mouse coordinates
+    // Loop over each renderer (in reverse order) and find their nearest
+    // models at mouse coordinates
     for (auto it = _objects.renderers.crbegin(); it != _objects.renderers.crend(); ++it) {
-        // Retrieve PlaneRenderer
-        Renderer::Ptr const& renderer = it->second;
-        if (!renderer)
+        // Retrieve Renderer's raw ptr needed for dynamic_cast
+        Renderer* ptr = it->second.get();
+        if (ptr == nullptr)
             continue;
-        PlaneRenderer* ptr = dynamic_cast<PlaneRenderer*>(renderer.get());
-        // Find nearest model
-        if (ptr != nullptr && ptr->_findNearestModel(x, y)) {
+        // Try to cast to Plane::Renderer, and find its nearest model
+        Plane::Renderer* renderer = dynamic_cast<Plane::Renderer*>(ptr);
+        if (renderer != nullptr && renderer->_findNearestModel(x, y)) {
             // If a model was found, update hover status
             _something_is_hovered = true;
-            if (ptr->_hovered_z < z) {
-                z = ptr->_hovered_z;
-                _hovered_model_id = ptr->_hovered_plane;
+            if (renderer->_hovered_z < z) {
+                z = renderer->_hovered_z;
+                _hovered_model_id = renderer->_hovered_id;
                 _hovered_model_type = ModelType::Plane;
             }
             // If the depth buffer was reset at least once by the renderer, previous
             // tested models will always be on top of all not-yet-tested models,
-            // which means we must skip further tests. This is why we're testing
-            // renderers in their reverse order.
+            // which means we must skip further tests.
+            // This is why we're testing renderers in their reverse order.
             bool depth_buffer_was_reset = false;
-            for (auto it = ptr->cbegin(); it != ptr->cend(); ++it) {
+            for (auto it = renderer->chunks.cbegin(); it != renderer->chunks.cend(); ++it) {
                 if (it->reset_depth_before) {
                     depth_buffer_was_reset = true;
                     break;
