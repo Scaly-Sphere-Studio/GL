@@ -99,12 +99,6 @@ namespace Basic {
         glBindBuffer(GL_ARRAY_BUFFER, id);
     }
 
-    void VBO::unbind() const
-    {
-        Context const context(_window);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
-
     void VBO::edit(GLsizeiptr size, const void* data, GLenum usage)
     {
         Context const context(_window);
@@ -135,12 +129,6 @@ namespace Basic {
     {
         Context const context(_window);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
-    }
-
-    void IBO::unbind() const
-    {
-        Context const context(_window);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
     void IBO::edit(GLsizeiptr size, const void* data, GLenum usage)
