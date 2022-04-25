@@ -133,15 +133,16 @@ void mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) tr
     if (window->_something_is_hovered) {
         uint32_t const id = window->_hovered_model_id;
         switch (window->_hovered_model_type) {
-        case ModelType::Plane: {
+        case Model::Type::Plane:
+        {
             if (window->_objects.planes.count(id) == 0)
                 break;
             Plane::Ptr const& plane = window->_objects.planes.at(id);
             if (plane) {
                 plane->_callOnClickFunction(ptr, id, button, action, mods);
             }
-            break;
         }
+            break;
         default:
             break;
         }

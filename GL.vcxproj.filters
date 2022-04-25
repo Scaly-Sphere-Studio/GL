@@ -55,10 +55,10 @@
     <ClCompile Include="src\Camera.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Renderer.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\_internal\PlaneRenderer.cpp">
+      <Filter>src\_internal</Filter>
+    </ClCompile>
+    <ClCompile Include="src\_internal\loadPreSetShaders.cpp">
       <Filter>src\_internal</Filter>
     </ClCompile>
   </ItemGroup>

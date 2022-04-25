@@ -80,29 +80,22 @@ public :
         Objects& operator=(const Objects&)  = delete;   // Copy assignment
         Objects& operator=(Objects&&)       = delete;   // Move assignment
         // Objects
-        std::map<uint32_t, Model::Ptr> models;          // Models
+        std::map<uint32_t, Shaders::Ptr> shaders;       // Shaders
+        std::map<uint32_t, Renderer::Ptr> renderers;    // Renderers
         std::map<uint32_t, Plane::Ptr> planes;          // Planes
         std::map<uint32_t, Texture::Ptr> textures;      // Textures
         std::map<uint32_t, Camera::Ptr> cameras;        // Cameras
-        std::map<uint32_t, Shaders::Ptr> shaders;       // Shaders
-        std::map<uint32_t, Renderer::Ptr> renderers;    // Renderers
     };
 
 private:
+    // Stores all window objects
     Objects _objects;
+    // To be called in create() as weak_from_this() is needed
+    void loadPreSetShaders();
 
 public:
     inline Objects const& getObjects() const noexcept { return _objects; };
     void cleanObjects() noexcept;
-
-    void createModel(uint32_t id, ModelType type);
-    void removeModel(uint32_t id, ModelType type);
-
-    void createTexture(uint32_t id);
-    void removeTexture(uint32_t id);
-
-    void createCamera(uint32_t id);
-    void removeCamera(uint32_t id);
 
     void createShaders(uint32_t id);
     void removeShaders(uint32_t id);
@@ -113,6 +106,15 @@ public:
         _objects.renderers.at(id).reset(new T(weak_from_this()));
     }
     void removeRenderer(uint32_t id);
+    void createModel(uint32_t id, Model::Type type);
+    void removeModel(uint32_t id, Model::Type type);
+
+    void createTexture(uint32_t id);
+    void removeTexture(uint32_t id);
+
+    void createCamera(uint32_t id);
+    void removeCamera(uint32_t id);
+
 
 // --- Public methods ---
 
@@ -129,7 +131,7 @@ private:
     double _old_cursor_x{ 0 }, _old_cursor_y{ 0 };
     bool _something_is_hovered{ false };
     uint32_t _hovered_model_id{ 0 };
-    ModelType _hovered_model_type{ ModelType::Classic };
+    Model::Type _hovered_model_type{ Model::Type::Plane };
     void _updateHoveredModel();
     void _updateHoveredModelIfNeeded(std::chrono::steady_clock::time_point const& now);
     void _callPassiveFunctions();

@@ -3,23 +3,6 @@
 
 __SSS_GL_BEGIN;
 
-static std::string readShaderFile(std::string const& filepath)
-{
-	// Read the shader code from the file
-	std::string shader_code;
-	std::ifstream shader_stream(filepath, std::ios::in);
-	// Throw if file could not be open
-	if (!shader_stream.is_open()) {
-		throw_exc(__FUNC_MSG(__CONTEXT_MSG("Could not open file", filepath)));
-	}
-	std::stringstream sstr;
-	sstr << shader_stream.rdbuf();
-	shader_code = sstr.str();
-	shader_stream.close();
-	// Return shader code
-	return shader_code;
-}
-
 static void compileShader(GLuint shader_id, std::string const& shader_code)
 {
 	// Compile shader
@@ -103,11 +86,11 @@ Shaders::~Shaders()
 
 void Shaders::loadFromFiles(std::string const& vertex_fp, std::string const& fragment_fp) try
 {
-	loadFromData(readShaderFile(vertex_fp), readShaderFile(fragment_fp));
+	loadFromStrings(readFile(vertex_fp), readFile(fragment_fp));
 }
 __CATCH_AND_RETHROW_METHOD_EXC;
 
-void Shaders::loadFromData(std::string const& vertex_data, std::string const& fragment_data) try
+void Shaders::loadFromStrings(std::string const& vertex_data, std::string const& fragment_data) try
 {
 	Context const context(_window);
 	_id = loadShaders(vertex_data, fragment_data);

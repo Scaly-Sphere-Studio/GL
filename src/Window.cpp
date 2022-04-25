@@ -190,7 +190,10 @@ Window::~Window()
 
 Window::Shared Window::create(CreateArgs const& args) try
 {
-    return (Shared)_instances.emplace_back(Shared(new Window(args)));
+    Shared ptr(new Window(args));
+    _instances.emplace_back(ptr);
+    ptr->loadPreSetShaders();
+    return ptr;
 }
 __CATCH_AND_RETHROW_FUNC_EXC;
 
@@ -209,22 +212,46 @@ __CATCH_AND_RETHROW_FUNC_EXC;
 void Window::cleanObjects() noexcept
 {
     Context const context(_window.get());
-    _objects.models.clear();
+    _objects.shaders.clear();
+    _objects.renderers.clear();
     _objects.planes.clear();
     _objects.textures.clear();
     _objects.cameras.clear();
-    _objects.shaders.clear();
-    _objects.renderers.clear();
 }
 
-void Window::createModel(uint32_t id, ModelType type) try
+void Window::createShaders(uint32_t id) try
+{
+    if (id >= static_cast<uint32_t>(Shaders::Preset::First)) {
+        __LOG_METHOD_CTX_WRN("Given ID is in reserved values", id);
+        return;
+    }
+    _objects.shaders.try_emplace(id);
+    _objects.shaders.at(id).reset(new Shaders(weak_from_this()));
+}
+__CATCH_AND_RETHROW_METHOD_EXC;
+
+void Window::removeShaders(uint32_t id)
+{
+    if (id >= static_cast<uint32_t>(Shaders::Preset::First)) {
+        __LOG_METHOD_CTX_WRN("Given ID is in reserved values", id);
+        return;
+    }
+    if (_objects.shaders.count(id) != 0) {
+        _objects.shaders.erase(_objects.shaders.find(id));
+    }
+}
+
+void Window::removeRenderer(uint32_t id)
+{
+    if (_objects.renderers.count(id) != 0) {
+        _objects.renderers.erase(_objects.renderers.find(id));
+    }
+}
+
+void Window::createModel(uint32_t id, Model::Type type) try
 {
     switch (type) {
-    case ModelType::Classic:
-        _objects.models.try_emplace(id);
-        _objects.models.at(id).reset(new Model(weak_from_this()));
-        break;
-    case ModelType::Plane:
+    case Model::Type::Plane:
         _objects.planes.try_emplace(id);
         _objects.planes.at(id).reset(new Plane(weak_from_this()));
         break;
@@ -232,15 +259,10 @@ void Window::createModel(uint32_t id, ModelType type) try
 }
 __CATCH_AND_RETHROW_METHOD_EXC;
 
-void Window::removeModel(uint32_t id, ModelType type)
+void Window::removeModel(uint32_t id, Model::Type type)
 {
     switch (type) {
-    case ModelType::Classic:
-        if (_objects.models.count(id) != 0) {
-            _objects.models.erase(_objects.models.find(id));
-        }
-        break;
-    case ModelType::Plane:
+    case Model::Type::Plane:
         if (_objects.planes.count(id) != 0) {
             _objects.planes.erase(_objects.planes.find(id));
         }
@@ -273,27 +295,6 @@ void Window::removeCamera(uint32_t id)
 {
     if (_objects.cameras.count(id) != 0) {
         _objects.cameras.erase(_objects.cameras.find(id));
-    }
-}
-
-void Window::createShaders(uint32_t id) try
-{
-    _objects.shaders.try_emplace(id);
-    _objects.shaders.at(id).reset(new Shaders(weak_from_this()));
-}
-__CATCH_AND_RETHROW_METHOD_EXC;
-
-void Window::removeShaders(uint32_t id)
-{
-    if (_objects.shaders.count(id) != 0) {
-        _objects.shaders.erase(_objects.shaders.find(id));
-    }
-}
-
-void Window::removeRenderer(uint32_t id)
-{
-    if (_objects.renderers.count(id) != 0) {
-        _objects.renderers.erase(_objects.renderers.find(id));
     }
 }
 
@@ -402,7 +403,7 @@ void Window::_updateHoveredModel()
             if (renderer->_hovered_z < z) {
                 z = renderer->_hovered_z;
                 _hovered_model_id = renderer->_hovered_id;
-                _hovered_model_type = ModelType::Plane;
+                _hovered_model_type = Model::Type::Plane;
             }
             // If the depth buffer was reset at least once by the renderer, previous
             // tested models will always be on top of all not-yet-tested models,
@@ -458,9 +459,6 @@ void Window::_updateHoveredModelIfNeeded(std::chrono::steady_clock::time_point c
 
 void Window::_callPassiveFunctions()
 {
-    for (auto it = _objects.models.cbegin(); it != _objects.models.cend(); ++it) {
-        it->second->_callPassiveFunction(_window.get(), it->first);
-    }
     for (auto it = _objects.planes.cbegin(); it != _objects.planes.cend(); ++it) {
         it->second->_callPassiveFunction(_window.get(), it->first);
     }

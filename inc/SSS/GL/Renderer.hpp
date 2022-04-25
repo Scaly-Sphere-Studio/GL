@@ -6,7 +6,8 @@ __SSS_GL_BEGIN;
 
 class Renderer : public _internal::WindowObject {
 protected:
-    Renderer(std::weak_ptr<Window> window);             // Constructor
+    // Constructor
+    Renderer(std::weak_ptr<Window> window) : _internal::WindowObject(window) {};
 public:
     Renderer()                              = delete;   // Constructor (default)
     virtual ~Renderer()                     = default;  // Destructor
@@ -28,13 +29,13 @@ public:
     std::deque<Chunk> chunks;
     std::string title;
 
-protected:
-    Shaders::Ptr _shaders;
-    Basic::VAO::Ptr _vao;
-    Basic::VBO::Ptr _vbo;
-    Basic::IBO::Ptr _ibo;
-public:
     virtual void render() = 0;
+
+private:
+    uint32_t _shaders_id{ 0 };
+public:
+    inline void setShadersID(uint32_t id) noexcept { _shaders_id = id; };
+    inline uint32_t getShadersID() const noexcept { return _shaders_id; };
 
 private:
     bool _is_active{ true };

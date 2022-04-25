@@ -17,9 +17,14 @@ public:
     
     // Aliases
     using Ptr = std::unique_ptr<Shaders>;
+    enum class Preset : uint32_t {
+        Plane = 0x80000000,
+
+        First = Plane
+    };
 
     void loadFromFiles(std::string const& vertex_fp, std::string const& fragment_fp);
-    void loadFromData(std::string const& vertex_data, std::string const& fragment_data);
+    void loadFromStrings(std::string const& vertex_data, std::string const& fragment_data);
 
     // Use this shader program for the current rendering
     void use() const;

@@ -4,10 +4,6 @@
 
 __SSS_GL_BEGIN;
 
-enum class ModelType {
-    Classic,    // Model class
-    Plane,      // Plane class
-};
 
 class Model : public _internal::WindowObject {
     friend class Window;
@@ -16,9 +12,12 @@ protected:
     Model(std::weak_ptr<Window> window);
 
 public:
-    virtual ~Model();
+    virtual ~Model() = 0;
 
     using Ptr = std::unique_ptr<Model>;
+    enum class Type {
+        Plane   // Plane class
+    };
 
     void setScaling(glm::vec3 scaling);
     void setScaling(float scaling = 1.f);

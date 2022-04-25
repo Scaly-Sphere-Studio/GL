@@ -14,17 +14,23 @@ private:
     PlaneRenderer(std::weak_ptr<Window> window);
 
     using Mat4_array = std::array<glm::mat4, glsl_max_array_size>;
-    void _renderPart(uint32_t& count, bool reset_depth) const;
+    void _renderPart(Shaders::Ptr const& shader,
+        uint32_t& count, bool reset_depth) const;
 
 public:
     virtual void render();
 
 private:
-    bool _findNearestModel(float x, float y);
-    uint32_t _hovered_id{ 0 };
-    double _hovered_z{ DBL_MAX };
+    Basic::VAO::Ptr _vao;
+    Basic::VBO::Ptr _vbo;
+    Basic::IBO::Ptr _ibo;
+    
     Mat4_array _VPs;
     Mat4_array _Models;
+
+    uint32_t _hovered_id{ 0 };
+    double _hovered_z{ DBL_MAX };
+    bool _findNearestModel(float x, float y);
 };
 
 __INTERNAL_END;
