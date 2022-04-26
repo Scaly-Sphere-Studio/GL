@@ -37,10 +37,10 @@
     <ClInclude Include="inc\SSS\GL\_internal\callbacks.hpp" />
     <ClInclude Include="inc\SSS\GL\_internal\PlaneRenderer.hpp" />
     <ClInclude Include="inc\SSS\GL\_internal\_includes.hpp" />
-    <ClInclude Include="inc\SSS\GL\_internal\basics.hpp" />
+    <ClInclude Include="inc\SSS\GL\Basics.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\_internal\basics.cpp" />
+    <ClCompile Include="src\Basics.cpp" />
     <ClCompile Include="src\_internal\callbacks.cpp" />
     <ClCompile Include="src\Shaders.cpp" />
     <ClCompile Include="src\Texture.cpp" />

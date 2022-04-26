@@ -1,5 +1,4 @@
 #include "SSS/GL/Window.hpp"
-#include "SSS/GL/_internal/callbacks.hpp"
 
 __SSS_GL_BEGIN;
 

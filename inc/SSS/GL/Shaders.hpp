@@ -1,6 +1,6 @@
 #pragma once
 
-#include "_internal/basics.hpp"
+#include "Basics.hpp"
 
 /** @file
  *  Defines class SSS::GL::Shaders.

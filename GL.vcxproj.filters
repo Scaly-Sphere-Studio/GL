@@ -46,9 +46,6 @@
     <ClCompile Include="src\_internal\callbacks.cpp">
       <Filter>src\_internal</Filter>
     </ClCompile>
-    <ClCompile Include="src\_internal\basics.cpp">
-      <Filter>src\_internal</Filter>
-    </ClCompile>
     <ClCompile Include="src\Texture.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -60,6 +57,9 @@
     </ClCompile>
     <ClCompile Include="src\_internal\loadPreSetShaders.cpp">
       <Filter>src\_internal</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Basics.cpp">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -96,8 +96,8 @@
     <ClInclude Include="inc\SSS\GL\_internal\PlaneRenderer.hpp">
       <Filter>inc\_internal</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL\_internal\basics.hpp">
-      <Filter>inc\_internal</Filter>
+    <ClInclude Include="inc\SSS\GL\Basics.hpp">
+      <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
