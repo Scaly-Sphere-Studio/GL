@@ -2,6 +2,10 @@
 
 #include "_internal/basics.hpp"
 
+/** @file
+ *  Defines class SSS::GL::Texture.
+ */
+
 __SSS_GL_BEGIN;
 
 class Texture : public _internal::WindowObject {

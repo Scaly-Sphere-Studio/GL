@@ -3,7 +3,7 @@
 #include "_includes.hpp"
 
 /** @file
- *  Defines SSS::GL::Basic namespace.
+ *  Defines namespace SSS::GL::Basic and subsequent classes.
  */
 
 __SSS_GL_BEGIN;

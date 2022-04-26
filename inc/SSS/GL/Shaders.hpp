@@ -2,6 +2,10 @@
 
 #include "_internal/basics.hpp"
 
+/** @file
+ *  Defines class SSS::GL::Shaders.
+ */
+
 __SSS_GL_BEGIN;
 
 class Shaders : public _internal::WindowObject {

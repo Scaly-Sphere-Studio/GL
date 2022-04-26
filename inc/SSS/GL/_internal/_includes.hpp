@@ -1,7 +1,7 @@
 #pragma once
 
 /** @dir SSS/GL/_internal
- *  Holds \b internal headers for the %SSS/Text-Rendering library.
+ *  Holds \b internal headers for the %SSS/GL library.
  */
 
 /** @file

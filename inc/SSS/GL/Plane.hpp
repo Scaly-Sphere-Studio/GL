@@ -2,6 +2,10 @@
 
 #include "Model.hpp"
 
+/** @file
+ *  Defines class SSS::GL::Plane.
+ */
+
 __SSS_GL_BEGIN;
 
 __INTERNAL_BEGIN;

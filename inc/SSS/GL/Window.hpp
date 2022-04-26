@@ -6,6 +6,10 @@
 #include "Plane.hpp"
 #include "_internal/PlaneRenderer.hpp"
 
+/** @file
+ *  Defines class SSS::GL::Window.
+ */
+
 __SSS_GL_BEGIN;
     
 void pollEverything();

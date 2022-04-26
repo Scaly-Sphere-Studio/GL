@@ -2,6 +2,10 @@
 
 #include "Shaders.hpp"
 
+/** @file
+ *  Defines abstract class SSS::GL::Renderer.
+ */
+
 __SSS_GL_BEGIN;
 
 class Renderer : public _internal::WindowObject {

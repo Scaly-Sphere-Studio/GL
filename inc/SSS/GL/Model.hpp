@@ -2,8 +2,11 @@
 
 #include "_internal/basics.hpp"
 
-__SSS_GL_BEGIN;
+/** @file
+ *  Defines abstract class SSS::GL::Model.
+ */
 
+__SSS_GL_BEGIN;
 
 class Model : public _internal::WindowObject {
     friend class Window;

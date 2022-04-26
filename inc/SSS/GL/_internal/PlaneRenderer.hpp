@@ -2,6 +2,10 @@
 
 #include "../Renderer.hpp"
 
+/** @file
+ *  Defines internal class behind SSS::GL::Plane::Renderer alias.
+ */
+
 __SSS_GL_BEGIN;
 __INTERNAL_BEGIN;
 

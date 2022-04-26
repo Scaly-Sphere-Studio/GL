@@ -2,6 +2,10 @@
 
 #include "_internal/basics.hpp"
 
+/** @file
+ *  Defines class SSS::GL::Camera.
+ */
+
 __SSS_GL_BEGIN;
 __INTERNAL_BEGIN;
 void window_resize_callback(GLFWwindow*, int, int); // Pre-definition

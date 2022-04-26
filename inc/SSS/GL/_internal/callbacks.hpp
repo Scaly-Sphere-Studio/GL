@@ -2,6 +2,10 @@
 
 #include "_includes.hpp"
 
+/** @file
+ *  Defines internal callback functions (doesn't affect user callbacks).
+ */
+
 __SSS_GL_BEGIN;
 
 /** \cond TODO*/
