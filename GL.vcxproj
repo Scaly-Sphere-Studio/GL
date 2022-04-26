@@ -27,6 +27,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\SSS\GL.hpp" />
+    <ClInclude Include="inc\SSS\GL\Globals.hpp" />
     <ClInclude Include="inc\SSS\GL\Renderer.hpp" />
     <ClInclude Include="inc\SSS\GL\Camera.hpp" />
     <ClInclude Include="inc\SSS\GL\Model.hpp" />
@@ -50,6 +51,7 @@
     <ClCompile Include="src\_internal\PlaneRenderer.cpp" />
     <ClCompile Include="src\_internal\loadPreSetShaders.cpp" />
     <ClCompile Include="src\Window.cpp" />
+    <ClCompile Include="src\Globals.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

@@ -7,13 +7,11 @@
 #include "_internal/PlaneRenderer.hpp"
 
 /** @file
- *  Defines class SSS::GL::Window.
+ *  Defines class SSS::GL::Window and its bound class SSS::GL::Context.
  */
 
 __SSS_GL_BEGIN;
     
-void pollEverything();
-
 class Window : public std::enable_shared_from_this<Window> {
     
     friend void pollEverything();

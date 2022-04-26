@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GL/Window.hpp"
+#include "GL/Globals.hpp"
 
 /** @file
  *  Header of the
