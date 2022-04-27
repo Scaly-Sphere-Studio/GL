@@ -9,7 +9,7 @@ std::map<uint32_t, SSS::GL::Model::PassiveFunc> SSS::GL::Model::passive_funcs {
     { 0, nullptr }
 };
 
-__SSS_GL_BEGIN;
+SSS_GL_BEGIN;
 
 Model::Model(std::weak_ptr<Window> window) try
     : _internal::WindowObject(window)
@@ -18,7 +18,7 @@ Model::Model(std::weak_ptr<Window> window) try
     setRotation();
     setTranslation();
 }
-__CATCH_AND_RETHROW_METHOD_EXC;
+CATCH_AND_RETHROW_METHOD_EXC;
 
 Model::~Model()
 {
@@ -108,7 +108,7 @@ void Model::_callOnClickFunction(GLFWwindow* ptr, uint32_t id, int button, int a
         f(ptr, id, button, action, mods);
     }
 }
-__CATCH_AND_RETHROW_METHOD_EXC;
+CATCH_AND_RETHROW_METHOD_EXC;
 
 void Model::_callPassiveFunction(GLFWwindow* ptr, uint32_t id)
 {
@@ -121,4 +121,4 @@ void Model::_callPassiveFunction(GLFWwindow* ptr, uint32_t id)
     }
 }
 
-__SSS_GL_END;
+SSS_GL_END;

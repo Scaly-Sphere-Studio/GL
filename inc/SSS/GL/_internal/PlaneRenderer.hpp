@@ -6,8 +6,8 @@
  *  Defines internal class behind SSS::GL::Plane::Renderer alias.
  */
 
-__SSS_GL_BEGIN;
-__INTERNAL_BEGIN;
+SSS_GL_BEGIN;
+INTERNAL_BEGIN;
 
 class PlaneRenderer : public Renderer {
     friend class Window;
@@ -37,5 +37,5 @@ private:
     bool _findNearestModel(float x, float y);
 };
 
-__INTERNAL_END;
-__SSS_GL_END;
+INTERNAL_END;
+SSS_GL_END;

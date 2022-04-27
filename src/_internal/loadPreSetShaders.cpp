@@ -1,6 +1,6 @@
 #include "SSS/GL/Window.hpp"
 
-__SSS_GL_BEGIN;
+SSS_GL_BEGIN;
 
 static void _planeShadersData(std::string& vertex, std::string& fragment, uint32_t size)
 {
@@ -57,6 +57,6 @@ void Window::loadPreSetShaders() try
     }
 
 }
-__CATCH_AND_RETHROW_METHOD_EXC;
+CATCH_AND_RETHROW_METHOD_EXC;
 
-__SSS_GL_END;
+SSS_GL_END;

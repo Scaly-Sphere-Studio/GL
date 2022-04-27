@@ -1,7 +1,7 @@
 #include "SSS/GL/Basics.hpp"
 #include "SSS/GL/Window.hpp"
 
-__SSS_GL_BEGIN;
+SSS_GL_BEGIN;
 
 namespace Basic {
 
@@ -16,7 +16,7 @@ namespace Basic {
             }())
     {
     }
-    __CATCH_AND_RETHROW_METHOD_EXC;
+    CATCH_AND_RETHROW_METHOD_EXC;
 
     Texture::~Texture()
     {
@@ -60,7 +60,7 @@ namespace Basic {
             }())
     {
     }
-    __CATCH_AND_RETHROW_METHOD_EXC;
+    CATCH_AND_RETHROW_METHOD_EXC;
 
     VAO::~VAO()
     {
@@ -84,7 +84,7 @@ namespace Basic {
             }())
     {
     }
-    __CATCH_AND_RETHROW_METHOD_EXC;
+    CATCH_AND_RETHROW_METHOD_EXC;
 
 
     VBO::~VBO()
@@ -117,7 +117,7 @@ namespace Basic {
             }())
     {
     }
-    __CATCH_AND_RETHROW_METHOD_EXC;
+    CATCH_AND_RETHROW_METHOD_EXC;
 
     IBO::~IBO()
     {
@@ -138,4 +138,4 @@ namespace Basic {
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, usage);
     }
 }
-__SSS_GL_END;
+SSS_GL_END;

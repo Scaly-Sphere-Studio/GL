@@ -1,7 +1,7 @@
 #include "SSS/GL/Globals.hpp"
 #include "SSS/GL/Window.hpp"
 
-__SSS_GL_BEGIN;
+SSS_GL_BEGIN;
 
 void pollEverything() try
 {
@@ -66,6 +66,6 @@ void pollEverything() try
         }
     }
 }
-__CATCH_AND_RETHROW_FUNC_EXC;
+CATCH_AND_RETHROW_FUNC_EXC;
 
-__SSS_GL_END;
+SSS_GL_END;

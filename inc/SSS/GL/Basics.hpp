@@ -6,11 +6,11 @@
  *  Defines namespace SSS::GL::Basic and subsequent classes.
  */
 
-__SSS_GL_BEGIN;
+SSS_GL_BEGIN;
 
 class Window; // Pre-declaration of Window class.
 
-__INTERNAL_BEGIN;
+INTERNAL_BEGIN;
 
 // This class is to be inherited in all classes whose instances are bounded
 // to a specific Window instance. 
@@ -23,7 +23,7 @@ protected:
     std::weak_ptr<Window> _window;
 };
 
-__INTERNAL_END;
+INTERNAL_END;
 
 /** %Basic abstractisation of \b OpenGL objects.*/
 namespace Basic {
@@ -166,4 +166,4 @@ namespace Basic {
     };
 }
 
-__SSS_GL_END;
+SSS_GL_END;

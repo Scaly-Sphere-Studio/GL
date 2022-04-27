@@ -6,8 +6,8 @@
  *  Defines global functions.
  */
 
-__SSS_GL_BEGIN;
+SSS_GL_BEGIN;
 
 void pollEverything();
 
-__SSS_GL_END;
+SSS_GL_END;

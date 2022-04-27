@@ -6,7 +6,7 @@
 #define STBI_FAILURE_USERMSG
 #include <stb_image.h>
 
-__SSS_GL_BEGIN;
+SSS_GL_BEGIN;
 
 // Init statics
 bool Texture::LOG::constructor{ false };
@@ -24,15 +24,15 @@ Texture::Texture(std::weak_ptr<Window> window) try
     _raw_texture.parameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
     if (LOG::constructor) {
-        __LOG_CONSTRUCTOR;
+        LOG_CONSTRUCTOR;
     }
 }
-__CATCH_AND_RETHROW_METHOD_EXC;
+CATCH_AND_RETHROW_METHOD_EXC;
 
 Texture::~Texture()
 {
     if (LOG::destructor) {
-        __LOG_DESTRUCTOR;
+        LOG_DESTRUCTOR;
     }
 }
 
@@ -50,7 +50,7 @@ void Texture::edit(void const* pixels, int width, int height) try
 
     _updatePlanesScaling();
 }
-__CATCH_AND_RETHROW_METHOD_EXC;
+CATCH_AND_RETHROW_METHOD_EXC;
 
 void Texture::useFile(std::string filepath)
 {
@@ -186,4 +186,4 @@ void Texture::_AsyncLoading::_asyncFunction(std::string filepath)
     _pixels = RGBA32::Vector(raw_pixels.get(), raw_pixels.get() + (_w * _h));
 }
 
-__SSS_GL_END;
+SSS_GL_END;

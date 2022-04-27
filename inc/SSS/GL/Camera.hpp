@@ -6,10 +6,10 @@
  *  Defines class SSS::GL::Camera.
  */
 
-__SSS_GL_BEGIN;
-__INTERNAL_BEGIN;
+SSS_GL_BEGIN;
+INTERNAL_BEGIN;
 void window_resize_callback(GLFWwindow*, int, int); // Pre-definition
-__INTERNAL_END;
+INTERNAL_END;
 
 class Camera : _internal::WindowObject {
     friend void _internal::window_resize_callback(GLFWwindow*, int, int);
@@ -66,4 +66,4 @@ private:
     void _computeProjection();
 };
 
-__SSS_GL_END;
+SSS_GL_END;

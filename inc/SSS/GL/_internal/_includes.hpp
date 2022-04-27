@@ -32,11 +32,11 @@
 
 /** Declares the SSS::GL namespace.
  *  Further code will be nested in the SSS::GL namespace.\n
- *  Should be used in pair with with #__SSS_GL_END.
+ *  Should be used in pair with with #SSS_GL_END.
  */
-#define __SSS_GL_BEGIN __SSS_BEGIN; namespace GL {
+#define SSS_GL_BEGIN SSS_BEGIN; namespace GL {
 /** Closes the SSS::GL namespace declaration.
  *  Further code will no longer be nested in the SSS::GL namespace.\n
- *  Should be used in pair with with #__SSS_GL_BEGIN.
+ *  Should be used in pair with with #SSS_GL_BEGIN.
  */
-#define __SSS_GL_END __SSS_END; }
+#define SSS_GL_END SSS_END; }

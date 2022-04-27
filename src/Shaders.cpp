@@ -1,7 +1,7 @@
 #include "SSS/GL/Shaders.hpp"
 #include "SSS/GL/Window.hpp"
 
-__SSS_GL_BEGIN;
+SSS_GL_BEGIN;
 
 static void compileShader(GLuint shader_id, std::string const& shader_code)
 {
@@ -19,7 +19,7 @@ static void compileShader(GLuint shader_id, std::string const& shader_code)
 		std::vector<char> msg(log_length + 1);
 		glGetShaderInfoLog(shader_id, log_length, NULL, &msg[0]);
 		// Throw
-		throw_exc(__FUNC_MSG(__CONTEXT_MSG("Could not compile shader", &msg[0])));
+		throw_exc(FUNC_MSG(CONTEXT_MSG("Could not compile shader", &msg[0])));
 	}
 }
 
@@ -28,11 +28,11 @@ static GLuint loadShaders(std::string const& vertex_data, std::string const& fra
 	// Create the shaders
 	GLuint vertex_shader_id = glCreateShader(GL_VERTEX_SHADER);
 	if (vertex_shader_id == 0) {
-		throw_exc(__CONTEXT_MSG("Could not create vertex shader", glGetError()));
+		throw_exc(CONTEXT_MSG("Could not create vertex shader", glGetError()));
 	}
 	GLuint fragment_shader_id = glCreateShader(GL_FRAGMENT_SHADER);
 	if (fragment_shader_id == 0) {
-		throw_exc(__CONTEXT_MSG("Could not create fragment shader", glGetError()));
+		throw_exc(CONTEXT_MSG("Could not create fragment shader", glGetError()));
 	}
 	// Compile the shaders
 	compileShader(vertex_shader_id, vertex_data);
@@ -41,7 +41,7 @@ static GLuint loadShaders(std::string const& vertex_data, std::string const& fra
 	// Link the program
 	GLuint program_id = glCreateProgram();
 	if (program_id == 0) {
-		throw_exc(__CONTEXT_MSG("Could not create program", glGetError()));
+		throw_exc(CONTEXT_MSG("Could not create program", glGetError()));
 	}
 	glAttachShader(program_id, vertex_shader_id);
 	glAttachShader(program_id, fragment_shader_id);
@@ -56,7 +56,7 @@ static GLuint loadShaders(std::string const& vertex_data, std::string const& fra
 		std::vector<char> msg(log_length + 1);
 		glGetProgramInfoLog(program_id, log_length, NULL, &msg[0]);
 		// Throw
-		throw_exc(__FUNC_MSG(__CONTEXT_MSG("Could not link program", &msg[0])));
+		throw_exc(FUNC_MSG(CONTEXT_MSG("Could not link program", &msg[0])));
 	}
 
 	// Free shaders
@@ -73,7 +73,7 @@ Shaders::Shaders(std::weak_ptr<Window> window) try
 	: _internal::WindowObject(window)
 {
 }
-__CATCH_AND_RETHROW_METHOD_EXC;
+CATCH_AND_RETHROW_METHOD_EXC;
 
 Shaders::~Shaders()
 {
@@ -88,7 +88,7 @@ void Shaders::loadFromFiles(std::string const& vertex_fp, std::string const& fra
 {
 	loadFromStrings(readFile(vertex_fp), readFile(fragment_fp));
 }
-__CATCH_AND_RETHROW_METHOD_EXC;
+CATCH_AND_RETHROW_METHOD_EXC;
 
 void Shaders::loadFromStrings(std::string const& vertex_data, std::string const& fragment_data) try
 {
@@ -96,12 +96,12 @@ void Shaders::loadFromStrings(std::string const& vertex_data, std::string const&
 	_id = loadShaders(vertex_data, fragment_data);
 	_loaded = true;
 }
-__CATCH_AND_RETHROW_METHOD_EXC;
+CATCH_AND_RETHROW_METHOD_EXC;
 
 void Shaders::use() const
 {
 	if (!_loaded) {
-		__LOG_OBJ_METHOD_WRN("Shaders were not loaded!");
+		LOG_OBJ_METHOD_WRN("Shaders were not loaded!");
 		return;
 	}
 	Context const context(_window);
@@ -126,4 +126,4 @@ void Shaders::setUniformMat4fv(std::string const& name, GLsizei count,
 	glUniformMatrix4fv(getUniformLocation(name), count, transpose, value);
 }
 
-__SSS_GL_END;
+SSS_GL_END;

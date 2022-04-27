@@ -10,7 +10,7 @@
  *  Defines class SSS::GL::Window and its bound class SSS::GL::Context.
  */
 
-__SSS_GL_BEGIN;
+SSS_GL_BEGIN;
     
 class Window : public std::enable_shared_from_this<Window> {
     
@@ -266,4 +266,4 @@ private:
     bool _equal{ true };
 };
 
-__SSS_GL_END;
+SSS_GL_END;

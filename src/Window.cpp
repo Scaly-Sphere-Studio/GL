@@ -1,6 +1,6 @@
 #include "SSS/GL/Window.hpp"
 
-__SSS_GL_BEGIN;
+SSS_GL_BEGIN;
 
     // --- Static initializations ---
 
@@ -26,7 +26,7 @@ Window::Window(CreateArgs const& args) try
         // Init GLFW
         glfwInit();
         if (LOG::glfw_init) {
-            __LOG_OBJ_MSG("GLFW initialized.");
+            LOG_OBJ_MSG("GLFW initialized.");
         }
         // Retrive monitors
         _internal::monitor_callback(nullptr, 0);
@@ -98,10 +98,10 @@ Window::Window(CreateArgs const& args) try
     glfwSetKeyCallback(_window.get(), _internal::key_callback);
 
     if (LOG::constructor) {
-        __LOG_CONSTRUCTOR;
+        LOG_CONSTRUCTOR;
     }
 }
-__CATCH_AND_RETHROW_METHOD_EXC;
+CATCH_AND_RETHROW_METHOD_EXC;
 
 // Destructor
 Window::~Window()
@@ -114,11 +114,11 @@ Window::~Window()
     if (_instances.empty()) {
         glfwTerminate();
         if (LOG::glfw_init) {
-            __LOG_OBJ_MSG("GLFW terminated.");
+            LOG_OBJ_MSG("GLFW terminated.");
         }
     }
     if (LOG::destructor) {
-        __LOG_DESTRUCTOR;
+        LOG_DESTRUCTOR;
     }
 }
 
@@ -129,7 +129,7 @@ Window::Shared Window::create(CreateArgs const& args) try
     ptr->loadPreSetShaders();
     return ptr;
 }
-__CATCH_AND_RETHROW_FUNC_EXC;
+CATCH_AND_RETHROW_FUNC_EXC;
 
 Window::Shared Window::get(GLFWwindow* ptr) try
 {
@@ -141,7 +141,7 @@ Window::Shared Window::get(GLFWwindow* ptr) try
     }
     throw_exc("Found no window for given pointer.");
 }
-__CATCH_AND_RETHROW_FUNC_EXC;
+CATCH_AND_RETHROW_FUNC_EXC;
 
 void Window::cleanObjects() noexcept
 {
@@ -156,18 +156,18 @@ void Window::cleanObjects() noexcept
 void Window::createShaders(uint32_t id) try
 {
     if (id >= static_cast<uint32_t>(Shaders::Preset::First)) {
-        __LOG_METHOD_CTX_WRN("Given ID is in reserved values", id);
+        LOG_METHOD_CTX_WRN("Given ID is in reserved values", id);
         return;
     }
     _objects.shaders.try_emplace(id);
     _objects.shaders.at(id).reset(new Shaders(weak_from_this()));
 }
-__CATCH_AND_RETHROW_METHOD_EXC;
+CATCH_AND_RETHROW_METHOD_EXC;
 
 void Window::removeShaders(uint32_t id)
 {
     if (id >= static_cast<uint32_t>(Shaders::Preset::First)) {
-        __LOG_METHOD_CTX_WRN("Given ID is in reserved values", id);
+        LOG_METHOD_CTX_WRN("Given ID is in reserved values", id);
         return;
     }
     if (_objects.shaders.count(id) != 0) {
@@ -191,7 +191,7 @@ void Window::createModel(uint32_t id, Model::Type type) try
         break;
     }
 }
-__CATCH_AND_RETHROW_METHOD_EXC;
+CATCH_AND_RETHROW_METHOD_EXC;
 
 void Window::removeModel(uint32_t id, Model::Type type)
 {
@@ -209,7 +209,7 @@ void Window::createTexture(uint32_t id) try
     _objects.textures.try_emplace(id);
     _objects.textures.at(id).reset(new Texture(weak_from_this()));
 }
-__CATCH_AND_RETHROW_METHOD_EXC;
+CATCH_AND_RETHROW_METHOD_EXC;
 
 void Window::removeTexture(uint32_t id)
 {
@@ -223,7 +223,7 @@ void Window::createCamera(uint32_t id) try
     _objects.cameras.try_emplace(id);
     _objects.cameras.at(id).reset(new Camera(weak_from_this()));
 }
-__CATCH_AND_RETHROW_FUNC_EXC;
+CATCH_AND_RETHROW_FUNC_EXC;
 
 void Window::removeCamera(uint32_t id)
 {
@@ -276,14 +276,14 @@ void Window::printFrame() try
                 char buff[64];
                 sprintf_s(buff, "% 4lldfps, longest frame: %lldms",
                     _frame_timer.get(), _frame_timer.longestFrame());
-                __LOG_OBJ_MSG(buff);
+                LOG_OBJ_MSG(buff);
             }
             else {
                 if (LOG::fps) {
-                    __LOG_OBJ_MSG(_frame_timer.getFormatted() + "fps");
+                    LOG_OBJ_MSG(_frame_timer.getFormatted() + "fps");
                 }
                 if (LOG::longest_frame) {
-                    __LOG_OBJ_MSG(__CONTEXT_MSG(
+                    LOG_OBJ_MSG(CONTEXT_MSG(
                         "Longest frame", _frame_timer.longestFrame()) + "ms");
                 }
             }
@@ -296,7 +296,7 @@ void Window::printFrame() try
         _last_render_time = clock::now();
     }
 }
-__CATCH_AND_RETHROW_METHOD_EXC;
+CATCH_AND_RETHROW_METHOD_EXC;
 
 void Window::_updateHoveredModel()
 {
@@ -441,14 +441,14 @@ void Window::setFullscreen(bool state, int screen_id)
     if (state) {
         // Ensure given ID is in range
         if (screen_id >= static_cast<int>(_monitors.size())) {
-            __LOG_METHOD_WRN("screen_id out of range.");
+            LOG_METHOD_WRN("screen_id out of range.");
             return;
         }
         // Select monitor
         GLFWmonitor* monitor = screen_id < 0 ? _main_monitor : _monitors[screen_id];
         // Ensure window isn't already fullscreen on given ID
         if (fullscreenMonitor == monitor) {
-            __LOG_METHOD_WRN("window is already fullscreen on given screen");
+            LOG_METHOD_WRN("window is already fullscreen on given screen");
             return;
         }
         // Store current size & pos, if currently in windowed mode
@@ -461,7 +461,7 @@ void Window::setFullscreen(bool state, int screen_id)
     else {
         // Ensure the window isn't arealdy windowed
         if (fullscreenMonitor == nullptr) {
-            __LOG_METHOD_WRN("window is already windowed.");
+            LOG_METHOD_WRN("window is already windowed.");
             return;
         }
         // Set window in windowed mode with old values
@@ -519,4 +519,4 @@ Context::~Context()
     glfwMakeContextCurrent(_previous);
 }
 
-__SSS_GL_END;
+SSS_GL_END;

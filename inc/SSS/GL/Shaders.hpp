@@ -6,7 +6,7 @@
  *  Defines class SSS::GL::Shaders.
  */
 
-__SSS_GL_BEGIN;
+SSS_GL_BEGIN;
 
 class Shaders : public _internal::WindowObject {
     friend class Window;
@@ -46,4 +46,4 @@ private:
     GLuint _id{ 0 };
 };
 
-__SSS_GL_END;
+SSS_GL_END;

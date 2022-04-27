@@ -6,7 +6,7 @@
  *  Defines abstract class SSS::GL::Model.
  */
 
-__SSS_GL_BEGIN;
+SSS_GL_BEGIN;
 
 class Model : public _internal::WindowObject {
     friend class Window;
@@ -76,4 +76,4 @@ protected:
     void _callPassiveFunction(GLFWwindow* ptr, uint32_t id);
 };
 
-__SSS_GL_END;
+SSS_GL_END;

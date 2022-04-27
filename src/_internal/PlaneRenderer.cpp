@@ -3,8 +3,8 @@
 #include "SSS/GL/Window.hpp"
 #include "SSS/GL/Texture.hpp"
 
-__SSS_GL_BEGIN;
-__INTERNAL_BEGIN;
+SSS_GL_BEGIN;
+INTERNAL_BEGIN;
 
 PlaneRenderer::PlaneRenderer(std::weak_ptr<Window> window) try
     : Renderer(window)
@@ -42,7 +42,7 @@ PlaneRenderer::PlaneRenderer(std::weak_ptr<Window> window) try
     };
     _ibo->edit(sizeof(indices), indices, GL_STATIC_DRAW);
 }
-__CATCH_AND_RETHROW_METHOD_EXC;
+CATCH_AND_RETHROW_METHOD_EXC;
 
 void PlaneRenderer::_renderPart(Shaders::Ptr const& shader,
     uint32_t& count, bool reset_depth) const
@@ -146,7 +146,7 @@ void PlaneRenderer::render() try
     }
     _renderPart(shader, count, false);
 }
-__CATCH_AND_RETHROW_METHOD_EXC;
+CATCH_AND_RETHROW_METHOD_EXC;
 
 bool PlaneRenderer::_findNearestModel(float x, float y)
 {
@@ -202,5 +202,5 @@ bool PlaneRenderer::_findNearestModel(float x, float y)
     return result;
 }
 
-__INTERNAL_END;
-__SSS_GL_END;
+INTERNAL_END;
+SSS_GL_END;

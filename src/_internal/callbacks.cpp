@@ -1,7 +1,7 @@
 #include "SSS/GL/_internal/callbacks.hpp"
 #include "SSS/GL/Window.hpp"
 
-__SSS_GL_BEGIN;
+SSS_GL_BEGIN;
 
 namespace LOG {
     bool internal_callbacks::window_resize{ false };
@@ -12,7 +12,7 @@ namespace LOG {
     bool internal_callbacks::monitor{ false };
 }
 
-__INTERNAL_BEGIN;
+INTERNAL_BEGIN;
 
 void window_iconify_callback(GLFWwindow* ptr, int state)
 {
@@ -29,7 +29,7 @@ void window_iconify_callback(GLFWwindow* ptr, int state)
 void window_resize_callback(GLFWwindow* ptr, int w, int h) try
 {
     if (LOG::internal_callbacks::window_resize) {
-        __LOG_FUNC_MSG(toString(w) + 'x' + toString(h));
+        LOG_FUNC_MSG(toString(w) + 'x' + toString(h));
     }
 
     Window::Shared const window = Window::get(ptr);
@@ -58,13 +58,13 @@ void window_resize_callback(GLFWwindow* ptr, int w, int h) try
         window->_resize_callback(ptr, w, h);
     }
 }
-__CATCH_AND_RETHROW_FUNC_EXC;
+CATCH_AND_RETHROW_FUNC_EXC;
 
 // Determines current monitor of the window
 void window_pos_callback(GLFWwindow* ptr, int x, int y) try
 {
     if (LOG::internal_callbacks::window_pos) {
-        __LOG_FUNC_MSG(toString(x) + 'x' + toString(y));
+        LOG_FUNC_MSG(toString(x) + 'x' + toString(y));
     }
 
     Window::Shared const window = Window::get(ptr);
@@ -97,13 +97,13 @@ void window_pos_callback(GLFWwindow* ptr, int x, int y) try
         window->_pos_callback(ptr, x, y);
     }
 }
-__CATCH_AND_RETHROW_FUNC_EXC;
+CATCH_AND_RETHROW_FUNC_EXC;
 
 // Used for clickable planes and such
 void mouse_position_callback(GLFWwindow* ptr, double x, double y)
 {
     if (LOG::internal_callbacks::mouse_position) {
-        __LOG_FUNC_MSG(toString(x) + 'x' + toString(y));
+        LOG_FUNC_MSG(toString(x) + 'x' + toString(y));
     }
 
     Window::Shared const window = Window::get(ptr);
@@ -118,9 +118,9 @@ void mouse_position_callback(GLFWwindow* ptr, double x, double y)
 void mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) try
 {
     if (LOG::internal_callbacks::mouse_button) {
-        __LOG_FUNC_MSG(__CONTEXT_MSG("button", button)
-            + "; " + __CONTEXT_MSG("action", action)
-            + "; " + __CONTEXT_MSG("mods", mods)
+        LOG_FUNC_MSG(CONTEXT_MSG("button", button)
+            + "; " + CONTEXT_MSG("action", action)
+            + "; " + CONTEXT_MSG("mods", mods)
         );
     }
 
@@ -153,16 +153,16 @@ void mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) tr
         window->_mouse_button_callback(ptr, button, action, mods);
     }
 }
-__CATCH_AND_RETHROW_FUNC_EXC;
+CATCH_AND_RETHROW_FUNC_EXC;
 
 // Stores key inputs
 void key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods) try
 {
     if (LOG::internal_callbacks::key) {
-        __LOG_FUNC_MSG(__CONTEXT_MSG("key", key)
-            + "; " + __CONTEXT_MSG("scancode", scancode)
-            + "; " + __CONTEXT_MSG("action", action)
-            + "; " + __CONTEXT_MSG("mods", mods)
+        LOG_FUNC_MSG(CONTEXT_MSG("key", key)
+            + "; " + CONTEXT_MSG("scancode", scancode)
+            + "; " + CONTEXT_MSG("action", action)
+            + "; " + CONTEXT_MSG("mods", mods)
         );
     }
 
@@ -178,13 +178,13 @@ void key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods) 
         window->_key_callback(ptr, key, scancode, action, mods);
     }
 }
-__CATCH_AND_RETHROW_FUNC_EXC;
+CATCH_AND_RETHROW_FUNC_EXC;
 
 // Updates connected monitors
 void monitor_callback(GLFWmonitor* ptr, int event) try
 {
     if (LOG::internal_callbacks::monitor) {
-        __LOG_FUNC_CTX_MSG("event", event);
+        LOG_FUNC_CTX_MSG("event", event);
     }
     // Ignore arguments
     ptr; event;
@@ -200,7 +200,7 @@ void monitor_callback(GLFWmonitor* ptr, int event) try
         Window::_monitors[i] = arr[i];
     }
 }
-__CATCH_AND_RETHROW_FUNC_EXC;
+CATCH_AND_RETHROW_FUNC_EXC;
 
-__INTERNAL_END;
-__SSS_GL_END;
+INTERNAL_END;
+SSS_GL_END;

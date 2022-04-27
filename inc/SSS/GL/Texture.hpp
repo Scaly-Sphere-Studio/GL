@@ -6,7 +6,7 @@
  *  Defines class SSS::GL::Texture.
  */
 
-__SSS_GL_BEGIN;
+SSS_GL_BEGIN;
 
 class Texture : public _internal::WindowObject {
 
@@ -78,4 +78,4 @@ private:
     void _internal_edit(void const* pixels, int w, int h);
 };
 
-__SSS_GL_END;
+SSS_GL_END;

@@ -2,13 +2,13 @@
 #include "SSS/GL/Window.hpp"
 #include "SSS/GL/Texture.hpp"
 
-__SSS_GL_BEGIN;
+SSS_GL_BEGIN;
 
 Plane::Plane(std::weak_ptr<Window> window) try
     : Model(window)
 {
 }
-__CATCH_AND_RETHROW_METHOD_EXC;
+CATCH_AND_RETHROW_METHOD_EXC;
 
 Plane::~Plane()
 {
@@ -180,6 +180,6 @@ bool Plane::_isHovered(glm::mat4 const& VP, float x, float y, double &z) try
         || _hoverTriangle(mvp, C, D, A, x, y, z, is_hovered);
     return is_hovered;
 }
-__CATCH_AND_RETHROW_METHOD_EXC;
+CATCH_AND_RETHROW_METHOD_EXC;
 
-__SSS_GL_END;
+SSS_GL_END;

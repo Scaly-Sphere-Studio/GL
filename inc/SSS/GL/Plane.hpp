@@ -6,12 +6,12 @@
  *  Defines class SSS::GL::Plane.
  */
 
-__SSS_GL_BEGIN;
+SSS_GL_BEGIN;
 
-__INTERNAL_BEGIN;
+INTERNAL_BEGIN;
 void mouse_button_callback(GLFWwindow*, int, int, int); // Pre-declaration
 class PlaneRenderer;
-__INTERNAL_END;
+INTERNAL_END;
 
 class Plane : public Model {
     friend void _internal::mouse_button_callback(GLFWwindow*, int, int, int);
@@ -68,4 +68,4 @@ protected:
     bool _isHovered(glm::mat4 const& VP, float x, float y, double &z);
 };
 
-__SSS_GL_END;
+SSS_GL_END;

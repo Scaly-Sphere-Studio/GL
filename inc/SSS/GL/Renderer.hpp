@@ -6,7 +6,7 @@
  *  Defines abstract class SSS::GL::Renderer.
  */
 
-__SSS_GL_BEGIN;
+SSS_GL_BEGIN;
 
 class Renderer : public _internal::WindowObject {
 protected:
@@ -48,4 +48,4 @@ public:
     inline bool isActive() const noexcept { return _is_active; };
 };
 
-__SSS_GL_END;
+SSS_GL_END;

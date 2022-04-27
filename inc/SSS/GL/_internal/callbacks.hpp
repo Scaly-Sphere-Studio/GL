@@ -6,7 +6,7 @@
  *  Defines internal callback functions (doesn't affect user callbacks).
  */
 
-__SSS_GL_BEGIN;
+SSS_GL_BEGIN;
 
 /** \cond TODO*/
 namespace LOG {
@@ -21,7 +21,7 @@ namespace LOG {
 };
 /** \endcond*/
 
-__INTERNAL_BEGIN;
+INTERNAL_BEGIN;
 
 void window_iconify_callback(GLFWwindow* ptr, int state);
 // Resizes the internal width and height of correspondig Window instance
@@ -37,5 +37,5 @@ void key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods);
 // Updates connected monitors
 void monitor_callback(GLFWmonitor* ptr, int event);
 
-__INTERNAL_END;
-__SSS_GL_END;
+INTERNAL_END;
+SSS_GL_END;
