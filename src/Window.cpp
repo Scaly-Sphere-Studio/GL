@@ -485,38 +485,50 @@ void Window::_setMainMonitor(int id)
     _main_monitor = _monitors[id];
 }
 
-Context::Context(std::weak_ptr<Window> ptr)
-{
-    if (ptr.expired()) {
-        return;
-    }
-    Window::Shared const window = ptr.lock();
-    _given = window->_window.get();
-    _previous = glfwGetCurrentContext();
-    _equal = _given == _previous;
-    if (_equal) {
-        return;
-    }
-    glfwMakeContextCurrent(_given);
-}
 
-Context::Context(GLFWwindow* ptr)
+
+
+void Context::_init(GLFWwindow* ptr)
 {
     _given = ptr;
     _previous = glfwGetCurrentContext();
     _equal = _given == _previous;
-    if (_equal) {
+    if (!_equal) {
+        glfwMakeContextCurrent(_given);
+        // Log
+        if (Log::GL::Context::query(Log::GL::Context::get().set_context)) {
+            char buff[256];
+            sprintf_s(buff, "Context -> make current: %p (given)", ptr);
+            LOG_GL_MSG(buff);
+        }
+    }
+}
+
+Context::Context(std::weak_ptr<Window> ptr)
+{
+    Window::Shared const window = ptr.lock();
+    if (!window) {
         return;
     }
-    glfwMakeContextCurrent(_given);
+    _init(window->_window.get());
+}
+
+Context::Context(GLFWwindow* ptr)
+{
+    _init(ptr);
 }
 
 Context::~Context()
 {
-    if (_equal) {
-        return;
+    if (!_equal) {
+        glfwMakeContextCurrent(_previous);
+        // Log
+        if (Log::GL::Context::query(Log::GL::Context::get().set_context)) {
+            char buff[256];
+            sprintf_s(buff, "Context -> make current: %p (previous)", _previous);
+            LOG_GL_MSG(buff);
+        }
     }
-    glfwMakeContextCurrent(_previous);
 }
 
 SSS_GL_END;

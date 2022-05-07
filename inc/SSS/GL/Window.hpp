@@ -10,6 +10,14 @@
  *  Defines class SSS::GL::Window and its bound class SSS::GL::Context.
  */
 
+namespace SSS::Log::GL {
+    /** Logging properties for internal SSS::GL::Shaders.*/
+    struct Context : public LogBase<Context> {
+        using LOG_STRUCT_BASICS(Log, Context);
+        bool set_context = false;
+    };
+}
+
 SSS_GL_BEGIN;
     
 class Window : public std::enable_shared_from_this<Window> {
@@ -269,6 +277,8 @@ INTERNAL_END;
 
 
 class Context {
+private:
+    void _init(GLFWwindow* ptr);
 public:
     Context()                           = delete;   // Default constructor
     Context(std::weak_ptr<Window> ptr);             // Constructor
