@@ -12,7 +12,6 @@ class Texture : public _internal::WindowObject {
 
     friend void pollEverything();
     friend class Window;
-    friend class Plane;
 
 private:
     Texture(std::weak_ptr<Window> window);
@@ -45,6 +44,7 @@ private:
 public:
     void edit(void const* pixels, int width, int height);
     void useFile(std::string filepath);
+    inline RGBA32::Vector const& getRawPixels() const noexcept { return _pixels; };
 
     void setType(Type type) noexcept;
     inline Type getType() const noexcept { return _type; };

@@ -132,22 +132,28 @@ bool Plane::_hoverTriangle(glm::mat4 const& mvp, glm::vec4 const& A,
 
     // Update status if the position is on an opaque pixel
     size_t const pixel = static_cast<size_t>(_relative_y * _tex_w + _relative_x);
-    if (texture->_type == Texture::Type::Raw) {
-        if (pixel < texture->_pixels.size()) {
-            is_hovered = texture->_pixels.at(pixel).bytes.a != 0;
-        }
-    }
-    else if (texture->_type == Texture::Type::Text) {
-        TR::Area::Ptr const& text_area = texture->getTextArea();
-        if (text_area) {
-            int w, h;
-            text_area->getDimensions(w, h);
-            size_t const size = static_cast<size_t>(w) * static_cast<size_t>(h);
-            if (pixel < size) {
-                void const* pixels = text_area->pixelsGet();
-                is_hovered = static_cast<RGBA32 const*>(pixels)[pixel].bytes.a != 0;
+    switch (texture->getType()) {
+    case Texture::Type::Raw:
+        {
+            if (pixel < texture->getRawPixels().size()) {
+                is_hovered = texture->getRawPixels().at(pixel).bytes.a != 0;
             }
         }
+        break;
+    case Texture::Type::Text:
+        {
+            TR::Area::Ptr const& text_area = texture->getTextArea();
+            if (text_area) {
+                int w, h;
+                text_area->getDimensions(w, h);
+                size_t const size = static_cast<size_t>(w) * static_cast<size_t>(h);
+                if (pixel < size) {
+                    void const* pixels = text_area->pixelsGet();
+                    is_hovered = static_cast<RGBA32 const*>(pixels)[pixel].bytes.a != 0;
+                }
+            }
+        }
+        break;
     }
 
     return true;
