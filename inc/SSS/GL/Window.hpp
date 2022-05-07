@@ -190,7 +190,7 @@ public:
     inline GLFWmonitor* getMonitor() const noexcept { return _main_monitor; }
 
     void setTitle(std::string const& title);
-    inline std::string getTitle() const noexcept { return _title; };
+    inline std::string const& getTitle() const noexcept { return _title; };
 
     inline void setDimensions(int w, int h) { glfwSetWindowSize(_window.get(), w, h); };
     inline void getDimensions(int& w, int& h) const noexcept { w = _w; h = _h; };
@@ -249,6 +249,24 @@ private:
     // Sets the window's main monitor
     void _setMainMonitor(int id);
 };
+
+INTERNAL_BEGIN;
+inline char const* windowTitle(Window::Shared win) noexcept
+{
+    if (win) {
+        return win->getTitle().c_str();
+    }
+    return nullptr;
+}
+
+inline char const* windowTitle(std::weak_ptr<Window> win) noexcept
+{
+    return windowTitle(win.lock());
+}
+#define WINDOW_TITLE(X) _internal::windowTitle(X)
+
+INTERNAL_END;
+
 
 class Context {
 public:

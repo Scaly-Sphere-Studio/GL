@@ -3,6 +3,42 @@
 
 SSS_GL_BEGIN;
 
+Shaders::Shaders(std::weak_ptr<Window> window) try
+	: _internal::WindowObject(window)
+{
+	// Log
+	if (Log::GL::Shaders::query(Log::GL::Shaders::get().loading)) {
+		char buff[256];
+		sprintf_s(buff, "'%s' window -> shaders -> created", WINDOW_TITLE(_window));
+		LOG_GL_MSG(buff);
+	}
+}
+CATCH_AND_RETHROW_METHOD_EXC;
+
+Shaders::~Shaders()
+{
+	if (!_loaded) {
+		// Log
+		if (Log::GL::Shaders::query(Log::GL::Shaders::get().loading)) {
+			char buff[256];
+			sprintf_s(buff, "'%s' window -> shaders -> deleted (was never loaded)",
+				WINDOW_TITLE(_window));
+			LOG_GL_MSG(buff);
+		}
+		return;
+	}
+	Context const context(_window);
+	glDeleteProgram(_id);
+
+	// Log
+	if (Log::GL::Shaders::query(Log::GL::Shaders::get().loading)) {
+		char buff[256];
+		sprintf_s(buff, "'%s' window -> shaders -> deleted (id: %u)",
+			WINDOW_TITLE(_window), _id);
+		LOG_GL_MSG(buff);
+	}
+}
+
 static void compileShader(GLuint shader_id, std::string const& shader_code)
 {
 	// Compile shader
@@ -69,32 +105,25 @@ static GLuint loadShaders(std::string const& vertex_data, std::string const& fra
 	return program_id;
 }
 
-Shaders::Shaders(std::weak_ptr<Window> window) try
-	: _internal::WindowObject(window)
-{
-}
-CATCH_AND_RETHROW_METHOD_EXC;
-
-Shaders::~Shaders()
-{
-	if (!_loaded) {
-		return;
-	}
-	Context const context(_window);
-	glDeleteProgram(_id);
-}
-
-void Shaders::loadFromFiles(std::string const& vertex_fp, std::string const& fragment_fp) try
-{
-	loadFromStrings(readFile(vertex_fp), readFile(fragment_fp));
-}
-CATCH_AND_RETHROW_METHOD_EXC;
-
 void Shaders::loadFromStrings(std::string const& vertex_data, std::string const& fragment_data) try
 {
 	Context const context(_window);
 	_id = loadShaders(vertex_data, fragment_data);
 	_loaded = true;
+
+	// Log
+	if (Log::GL::Shaders::query(Log::GL::Shaders::get().loading)) {
+		char buff[256];
+		sprintf_s(buff, "'%s' window -> shaders -> loaded (id: %u)",
+			WINDOW_TITLE(_window), _id);
+		LOG_GL_MSG(buff);
+	}
+}
+CATCH_AND_RETHROW_METHOD_EXC;
+
+void Shaders::loadFromFiles(std::string const& vertex_fp, std::string const& fragment_fp) try
+{
+	loadFromStrings(readFile(vertex_fp), readFile(fragment_fp));
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 

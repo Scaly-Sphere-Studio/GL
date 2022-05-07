@@ -6,6 +6,15 @@
  *  Defines class SSS::GL::Shaders.
  */
 
+namespace SSS::Log::GL {
+    /** Logging properties for internal SSS::GL::Shaders.*/
+    struct Shaders : public LogBase<Shaders> {
+        using LOG_STRUCT_BASICS(Log, Shaders);
+        bool life_state = false;
+        bool loading = false;
+    };
+}
+
 SSS_GL_BEGIN;
 
 class Shaders : public _internal::WindowObject {
@@ -27,8 +36,8 @@ public:
         First = Plane
     };
 
-    void loadFromFiles(std::string const& vertex_fp, std::string const& fragment_fp);
     void loadFromStrings(std::string const& vertex_data, std::string const& fragment_data);
+    void loadFromFiles(std::string const& vertex_fp, std::string const& fragment_fp);
 
     // Use this shader program for the current rendering
     void use() const;
