@@ -37,19 +37,28 @@ Window::Window(CreateArgs const& args) try
     _setMainMonitor(args.monitor_id);
     // Retrieve video size of monitor and adjust size parameters
     GLFWvidmode const* mode = glfwGetVideoMode(_main_monitor);
-    _w = args.w < mode->width ? args.w : mode->width;
-    _h = args.h < mode->height ? args.h : mode->height;
+    if (args.fullscreen && !args.hidden) {
+        _w = mode->width;
+        _h = mode->height;
+    }
+    else {
+        _w = args.w < mode->width ? args.w : mode->width;
+        _h = args.h < mode->height ? args.h : mode->height;
+    }
+    _title = args.title;
 
     // If in Debug mode, set the Debug hint
     if constexpr (DEBUGMODE) {
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
     }
+    // Hints
+    glfwWindowHint(GLFW_VISIBLE, args.hidden ? GLFW_FALSE : GLFW_TRUE);
     // Create window
     _window.reset(glfwCreateWindow(
         _w,
         _h,
-        args.title.c_str(),
-        args.fullscreen ? _main_monitor : nullptr,
+        _title.c_str(),
+        (args.fullscreen && !args.hidden) ? _main_monitor : nullptr,
         nullptr
     ));
     // Throw if an error occured
@@ -58,18 +67,24 @@ Window::Window(CreateArgs const& args) try
         glfwGetError(&msg);
         throw_exc(msg);
     }
-    _title = args.title;
-    // Center window on given monitor
+
     int x, y;
     glfwGetMonitorPos(_main_monitor, &x, &y);
-    if (args.fullscreen) {
-        // Retrieve actual width & height
-        glfwGetWindowSize(_window.get(), &_w, &_h);
-        _windowed_x = x + (mode->width - _w) / 2;
-        _windowed_y = y + (mode->height - _h) / 2;
-    }
-    else {
+    // Center window on given monitor if needed
+    if (!args.fullscreen && !args.hidden) {
         glfwSetWindowPos(_window.get(), x + (mode->width - _w) / 2, y + (mode->height - _h) / 2);
+        // Maximize if needed
+        if (args.maximized) {
+            setMaximization(args.maximized);
+        }
+    }
+    // Retrieve actual width & height
+    glfwGetWindowSize(_window.get(), &_w, &_h);
+    _windowed_x = x + (mode->width - _w) / 2;
+    _windowed_y = y + (mode->height - _h) / 2;
+    // Iconify if needed
+    if (args.iconified && !args.hidden) {
+        setIconification(args.iconified);
     }
 
     // Make context current for this scope
@@ -85,6 +100,10 @@ Window::Window(CreateArgs const& args) try
     // Enable blending (transparency)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Initial clear
+    glClear(GL_COLOR_BUFFER_BIT);
+    glfwSwapBuffers(_window.get());
 
     // Set VSYNC to false by default
     setVSYNC(false);
@@ -237,7 +256,7 @@ void Window::removeCamera(uint32_t id)
 // Draws objects inside renderers on the back buffer.
 void Window::drawObjects()
 {
-    if (!_is_iconified && glfwGetWindowAttrib(_window.get(), GLFW_VISIBLE)) {
+    if (!_is_iconified && isVisible()) {
         // Make context current for this scope
         Context const context(_window.get());
         // Render all active renderers
@@ -256,7 +275,7 @@ void Window::printFrame() try
 {
     using clock = std::chrono::steady_clock;
     // Render if visible
-    if (!_is_iconified && glfwGetWindowAttrib(_window.get(), GLFW_VISIBLE)) {
+    if (!_is_iconified && isVisible()) {
         // Make context current for this scope
         Context const context(_window.get());
 
@@ -470,6 +489,46 @@ void Window::setFullscreen(bool state, int screen_id)
     }
 }
 
+void Window::setIconification(bool iconify)
+{
+    if (iconify) {
+        glfwIconifyWindow(_window.get());
+    }
+    else {
+        glfwRestoreWindow(_window.get());
+    }
+}
+
+void Window::setMaximization(bool maximize)
+{
+    if (maximize) {
+        glfwMaximizeWindow(_window.get());
+    }
+    else {
+        glfwRestoreWindow(_window.get());
+    }
+}
+
+bool Window::isMaximized() const
+{
+    return glfwGetWindowAttrib(_window.get(), GLFW_MAXIMIZED);
+}
+
+void Window::setVisibility(bool show)
+{
+    if (show) {
+        glfwShowWindow(_window.get());
+    }
+    else {
+        glfwHideWindow(_window.get());
+    }
+}
+
+bool Window::isVisible() const
+{
+    return static_cast<bool>(glfwGetWindowAttrib(_window.get(), GLFW_VISIBLE));
+}
+
 void Window::setTitle(std::string const& title)
 {
     _title = title;
@@ -478,8 +537,11 @@ void Window::setTitle(std::string const& title)
 
 void Window::_setMainMonitor(int id)
 {
-    if (id < 0 || id >= _monitors.size()) {
+    if (id < 0) {
         id = 0;
+    }
+    if (id >= _monitors.size()) {
+        id = _monitors.size() - 1;
     }
     _main_monitor_id = id;
     _main_monitor = _monitors[id];

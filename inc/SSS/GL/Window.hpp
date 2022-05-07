@@ -52,6 +52,9 @@ public:
         std::string title{ "Untitled" };
         int monitor_id{ 0 };
         bool fullscreen{ false };
+        bool maximized{ false };
+        bool iconified{ false };
+        bool hidden{ false };
     };
 
 // --- Public aliases ---
@@ -214,7 +217,14 @@ public:
     inline bool isFullscreen() const noexcept
         { return glfwGetWindowMonitor(_window.get()) != nullptr; };
 
+    void setIconification(bool iconify);
     inline bool isIconified() const noexcept { return _is_iconified; };
+
+    void setMaximization(bool maximize);
+    bool isMaximized() const;
+
+    void setVisibility(bool show);
+    bool isVisible() const;
 
 private:
 // --- Private variables ---
