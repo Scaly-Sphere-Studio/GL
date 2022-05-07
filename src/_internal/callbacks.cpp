@@ -2,37 +2,19 @@
 #include "SSS/GL/Window.hpp"
 
 SSS_GL_BEGIN;
-
-namespace LOG {
-    bool internal_callbacks::window_resize{ false };
-    bool internal_callbacks::window_pos{ false };
-    bool internal_callbacks::mouse_position{ false };
-    bool internal_callbacks::mouse_button{ false };
-    bool internal_callbacks::key{ false };
-    bool internal_callbacks::monitor{ false };
-}
-
 INTERNAL_BEGIN;
-
-void window_iconify_callback(GLFWwindow* ptr, int state)
-{
-    Window::Shared const window = Window::get(ptr);
-    window->_is_iconified = static_cast<bool>(state);
-
-    // Call user defined callback, if needed
-    if (window->_iconify_callback != nullptr) {
-        window->_iconify_callback(ptr, state);
-    }
-}
 
 // Resizes the internal width and height of correspondig Window instance
 void window_resize_callback(GLFWwindow* ptr, int w, int h) try
 {
-    if (LOG::internal_callbacks::window_resize) {
-        LOG_FUNC_MSG(toString(w) + 'x' + toString(h));
-    }
-
     Window::Shared const window = Window::get(ptr);
+
+    if (Log::GL::Callbacks::query(Log::GL::Callbacks::get().window_resize)) {
+        char buff[256];
+        sprintf_s(buff, "'%s' window -> callback -> resize (%d, %d)",
+            window->getTitle().c_str(), w, h);
+        LOG_GL_MSG(buff);
+    }
 
     // Update internal sizes related values if not iconified (0, 0)
     if (!window->_is_iconified) {
@@ -63,11 +45,14 @@ CATCH_AND_RETHROW_FUNC_EXC;
 // Determines current monitor of the window
 void window_pos_callback(GLFWwindow* ptr, int x, int y) try
 {
-    if (LOG::internal_callbacks::window_pos) {
-        LOG_FUNC_MSG(toString(x) + 'x' + toString(y));
-    }
-
     Window::Shared const window = Window::get(ptr);
+
+    if (Log::GL::Callbacks::query(Log::GL::Callbacks::get().window_pos)) {
+        char buff[256];
+        sprintf_s(buff, "'%s' window -> callback -> position (%d, %d)",
+            window->getTitle().c_str(), x, y);
+        LOG_GL_MSG(buff);
+    }
 
     if (Window::_monitors.size() == 1) {
         window->_setMainMonitor(0);
@@ -99,14 +84,16 @@ void window_pos_callback(GLFWwindow* ptr, int x, int y) try
 }
 CATCH_AND_RETHROW_FUNC_EXC;
 
-// Used for clickable planes and such
 void mouse_position_callback(GLFWwindow* ptr, double x, double y)
 {
-    if (LOG::internal_callbacks::mouse_position) {
-        LOG_FUNC_MSG(toString(x) + 'x' + toString(y));
-    }
-
     Window::Shared const window = Window::get(ptr);
+
+    if (Log::GL::Callbacks::query(Log::GL::Callbacks::get().mouse_position)) {
+        char buff[256];
+        sprintf_s(buff, "'%s' window -> callback -> mouse position (%.1f, %.1f)",
+            window->getTitle().c_str(), x, y);
+        LOG_GL_MSG(buff);
+    }
 
     // Call user defined callback, if needed
     if (window->_mouse_position_callback != nullptr) {
@@ -114,17 +101,36 @@ void mouse_position_callback(GLFWwindow* ptr, double x, double y)
     }
 }
 
+void window_iconify_callback(GLFWwindow* ptr, int state)
+{
+    Window::Shared const window = Window::get(ptr);
+    window->_is_iconified = static_cast<bool>(state);
+
+    if (Log::GL::Callbacks::query(Log::GL::Callbacks::get().window_iconify)) {
+        char buff[256];
+        sprintf_s(buff, "'%s' window -> callback -> iconify (%s)",
+            window->getTitle().c_str(), toString(window->_is_iconified).c_str());
+        LOG_GL_MSG(buff);
+    }
+
+    // Call user defined callback, if needed
+    if (window->_iconify_callback != nullptr) {
+        window->_iconify_callback(ptr, state);
+    }
+}
+
 // Used for clickable planes and such
 void mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) try
 {
-    if (LOG::internal_callbacks::mouse_button) {
-        LOG_FUNC_MSG(CONTEXT_MSG("button", button)
-            + "; " + CONTEXT_MSG("action", action)
-            + "; " + CONTEXT_MSG("mods", mods)
-        );
+    Window::Shared const window = Window::get(ptr);
+
+    if (Log::GL::Callbacks::query(Log::GL::Callbacks::get().mouse_button)) {
+        char buff[256];
+        sprintf_s(buff, "'%s' window -> callback -> mouse button (#%d -> %d, %d)",
+            window->getTitle().c_str(), button, action, mods);
+        LOG_GL_MSG(buff);
     }
 
-    Window::Shared const window = Window::get(ptr);
     // If the cursor is currently moving, update hovering
     if (window->_cursor_is_moving) {
         window->_updateHoveredModel();
@@ -158,15 +164,14 @@ CATCH_AND_RETHROW_FUNC_EXC;
 // Stores key inputs
 void key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods) try
 {
-    if (LOG::internal_callbacks::key) {
-        LOG_FUNC_MSG(CONTEXT_MSG("key", key)
-            + "; " + CONTEXT_MSG("scancode", scancode)
-            + "; " + CONTEXT_MSG("action", action)
-            + "; " + CONTEXT_MSG("mods", mods)
-        );
-    }
-
     Window::Shared const window = Window::get(ptr);
+    
+    if (Log::GL::Callbacks::query(Log::GL::Callbacks::get().key)) {
+        char buff[256];
+        sprintf_s(buff, "'%s' window -> callback -> key (#%d (=%d) -> %d, %d)",
+            window->getTitle().c_str(), key, scancode, action, mods);
+        LOG_GL_MSG(buff);
+    }
     
     // Store key input if in range
     if (key >= 0 && key <= GLFW_KEY_LAST) {
@@ -183,8 +188,10 @@ CATCH_AND_RETHROW_FUNC_EXC;
 // Updates connected monitors
 void monitor_callback(GLFWmonitor* ptr, int event) try
 {
-    if (LOG::internal_callbacks::monitor) {
-        LOG_FUNC_CTX_MSG("event", event);
+    if (Log::GL::Callbacks::query(Log::GL::Callbacks::get().monitor)) {
+        char buff[256];
+        sprintf_s(buff, "monitor callback (%d)", event);
+        LOG_GL_MSG(buff);
     }
     // Ignore arguments
     ptr; event;

@@ -6,31 +6,31 @@
  *  Defines internal callback functions (doesn't affect user callbacks).
  */
 
-SSS_GL_BEGIN;
-
-/** \cond TODO*/
-namespace LOG {
-    struct internal_callbacks {
-        static bool window_resize;
-        static bool window_pos;
-        static bool mouse_position;
-        static bool mouse_button;
-        static bool key;
-        static bool monitor;
+namespace SSS::Log::GL {
+    /** Logging properties for internal SSS::GL::Window callbacks.*/
+    struct Callbacks : public LogBase<Callbacks> {
+        using LOG_STRUCT_BASICS(Log, Callbacks);
+        bool window_resize = false;
+        bool window_pos = false;
+        bool window_iconify = false;
+        bool mouse_position = false;
+        bool mouse_button = false;
+        bool key = false;
+        bool monitor = false;
     };
 };
-/** \endcond*/
 
+SSS_GL_BEGIN;
 INTERNAL_BEGIN;
 
-void window_iconify_callback(GLFWwindow* ptr, int state);
 // Resizes the internal width and height of correspondig Window instance
 void window_resize_callback(GLFWwindow* ptr, int w, int h);
 // Determines current monitor of the window
 void window_pos_callback(GLFWwindow* ptr, int x, int y);
+void window_iconify_callback(GLFWwindow* ptr, int state);
+void mouse_position_callback(GLFWwindow* ptr, double x, double y);
 // Used for clickable buttons and such
 void mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods);
-void mouse_position_callback(GLFWwindow* ptr, double x, double y);
 // Stores key inputs
 void key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods);
 
