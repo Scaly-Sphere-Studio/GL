@@ -8,10 +8,6 @@
 
 SSS_GL_BEGIN;
 
-// Init statics
-bool Texture::LOG::constructor{ false };
-bool Texture::LOG::destructor{ false };
-
 Texture::Texture(std::weak_ptr<Window> window) try
     : _internal::WindowObject(window),
     _raw_texture(window, GL_TEXTURE_2D)
@@ -22,17 +18,25 @@ Texture::Texture(std::weak_ptr<Window> window) try
     _raw_texture.parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     _raw_texture.parameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     _raw_texture.parameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-
-    if (LOG::constructor) {
-        LOG_CONSTRUCTOR;
+    
+    // Log
+    if (Log::GL::Texture::query(Log::GL::Texture::get().life_state)) {
+        char buff[256];
+        sprintf_s(buff, "'%s' -> Texture -> created (GLuint id: %u)",
+            WINDOW_TITLE(_window), _raw_texture.id);
+        LOG_GL_MSG(buff);
     }
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
 Texture::~Texture()
 {
-    if (LOG::destructor) {
-        LOG_DESTRUCTOR;
+    // Log
+    if (Log::GL::Texture::query(Log::GL::Texture::get().life_state)) {
+        char buff[256];
+        sprintf_s(buff, "'%s' -> Texture -> deleted (GLuint id: %u)",
+            WINDOW_TITLE(_window), _raw_texture.id);
+        LOG_GL_MSG(buff);
     }
 }
 
@@ -49,6 +53,14 @@ void Texture::edit(void const* pixels, int width, int height) try
     _pixels = RGBA32::Vector(ptr, ptr + (_raw_w * _raw_h));
 
     _updatePlanesScaling();
+
+    // Log
+    if (Log::GL::Texture::query(Log::GL::Texture::get().edit)) {
+        char buff[256];
+        sprintf_s(buff, "'%s' -> Texture -> edit (GLuint id: %u)",
+            WINDOW_TITLE(_window), _raw_texture.id);
+        LOG_GL_MSG(buff);
+    }
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
@@ -164,6 +176,13 @@ void Texture::_internal_edit(void const* pixels, int w, int h)
         }
     }
     _raw_texture.edit(pixels, w, h);
+    // Log
+    if (Log::GL::Texture::query(Log::GL::Texture::get().edit)) {
+        char buff[256];
+        sprintf_s(buff, "'%s' -> Texture -> edit (GLuint id: %u)",
+            WINDOW_TITLE(_window), _raw_texture.id);
+        LOG_GL_MSG(buff);
+    }
 }
 
 void Texture::_AsyncLoading::_asyncFunction(std::string filepath)

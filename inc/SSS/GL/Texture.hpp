@@ -7,6 +7,15 @@
  *  Defines class SSS::GL::Texture.
  */
 
+namespace SSS::Log::GL {
+    /** Logging properties for SSS::GL::Texture.*/
+    struct Texture : public LogBase<Texture> {
+        using LOG_STRUCT_BASICS(Log, Texture);
+        bool life_state = false;
+        bool edit = false;
+    };
+}
+
 SSS_GL_BEGIN;
 
 class Texture : public _internal::WindowObject {
@@ -19,13 +28,6 @@ private:
 
 public:
     ~Texture();
-
-    /** \cond TODO*/
-    struct LOG {
-        static bool constructor;
-        static bool destructor;
-    };
-    /** \endcond*/
 
     using Ptr = std::unique_ptr<Texture>;
     

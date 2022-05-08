@@ -165,7 +165,10 @@ CATCH_AND_RETHROW_FUNC_EXC;
 void Window::cleanObjects() noexcept
 {
     Context const context(_window.get());
-    _objects.shaders.clear();
+    _objects.shaders.erase(
+        _objects.shaders.cbegin(),
+        _objects.shaders.find(static_cast<uint32_t>(Shaders::Preset::First))
+    );
     _objects.renderers.clear();
     _objects.planes.clear();
     _objects.textures.clear();

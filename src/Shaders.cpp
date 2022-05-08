@@ -7,9 +7,9 @@ Shaders::Shaders(std::weak_ptr<Window> window) try
 	: _internal::WindowObject(window)
 {
 	// Log
-	if (Log::GL::Shaders::query(Log::GL::Shaders::get().loading)) {
+	if (Log::GL::Shaders::query(Log::GL::Shaders::get().life_state)) {
 		char buff[256];
-		sprintf_s(buff, "'%s' window -> shaders -> created", WINDOW_TITLE(_window));
+		sprintf_s(buff, "'%s' -> Shaders -> created", WINDOW_TITLE(_window));
 		LOG_GL_MSG(buff);
 	}
 }
@@ -19,9 +19,9 @@ Shaders::~Shaders()
 {
 	if (!_loaded) {
 		// Log
-		if (Log::GL::Shaders::query(Log::GL::Shaders::get().loading)) {
+		if (Log::GL::Shaders::query(Log::GL::Shaders::get().life_state)) {
 			char buff[256];
-			sprintf_s(buff, "'%s' window -> shaders -> deleted (was never loaded)",
+			sprintf_s(buff, "'%s' -> Shaders -> deleted (was never loaded)",
 				WINDOW_TITLE(_window));
 			LOG_GL_MSG(buff);
 		}
@@ -31,9 +31,9 @@ Shaders::~Shaders()
 	glDeleteProgram(_id);
 
 	// Log
-	if (Log::GL::Shaders::query(Log::GL::Shaders::get().loading)) {
+	if (Log::GL::Shaders::query(Log::GL::Shaders::get().life_state)) {
 		char buff[256];
-		sprintf_s(buff, "'%s' window -> shaders -> deleted (id: %u)",
+		sprintf_s(buff, "'%s' -> Shaders -> deleted (GLuint id: %u)",
 			WINDOW_TITLE(_window), _id);
 		LOG_GL_MSG(buff);
 	}
@@ -114,7 +114,7 @@ void Shaders::loadFromStrings(std::string const& vertex_data, std::string const&
 	// Log
 	if (Log::GL::Shaders::query(Log::GL::Shaders::get().loading)) {
 		char buff[256];
-		sprintf_s(buff, "'%s' window -> shaders -> loaded (id: %u)",
+		sprintf_s(buff, "'%s' -> Shaders -> loaded (GLuint id: %u)",
 			WINDOW_TITLE(_window), _id);
 		LOG_GL_MSG(buff);
 	}

@@ -7,7 +7,7 @@
  */
 
 namespace SSS::Log::GL {
-    /** Logging properties for internal SSS::GL::Shaders.*/
+    /** Logging properties for SSS::GL::Shaders.*/
     struct Shaders : public LogBase<Shaders> {
         using LOG_STRUCT_BASICS(Log, Shaders);
         bool life_state = false;

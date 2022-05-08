@@ -11,7 +11,7 @@ void window_resize_callback(GLFWwindow* ptr, int w, int h) try
 
     if (Log::GL::Callbacks::query(Log::GL::Callbacks::get().window_resize)) {
         char buff[256];
-        sprintf_s(buff, "'%s' window -> callback -> resize (%d, %d)",
+        sprintf_s(buff, "'%s' -> Callback -> resize (%d, %d)",
             WINDOW_TITLE(window), w, h);
         LOG_GL_MSG(buff);
     }
@@ -49,7 +49,7 @@ void window_pos_callback(GLFWwindow* ptr, int x, int y) try
 
     if (Log::GL::Callbacks::query(Log::GL::Callbacks::get().window_pos)) {
         char buff[256];
-        sprintf_s(buff, "'%s' window -> callback -> position (%d, %d)",
+        sprintf_s(buff, "'%s' -> Callback -> position (%d, %d)",
             WINDOW_TITLE(window), x, y);
         LOG_GL_MSG(buff);
     }
@@ -90,7 +90,7 @@ void mouse_position_callback(GLFWwindow* ptr, double x, double y)
 
     if (Log::GL::Callbacks::query(Log::GL::Callbacks::get().mouse_position)) {
         char buff[256];
-        sprintf_s(buff, "'%s' window -> callback -> mouse position (%.1f, %.1f)",
+        sprintf_s(buff, "'%s' -> Callback -> mouse position (%.1f, %.1f)",
             WINDOW_TITLE(window), x, y);
         LOG_GL_MSG(buff);
     }
@@ -108,7 +108,7 @@ void window_iconify_callback(GLFWwindow* ptr, int state)
 
     if (Log::GL::Callbacks::query(Log::GL::Callbacks::get().window_iconify)) {
         char buff[256];
-        sprintf_s(buff, "'%s' window -> callback -> iconify (%s)",
+        sprintf_s(buff, "'%s' -> Callback -> iconify (%s)",
             WINDOW_TITLE(window), toString(window->_is_iconified).c_str());
         LOG_GL_MSG(buff);
     }
@@ -126,7 +126,7 @@ void mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) tr
 
     if (Log::GL::Callbacks::query(Log::GL::Callbacks::get().mouse_button)) {
         char buff[256];
-        sprintf_s(buff, "'%s' window -> callback -> mouse button (#%d -> %d, %d)",
+        sprintf_s(buff, "'%s' -> Callback -> mouse button (#%d -> %d, %d)",
             WINDOW_TITLE(window), button, action, mods);
         LOG_GL_MSG(buff);
     }
@@ -168,7 +168,7 @@ void key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods) 
 
     if (Log::GL::Callbacks::query(Log::GL::Callbacks::get().key)) {
         char buff[256];
-        sprintf_s(buff, "'%s' window -> callback -> key (#%d (=%d) -> %d, %d)",
+        sprintf_s(buff, "'%s' -> Callback -> key (#%d (=%d) -> %d, %d)",
             WINDOW_TITLE(window), key, scancode, action, mods);
         LOG_GL_MSG(buff);
     }
