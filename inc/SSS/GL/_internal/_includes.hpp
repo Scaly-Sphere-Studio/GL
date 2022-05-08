@@ -18,12 +18,12 @@
 
 // SSS libs
 #include <SSS/Commons.hpp>
-#include <SSS/Text-Rendering.hpp>
 
 /** \cond INCLUDE*/
 // STL
 #include <array>
 #include <deque>
+#include <map>
 #include <fstream>
 #include <mutex>
 #include <shared_mutex>

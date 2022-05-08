@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SSS/Text-Rendering.hpp>
 #include "Basics.hpp"
 
 /** @file
@@ -10,7 +11,7 @@ SSS_GL_BEGIN;
 
 class Texture : public _internal::WindowObject {
 
-    friend void pollEverything();
+    friend bool pollEverything();
     friend class Window;
 
 private:
@@ -64,7 +65,7 @@ private:
 
     // Async class which fills _raw_pixels using stb_image
     class _AsyncLoading : public AsyncBase <std::string> {
-        friend void pollEverything();
+        friend bool pollEverything();
     protected:
         virtual void _asyncFunction(std::string filepath);
     private:

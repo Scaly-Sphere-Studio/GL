@@ -22,7 +22,7 @@ SSS_GL_BEGIN;
     
 class Window : public std::enable_shared_from_this<Window> {
     
-    friend void pollEverything();
+    friend bool pollEverything();
     friend void _internal::window_iconify_callback(GLFWwindow* ptr, int state);
     friend void _internal::window_resize_callback(GLFWwindow* ptr, int w, int h);
     friend void _internal::window_pos_callback(GLFWwindow* ptr, int x, int y);

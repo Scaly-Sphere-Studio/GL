@@ -8,6 +8,6 @@
 
 SSS_GL_BEGIN;
 
-void pollEverything();
+bool pollEverything();
 
 SSS_GL_END;

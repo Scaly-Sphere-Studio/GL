@@ -541,7 +541,7 @@ void Window::_setMainMonitor(int id)
         id = 0;
     }
     if (id >= _monitors.size()) {
-        id = _monitors.size() - 1;
+        id = static_cast<int>(_monitors.size() - 1);
     }
     _main_monitor_id = id;
     _main_monitor = _monitors[id];

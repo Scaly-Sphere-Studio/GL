@@ -3,8 +3,10 @@
 
 SSS_GL_BEGIN;
 
-void pollEverything() try
+bool pollEverything() try
 {
+    bool ret = false;
+
     // Poll events
     glfwPollEvents();
 
@@ -19,6 +21,9 @@ void pollEverything() try
         Window::Shared window = weak.lock();
         if (!window) {
             continue;
+        }
+        if (window->isVisible()) {
+            ret = true;
         }
         Context const context(window);
         // Call all passive functions
@@ -65,6 +70,8 @@ void pollEverything() try
             it->second->pixelsAreRetrieved();
         }
     }
+
+    return ret;
 }
 CATCH_AND_RETHROW_FUNC_EXC;
 
