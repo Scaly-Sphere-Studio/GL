@@ -11,10 +11,18 @@
  */
 
 namespace SSS::Log::GL {
-    /** Logging properties for internal SSS::GL::Shaders.*/
+    /** Logging properties for SSS::GL::Context.*/
     struct Context : public LogBase<Context> {
         using LOG_STRUCT_BASICS(Log, Context);
         bool set_context = false;
+    };
+    /** Logging properties for SSS::GL::Window.*/
+    struct Window : public LogBase<Window> {
+        using LOG_STRUCT_BASICS(Log, Window);
+        bool glfw_init = false;
+        bool life_state = false;
+        bool fps = false;
+        bool hovered_model = false;
     };
 }
 
@@ -34,18 +42,6 @@ class Window : public std::enable_shared_from_this<Window> {
     friend class Context;
 
 public:
-// --- Log options ---
-    
-    /** \cond TODO*/
-    struct LOG {
-        static bool constructor;
-        static bool destructor;
-        static bool glfw_init;
-        static bool fps;
-        static bool longest_frame;
-    };
-    /** \endcond*/
-
     struct CreateArgs {
         int w{ 720 };
         int h{ 720 };
@@ -56,8 +52,6 @@ public:
         bool iconified{ false };
         bool hidden{ false };
     };
-
-// --- Public aliases ---
 
     using Shared = std::shared_ptr<Window>;
 
@@ -134,7 +128,7 @@ public:
     // Draws objects inside renderers on the back buffer.
     void drawObjects();
     // Renders back buffer, clears front buffer, polls events.
-    // Logs fps if specified in LOG structure.
+    // Logs fps if specified in Log structure.
     void printFrame();
 private:
     FrameTimer _frame_timer;

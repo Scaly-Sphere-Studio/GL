@@ -2,21 +2,10 @@
 
 SSS_GL_BEGIN;
 
-    // --- Static initializations ---
-
-// Default log options
-bool Window::LOG::constructor{ true };
-bool Window::LOG::destructor{ true };
-bool Window::LOG::glfw_init{ true };
-bool Window::LOG::fps{ true };
-bool Window::LOG::longest_frame{ true };
-
 // Window ptr
 std::vector<std::weak_ptr<Window>> Window::_instances{};
 // Connected monitors
 std::vector<GLFWmonitor*> Window::_monitors{};
-
-    // --- Constructor & destructor ---
 
 // Constructor, creates a window
 Window::Window(CreateArgs const& args) try
@@ -25,8 +14,9 @@ Window::Window(CreateArgs const& args) try
     if (_instances.empty()) {
         // Init GLFW
         glfwInit();
-        if (LOG::glfw_init) {
-            LOG_OBJ_MSG("GLFW initialized.");
+        // Log
+        if (Log::GL::Window::query(Log::GL::Window::get().glfw_init)) {
+            LOG_GL_MSG("GLFW initialized");
         }
         // Retrive monitors
         _internal::monitor_callback(nullptr, 0);
@@ -116,8 +106,11 @@ Window::Window(CreateArgs const& args) try
     glfwSetMouseButtonCallback(_window.get(), _internal::mouse_button_callback);
     glfwSetKeyCallback(_window.get(), _internal::key_callback);
 
-    if (LOG::constructor) {
-        LOG_CONSTRUCTOR;
+    // Log
+    if (Log::GL::Window::query(Log::GL::Window::get().life_state)) {
+        char buff[256];
+        sprintf_s(buff, "'%s' -> created", _title.c_str());
+        LOG_GL_MSG(buff);
     }
 }
 CATCH_AND_RETHROW_METHOD_EXC;
@@ -127,17 +120,22 @@ Window::~Window()
 {
     // Free all bound objects
     cleanObjects();
+    _objects.shaders.clear();
     // Remove weak ptr from instance vector
     cleanWeakPtrVector(_instances);
     // Terminate GLFW
     if (_instances.empty()) {
         glfwTerminate();
-        if (LOG::glfw_init) {
-            LOG_OBJ_MSG("GLFW terminated.");
+        // Log
+        if (Log::GL::Window::query(Log::GL::Window::get().glfw_init)) {
+            LOG_GL_MSG("GLFW terminated");
         }
     }
-    if (LOG::destructor) {
-        LOG_DESTRUCTOR;
+    // Log
+    if (Log::GL::Window::query(Log::GL::Window::get().life_state)) {
+        char buff[256];
+        sprintf_s(buff, "'%s' -> deleted", _title.c_str());
+        LOG_GL_MSG(buff);
     }
 }
 
@@ -294,20 +292,12 @@ void Window::printFrame() try
         _last_render_time = now;
         // Update fps, log if needed
         if (_frame_timer.addFrame()) {
-            if (LOG::fps && LOG::longest_frame) {
-                char buff[64];
-                sprintf_s(buff, "% 4lldfps, longest frame: %lldms",
-                    _frame_timer.get(), _frame_timer.longestFrame());
-                LOG_OBJ_MSG(buff);
-            }
-            else {
-                if (LOG::fps) {
-                    LOG_OBJ_MSG(_frame_timer.getFormatted() + "fps");
-                }
-                if (LOG::longest_frame) {
-                    LOG_OBJ_MSG(CONTEXT_MSG(
-                        "Longest frame", _frame_timer.longestFrame()) + "ms");
-                }
+            // Log
+            if (Log::GL::Window::query(Log::GL::Window::get().fps)) {
+                char buff[256];
+                sprintf_s(buff, "'%s' -> % 4lldfps, longest frame: % 4lldms",
+                    _title.c_str(), _frame_timer.get(), _frame_timer.longestFrame());
+                LOG_GL_MSG(buff);
             }
         }
         // Clear back buffer
@@ -375,6 +365,21 @@ void Window::_updateHoveredModel()
             if (depth_buffer_was_reset)
                 break;
         }
+    }
+    if (_something_is_hovered &&
+        Log::GL::Window::query(Log::GL::Window::get().hovered_model)) {
+        std::string model_type;
+        switch (_hovered_model_type) {
+        case Model::Type::Plane:
+            model_type = "Plane";
+            break;
+        default:
+            model_type = "Unknown";
+        }
+        char buff[256];
+        sprintf_s(buff, "'%s' -> Hovered: %s #%u",
+            _title.c_str(), model_type.c_str(), _hovered_model_id);
+        LOG_GL_MSG(buff);
     }
     _hover_waiting_time = std::chrono::nanoseconds(0);
 }
