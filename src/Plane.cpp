@@ -39,16 +39,23 @@ void Plane::getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles, glm
 
 void Plane::_updateTexScaling()
 {
-    // Retrieve texture dimensions
     Window::Shared const window = _window.lock();
     if (!window || !_use_texture) {
         _tex_scaling = glm::vec3(1);
         _should_compute_mat4 = true;
         return;
     }
+    // Retrieve texture
+    if (window->getObjects().textures.count(_texture_id) == 0) {
+        return;
+    }
+    Texture::Ptr const& texture = window->getObjects().textures.at(_texture_id);
+    if (!texture) {
+        return;
+    }
     // Check if dimensions changed
     int w, h;
-    window->getObjects().textures.at(_texture_id)->getDimensions(w, h);
+    texture->getCurrentDimensions(w, h);
     if (_tex_w == w && _tex_h == h) {
         return;
     }

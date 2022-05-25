@@ -40,36 +40,6 @@ Texture::~Texture()
     }
 }
 
-void Texture::edit(void const* pixels, int width, int height) try
-{
-    _type = Type::Raw;
-    // Update size info
-    _raw_w = width;
-    _raw_h = height;
-    // Give the image to the OpenGL texture
-    _raw_texture.edit(pixels, _raw_w, _raw_h);
-    // Replace previous pixel storage
-    uint32_t const* ptr = reinterpret_cast<uint32_t const*>(pixels);
-    _pixels = RGBA32::Vector(ptr, ptr + (_raw_w * _raw_h));
-
-    _updatePlanesScaling();
-
-    // Log
-    if (Log::GL::Texture::query(Log::GL::Texture::get().edit)) {
-        char buff[256];
-        sprintf_s(buff, "'%s' -> Texture -> edit (GLuint id: %u)",
-            WINDOW_TITLE(_window), _raw_texture.id);
-        LOG_GL_MSG(buff);
-    }
-}
-CATCH_AND_RETHROW_METHOD_EXC;
-
-void Texture::useFile(std::string filepath)
-{
-    _type = Type::Raw;
-    _loading_thread.run(filepath);
-}
-
 void Texture::setType(Type type) noexcept
 {
     if (type == _type) {
@@ -85,19 +55,50 @@ void Texture::setType(Type type) noexcept
     }
     else if (type == Type::Text) {
         TR::Area::Ptr const& text_area = getTextArea();
-        if (!text_area) {
+        if (text_area) {
+            text_area->getDimensions(_text_w, _text_h);
+            _updatePlanesScaling();
+            _raw_texture.edit(text_area->pixelsGet(), _text_w, _text_h);
+        }
+        else {
             _text_w = 0;
             _text_h = 0;
             _updatePlanesScaling();
             _raw_texture.edit(nullptr, 0, 0);
         }
-        else {
-            text_area->getDimensions(_text_w, _text_h);
-            _updatePlanesScaling();
-            _raw_texture.edit(text_area->pixelsGet(), _text_w, _text_h);
-        }
     }
 }
+
+void Texture::loadImage(std::string const& filepath)
+{
+    _loading_thread.run(filepath);
+}
+
+void Texture::editRawPixels(void const* pixels, int width, int height) try
+{
+    // Update size info
+    _raw_w = width;
+    _raw_h = height;
+    // Give the image to the OpenGL texture
+    _raw_texture.edit(pixels, _raw_w, _raw_h);
+    // Replace previous pixel storage
+    uint32_t const* ptr = reinterpret_cast<uint32_t const*>(pixels);
+    _pixels = RGBA32::Vector(ptr, ptr + (_raw_w * _raw_h));
+
+    // Update plane scaling only if immediately needed
+    if (_type == Type::Raw) {
+        _updatePlanesScaling();
+    }
+
+    // Log
+    if (Log::GL::Texture::query(Log::GL::Texture::get().edit)) {
+        char buff[256];
+        sprintf_s(buff, "'%s' -> Texture -> edit (GLuint id: %u)",
+            WINDOW_TITLE(_window), _raw_texture.id);
+        LOG_GL_MSG(buff);
+    }
+}
+CATCH_AND_RETHROW_METHOD_EXC;
 
 void Texture::setTextAreaID(uint32_t id)
 {
@@ -109,7 +110,7 @@ void Texture::setTextAreaID(uint32_t id)
     if (_type == Type::Text && text_area) {
         int w, h;
         text_area->getDimensions(w, h);
-        _internal_edit(text_area->pixelsGet(), w, h);
+        _internalEdit(text_area->pixelsGet(), w, h);
     }
 }
 
@@ -123,7 +124,7 @@ TR::Area::Ptr const& Texture::getTextArea() const noexcept
     return text_areas.at(_text_area_id);
 }
 
-void Texture::getDimensions(int& w, int& h) const noexcept
+void Texture::getCurrentDimensions(int& w, int& h) const noexcept
 {
     if (_type == Type::Raw) {
         w = _raw_w;
@@ -133,6 +134,26 @@ void Texture::getDimensions(int& w, int& h) const noexcept
         w = _text_w;
         h = _text_h;
     }
+}
+
+void Texture::_AsyncLoading::_asyncFunction(std::string filepath)
+{
+    // Load image
+    SSS::C_Ptr <uint32_t, void(*)(void*), stbi_image_free>
+        raw_pixels(reinterpret_cast<uint32_t*>(stbi_load(
+            pathWhich(filepath).c_str(),    // Filepath to picture
+            &_w,        // Width, to query
+            &_h,        // Height, to query
+            nullptr,    // Byte composition, to query if not requested
+            4           // Byte composition, to request (here RGBA32)
+        )));
+    // Throw if error
+    if (raw_pixels == nullptr) {
+        SSS::throw_exc(CONTEXT_MSG(stbi_failure_reason(), filepath));
+    }
+    // Fill vector
+    if (_beingCanceled()) return;
+    _pixels = RGBA32::Vector(raw_pixels.get(), raw_pixels.get() + (_w * _h));
 }
 
 void Texture::_updatePlanesScaling()
@@ -159,7 +180,7 @@ void Texture::_updatePlanesScaling()
     }
 }
 
-void Texture::_internal_edit(void const* pixels, int w, int h)
+void Texture::_internalEdit(void const* pixels, int w, int h)
 {
     if (_type == Type::Raw) {
         if (w != _raw_w || h != _raw_h) {
@@ -183,26 +204,6 @@ void Texture::_internal_edit(void const* pixels, int w, int h)
             WINDOW_TITLE(_window), _raw_texture.id);
         LOG_GL_MSG(buff);
     }
-}
-
-void Texture::_AsyncLoading::_asyncFunction(std::string filepath)
-{
-    // Load image
-    SSS::C_Ptr <uint32_t, void(*)(void*), stbi_image_free>
-        raw_pixels(reinterpret_cast<uint32_t*>(stbi_load(
-            filepath.c_str(),   // Filepath to picture
-            &_w,                // Width, to query
-            &_h,                // Height, to query
-            nullptr,            // Byte composition, to query if not requested
-            4                   // Byte composition, to request (here RGBA32)
-        )));
-    // Throw if error
-    if (raw_pixels == nullptr) {
-        SSS::throw_exc(stbi_failure_reason());
-    }
-    // Fill vector
-    if (_beingCanceled()) return;
-    _pixels = RGBA32::Vector(raw_pixels.get(), raw_pixels.get() + (_w * _h));
 }
 
 SSS_GL_END;

@@ -43,7 +43,7 @@ bool pollEverything() try
                 // threads can run without affecting those pixels.
                 tex->_pixels = std::move(thread._pixels);
                 // Update dimensions if needed, edit OpenGL texture
-                tex->_internal_edit(&tex->_pixels[0], thread._w, thread._h);
+                tex->_internalEdit(&tex->_pixels[0], thread._w, thread._h);
                 thread.setAsHandled();
             }
             else if (tex->_type == Texture::Type::Text) {
@@ -60,7 +60,7 @@ bool pollEverything() try
                 int new_w, new_h;
                 text_area->getDimensions(new_w, new_h);
                 // Update dimensions if needed, edit OpenGL texture
-                tex->_internal_edit(text_area->pixelsGet(), new_w, new_h);
+                tex->_internalEdit(text_area->pixelsGet(), new_w, new_h);
             }
         }
     }
