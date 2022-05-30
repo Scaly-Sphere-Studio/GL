@@ -104,11 +104,6 @@ void Camera::setRange(float z_near, float z_far)
     _computeProjection();
 }
 
-glm::mat4 Camera::getMVP(glm::mat4 model) const
-{
-    return _projection * _view * model;
-}
-
 void Camera::_computeView()
 {
     static constexpr glm::vec3 up_vec(0, 1, 0);
@@ -116,6 +111,7 @@ void Camera::_computeView()
     glm::vec3 direction = yaw_pitch(glm::vec3(0, 0, -1), _rot_angles);
     glm::vec3 const relative_center = _position + direction;
     _view = glm::lookAt(_position, relative_center, up_vec);
+    _computeVP();
 }
 
 void Camera::_computeProjection()
@@ -131,6 +127,12 @@ void Camera::_computeProjection()
         _projection = glm::perspective(glm::radians(_fov), _screen_ratio, _z_near, _z_far);
         break;
     }
+    _computeVP();
+}
+
+void Camera::_computeVP()
+{
+    _vp = _projection * _view;
 }
 
 SSS_GL_END;

@@ -7,10 +7,14 @@
  */
 
 SSS_GL_BEGIN;
+
 INTERNAL_BEGIN;
 void window_resize_callback(GLFWwindow*, int, int); // Pre-definition
 INTERNAL_END;
 
+/** Abstractization of View and Projection matrices, used in Renderer::Chunk.
+ *  @sa Window::createCamera()
+ */
 class Camera : _internal::WindowObject {
     friend void _internal::window_resize_callback(GLFWwindow*, int, int);
     friend class Window;
@@ -18,38 +22,111 @@ class Camera : _internal::WindowObject {
 private:
     Camera(std::weak_ptr<Window> window);           // Constructor
 public:
+    /** Destructor, default
+     *  @sa Window::removeCamera()
+     */
+    ~Camera()                           = default;  // Destructor
+    /** \cond INTERNAL*/
     // Rule of 5
     Camera()                            = delete;   // Constructor (deleted)
-    ~Camera()                           = default;  // Destructor
     Camera(const Camera&)               = delete;   // Copy constructor
     Camera(Camera&&)                    = delete;   // Move constructor
     Camera& operator=(const Camera&)    = delete;   // Copy assignment
     Camera& operator=(Camera&&)         = delete;   // Move assignment
+    /** \endcond*/
 
+    /** Unique ptr stored in Window objects.*/
     using Ptr = std::unique_ptr<Camera>;
 
+    /** Sets the position coordinates of the camera.
+     *  The default coordinates are (0, 0, 0).
+     *  @sa move(), getPosition()
+     */
     void setPosition(glm::vec3 position);
+    /** Moves the position coordinates of the camera.
+     * 
+     *  The given \c translation vector is added to the position.
+     * 
+     *  If \c use_rotation_axis is set to \c true, the \c translation
+     *  vector undergoes the same rotation as the camera before being
+     *  computed, which is useful to move in first or third person.
+     *
+     *  @sa setPosition(), getPosition()
+     */
     void move(glm::vec3 translation, bool use_rotation_axis = true);
+    /** Returns the position coordinates of the camera.
+     *  @sa setPosition(), move()
+     */
     inline glm::vec3 getPosition() const noexcept { return _position; };
 
+    /** Sets the rotation angles of the camera.
+     * 
+     *  The default angles are (0, 0), which points to negative Z axis.
+     * 
+     *  The angles' range is automatically restricted to [-90, +90]
+     *  for the x axis, and [-360, +360] for the y axis.
+     * 
+     *  @sa rotate(), getRotation().
+     */
     void setRotation(glm::vec2 angles);
+    /** Rotates the rotation angles of the camera.
+     *  The angles' range is automatically restricted to [-90, +90]
+     *  for the x axis, and [-360, +360] for the y axis.
+     *  @sa setRotation(), getRotation().
+     */
     void rotate(glm::vec2 angles);
+    /** Returns the rotation angles of the camera.
+     *  @sa setRotation(), rotate()
+     */
     inline glm::vec2 getRotation() const noexcept { return _rot_angles; };
 
+    /** All available %Projection types of matrices.
+     *  @sa setProjectionType(), getProjectionType()
+     */
     enum class Projection {
+        /** Orthographic projection (2D).*/
         Ortho,
+        /** Perspective projection (3D).*/
         Perspective
     };
+    /** Sets the Projection of the camera.
+     *  @sa getProjectionType()
+     */
     void setProjectionType(Projection type);
+    /** Returns the current Projection of the camera.
+     *  @sa setProjectionType()
+     */
     inline Projection getProjectionType() const noexcept { return _projection_type; };
+    /** Sets the FOV (Field of View) of the camera (used in Projection::Perspective).
+     *  @sa getFOV()
+     */
     void setFOV(float degrees);
+    /** Returns the FOV (Field of View) of the camera, in degrees.
+     *  @sa setFOV()
+     */
     inline float getFOV() const noexcept { return _fov; };
+
+    /** Sets the visibility range of the camera.
+     *  @sa getRange()
+     */
     void setRange(float z_near, float z_far);
-    inline void getRange(float& z_near, float& z_far) const noexcept { z_near = _z_near; z_far = _z_far; };
+    /** Returns the visibility range of the camera in given parameters.
+     *  @sa setRange()
+     */
+    inline void getRange(float& z_near, float& z_far) const noexcept
+        { z_near = _z_near; z_far = _z_far; };
 
-    glm::mat4 getMVP(glm::mat4 model) const;
-
+    /** Returns the View and %Projection matrices previously computed together.
+     *  @sa getView(), getProjection()
+     */
+    inline glm::mat4 getVP() const noexcept { return _vp; };
+    /** Returns the previously computed View matrix.
+     *  @sa getVP(), getProjection()
+     */
     inline glm::mat4 getView() const noexcept { return _view; };
+    /** Returns the previously computed %Projection matrix.
+     *  @sa getVP(), getView()
+     */
     inline glm::mat4 getProjection() const noexcept { return _projection; };
 
 private:
@@ -64,6 +141,9 @@ private:
     Projection _projection_type{ Projection::Ortho };
     glm::mat4 _projection{ 1 };
     void _computeProjection();
+
+    glm::mat4 _vp{ 1 };
+    void _computeVP();
 };
 
 SSS_GL_END;

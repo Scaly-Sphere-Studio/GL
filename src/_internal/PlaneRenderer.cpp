@@ -113,7 +113,7 @@ void PlaneRenderer::render() try
             Camera::Ptr const& camera = objects.cameras.at(chunk.camera_ID);
             if (!camera)
                 continue;
-            VP = camera->getProjection() * camera->getView();
+            VP = camera->getVP();
         }
 
         // Loop over each plane in chunk
