@@ -6,8 +6,8 @@
 SSS_GL_BEGIN;
 INTERNAL_BEGIN;
 
-PlaneRenderer::PlaneRenderer(std::weak_ptr<Window> window) try
-    : Renderer(window)
+PlaneRenderer::PlaneRenderer(std::weak_ptr<Window> window, uint32_t id) try
+    : Renderer(window, id)
 {
     Context const context(_window);
 

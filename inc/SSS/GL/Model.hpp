@@ -10,11 +10,11 @@
 SSS_GL_BEGIN;
 
 template <class T>
-class Model : public _internal::WindowObject {
+class Model : public _internal::WindowObjectWithID {
     friend class Window;
 
 protected:
-    Model(std::weak_ptr<Window> window);
+    Model(std::weak_ptr<Window> window, uint32_t id);
 
 public:
     virtual ~Model() = 0;
@@ -79,8 +79,8 @@ std::map<uint32_t, typename Model<T>::PassiveFunc> Model<T>::passive_funcs {
 };
 
 template <class T>
-Model<T>::Model(std::weak_ptr<Window> window) try
-    : _internal::WindowObject(window)
+Model<T>::Model(std::weak_ptr<Window> window, uint32_t id) try
+    : _internal::WindowObjectWithID(window, id)
 {
     setScaling();
     setRotation();

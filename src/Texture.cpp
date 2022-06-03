@@ -8,8 +8,8 @@
 
 SSS_GL_BEGIN;
 
-Texture::Texture(std::weak_ptr<Window> window) try
-    : _internal::WindowObject(window),
+Texture::Texture(std::weak_ptr<Window> window, uint32_t id) try
+    : _internal::WindowObjectWithID(window, id),
     _raw_texture(window, GL_TEXTURE_2D)
 {
     Context const context(_window);
@@ -22,8 +22,8 @@ Texture::Texture(std::weak_ptr<Window> window) try
     // Log
     if (Log::GL::Texture::query(Log::GL::Texture::get().life_state)) {
         char buff[256];
-        sprintf_s(buff, "'%s' -> Texture -> created (GLuint id: %u)",
-            WINDOW_TITLE(_window), _raw_texture.id);
+        sprintf_s(buff, "'%s' -> Texture (id: %04u) -> created",
+            WINDOW_TITLE(_window), _id);
         LOG_GL_MSG(buff);
     }
 }
@@ -34,8 +34,8 @@ Texture::~Texture()
     // Log
     if (Log::GL::Texture::query(Log::GL::Texture::get().life_state)) {
         char buff[256];
-        sprintf_s(buff, "'%s' -> Texture -> deleted (GLuint id: %u)",
-            WINDOW_TITLE(_window), _raw_texture.id);
+        sprintf_s(buff, "'%s' -> Texture (id: %04u) -> deleted",
+            WINDOW_TITLE(_window), _id);
         LOG_GL_MSG(buff);
     }
 }
@@ -93,8 +93,8 @@ void Texture::editRawPixels(void const* pixels, int width, int height) try
     // Log
     if (Log::GL::Texture::query(Log::GL::Texture::get().edit)) {
         char buff[256];
-        sprintf_s(buff, "'%s' -> Texture -> edit (GLuint id: %u)",
-            WINDOW_TITLE(_window), _raw_texture.id);
+        sprintf_s(buff, "'%s' -> Texture (id: %04u) -> edit",
+            WINDOW_TITLE(_window), _id);
         LOG_GL_MSG(buff);
     }
 }
@@ -200,8 +200,8 @@ void Texture::_internalEdit(void const* pixels, int w, int h)
     // Log
     if (Log::GL::Texture::query(Log::GL::Texture::get().edit)) {
         char buff[256];
-        sprintf_s(buff, "'%s' -> Texture -> edit (GLuint id: %u)",
-            WINDOW_TITLE(_window), _raw_texture.id);
+        sprintf_s(buff, "'%s' -> Texture (id: %04u) -> edit",
+            WINDOW_TITLE(_window), _id);
         LOG_GL_MSG(buff);
     }
 }

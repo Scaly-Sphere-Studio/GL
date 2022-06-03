@@ -12,15 +12,27 @@ class Window; // Pre-declaration of Window class.
 
 INTERNAL_BEGIN;
 
-// This class is to be inherited in all classes whose instances are bounded
-// to a specific Window instance. 
+// This class is to be inherited in all classes whose instances are
+// bounded (without ID) to a specific Window instance.
 class WindowObject {
 public:
-    // Delete default constructor to enforce bounding to a Window instance
     WindowObject() = delete;
 protected:
     WindowObject(std::weak_ptr<Window> window) : _window(window) {};
     std::weak_ptr<Window> _window;
+};
+
+// This class is to be inherited in all classes whose instances are
+// bounded (with an ID) to a specific Window instance.
+class WindowObjectWithID {
+public:
+    WindowObjectWithID() = delete;
+    uint32_t getID() const noexcept { return _id; };
+protected:
+    WindowObjectWithID(std::weak_ptr<Window> window, uint32_t id)
+        : _window(window), _id(id) {};
+    std::weak_ptr<Window> _window;
+    uint32_t const _id;
 };
 
 INTERNAL_END;

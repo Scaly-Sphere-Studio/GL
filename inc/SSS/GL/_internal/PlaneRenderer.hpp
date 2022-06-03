@@ -15,7 +15,7 @@ class PlaneRenderer : public Renderer {
 private:
     static constexpr uint32_t glsl_max_array_size = 128;
 
-    PlaneRenderer(std::weak_ptr<Window> window);
+    PlaneRenderer(std::weak_ptr<Window> window, uint32_t id);
 
     using Mat4_array = std::array<glm::mat4, glsl_max_array_size>;
     void _renderPart(Shaders::Ptr const& shader,
@@ -29,8 +29,8 @@ private:
     Basic::VBO::Ptr _vbo;
     Basic::IBO::Ptr _ibo;
     
-    Mat4_array _VPs;
-    Mat4_array _Models;
+    Mat4_array _VPs{ };
+    Mat4_array _Models{ };
 
     uint32_t _hovered_id{ 0 };
     double _hovered_z{ DBL_MAX };

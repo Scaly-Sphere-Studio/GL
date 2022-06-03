@@ -19,7 +19,7 @@ class Plane : public Model<Plane> {
     friend class Texture;
 
 protected:
-    Plane(std::weak_ptr<Window> window);
+    Plane(std::weak_ptr<Window> window, uint32_t id);
 
 public:
     virtual ~Plane();

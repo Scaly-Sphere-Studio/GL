@@ -11,10 +11,11 @@ SSS_GL_BEGIN;
 /** Abstract class for specialized rendering logic.
  *  @sa Window::createRenderer(), Plane::Renderer
  */
-class Renderer : public _internal::WindowObject {
+class Renderer : public _internal::WindowObjectWithID {
 protected:
     /** Constructor, ensures the renderer is bound to a Window instance.*/
-    Renderer(std::weak_ptr<Window> window) : _internal::WindowObject(window) {};
+    Renderer(std::weak_ptr<Window> window, uint32_t id)
+        : _internal::WindowObjectWithID(window, id) {};
 public:
     /** Virtual destructor, default.*/
     virtual ~Renderer()                     = default;  // Destructor

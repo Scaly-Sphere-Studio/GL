@@ -180,7 +180,7 @@ void Window::createShaders(uint32_t id) try
         return;
     }
     _objects.shaders.try_emplace(id);
-    _objects.shaders.at(id).reset(new Shaders(weak_from_this()));
+    _objects.shaders.at(id).reset(new Shaders(weak_from_this(), id));
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
@@ -205,7 +205,7 @@ void Window::removeRenderer(uint32_t id)
 void Window::createPlane(uint32_t id) try
 {
     _objects.planes.try_emplace(id);
-    _objects.planes.at(id).reset(new Plane(weak_from_this()));
+    _objects.planes.at(id).reset(new Plane(weak_from_this(), id));
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
@@ -219,7 +219,7 @@ void Window::removePlane(uint32_t id)
 void Window::createTexture(uint32_t id) try
 {
     _objects.textures.try_emplace(id);
-    _objects.textures.at(id).reset(new Texture(weak_from_this()));
+    _objects.textures.at(id).reset(new Texture(weak_from_this(), id));
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
@@ -233,7 +233,7 @@ void Window::removeTexture(uint32_t id)
 void Window::createCamera(uint32_t id) try
 {
     _objects.cameras.try_emplace(id);
-    _objects.cameras.at(id).reset(new Camera(weak_from_this()));
+    _objects.cameras.at(id).reset(new Camera(weak_from_this(), id));
 }
 CATCH_AND_RETHROW_FUNC_EXC;
 

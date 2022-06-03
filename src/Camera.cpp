@@ -3,8 +3,8 @@
 
 SSS_GL_BEGIN;
 
-Camera::Camera(std::weak_ptr<Window> weak_window)
-    : _internal::WindowObject(weak_window)
+Camera::Camera(std::weak_ptr<Window> weak_window, uint32_t id)
+    : _internal::WindowObjectWithID(weak_window, id)
 {
     Window::Shared const window = _window.lock();
     if (!window) {

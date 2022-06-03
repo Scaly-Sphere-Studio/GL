@@ -45,11 +45,11 @@ void Window::loadPreSetShaders() try
     
     // Plane shader
     {
+        uint32_t const id = static_cast<uint32_t>(Shaders::Preset::Plane);
         // Retrieve shader pointer
-        Shaders::Ptr& shader =
-            _objects.shaders[static_cast<uint32_t>(Shaders::Preset::Plane)];
+        Shaders::Ptr& shader = _objects.shaders[id];
         // Allocate new shader
-        shader.reset(new Shaders(weak_from_this()));
+        shader.reset(new Shaders(weak_from_this(), id));
         // Retrieve shader data
         _planeShadersData(vertex_data, fragment_data, Plane::Renderer::glsl_max_array_size);
         // Load shader

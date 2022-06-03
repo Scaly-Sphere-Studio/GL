@@ -15,12 +15,12 @@ INTERNAL_END;
 /** Abstractization of View and Projection matrices, used in Renderer::Chunk.
  *  @sa Window::createCamera()
  */
-class Camera : _internal::WindowObject {
+class Camera : _internal::WindowObjectWithID {
     friend void _internal::window_resize_callback(GLFWwindow*, int, int);
     friend class Window;
 
 private:
-    Camera(std::weak_ptr<Window> window);           // Constructor
+    Camera(std::weak_ptr<Window> window, uint32_t id);  // Constructor
 public:
     /** Destructor, default
      *  @sa Window::removeCamera()

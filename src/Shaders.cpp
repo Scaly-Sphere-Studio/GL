@@ -3,13 +3,14 @@
 
 SSS_GL_BEGIN;
 
-Shaders::Shaders(std::weak_ptr<Window> window) try
-	: _internal::WindowObject(window)
+Shaders::Shaders(std::weak_ptr<Window> window, uint32_t id) try
+	: _internal::WindowObjectWithID(window, id)
 {
 	// Log
 	if (Log::GL::Shaders::query(Log::GL::Shaders::get().life_state)) {
 		char buff[256];
-		sprintf_s(buff, "'%s' -> Shaders -> created", WINDOW_TITLE(_window));
+		sprintf_s(buff, "'%s' -> Shaders (id: %04u) -> created",
+			WINDOW_TITLE(_window), _id);
 		LOG_GL_MSG(buff);
 	}
 }
@@ -21,19 +22,19 @@ Shaders::~Shaders()
 		// Log
 		if (Log::GL::Shaders::query(Log::GL::Shaders::get().life_state)) {
 			char buff[256];
-			sprintf_s(buff, "'%s' -> Shaders -> deleted (was never loaded)",
-				WINDOW_TITLE(_window));
+			sprintf_s(buff, "'%s' -> Shaders (id: %04u) -> deleted (was never loaded)",
+				WINDOW_TITLE(_window), _id);
 			LOG_GL_MSG(buff);
 		}
 		return;
 	}
 	Context const context(_window);
-	glDeleteProgram(_id);
+	glDeleteProgram(_program_id);
 
 	// Log
 	if (Log::GL::Shaders::query(Log::GL::Shaders::get().life_state)) {
 		char buff[256];
-		sprintf_s(buff, "'%s' -> Shaders -> deleted (GLuint id: %u)",
+		sprintf_s(buff, "'%s' -> Shaders (id: %04u) -> deleted",
 			WINDOW_TITLE(_window), _id);
 		LOG_GL_MSG(buff);
 	}
@@ -108,13 +109,13 @@ static GLuint loadShaders(std::string const& vertex_data, std::string const& fra
 void Shaders::loadFromStrings(std::string const& vertex_data, std::string const& fragment_data) try
 {
 	Context const context(_window);
-	_id = loadShaders(vertex_data, fragment_data);
+	_program_id = loadShaders(vertex_data, fragment_data);
 	_loaded = true;
 
 	// Log
 	if (Log::GL::Shaders::query(Log::GL::Shaders::get().loading)) {
 		char buff[256];
-		sprintf_s(buff, "'%s' -> Shaders -> loaded (GLuint id: %u)",
+		sprintf_s(buff, "'%s' -> Shaders (id: %04u) -> loaded",
 			WINDOW_TITLE(_window), _id);
 		LOG_GL_MSG(buff);
 	}
@@ -130,18 +131,20 @@ CATCH_AND_RETHROW_METHOD_EXC;
 void Shaders::use() const
 {
 	if (!_loaded) {
-		LOG_OBJ_METHOD_WRN("Shaders were not loaded!");
+		char buff[256];
+		sprintf_s(buff, "Shaders (id: %04u) were not loaded!", _id);
+		LOG_METHOD_WRN(buff);
 		return;
 	}
 	Context const context(_window);
-	glUseProgram(_id);
+	glUseProgram(_program_id);
 }
 
 // Return the location of a uniform variable for this program
 GLint Shaders::getUniformLocation(std::string const& name)
 {
 	Context const context(_window);
-	return glGetUniformLocation(_id, name.c_str());
+	return glGetUniformLocation(_program_id, name.c_str());
 }
 
 void Shaders::setUniform1iv(std::string const& name, GLsizei count, const GLint* value)

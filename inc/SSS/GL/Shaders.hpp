@@ -20,13 +20,13 @@ SSS_GL_BEGIN;
 /** Non-exhaustive abstractization of \b OpenGL shaders.
  *  @sa Window::createShaders(), Renderer::setShadersID()
  */
-class Shaders : public _internal::WindowObject {
+class Shaders : public _internal::WindowObjectWithID {
     friend class Window;
     friend class Renderer;
 
 private:
     // Constructor 
-    Shaders(std::weak_ptr<Window> window);
+    Shaders(std::weak_ptr<Window> window, uint32_t id);
 
 public:
     /** Destructor, unloads internal glProgram if needed.
@@ -78,7 +78,7 @@ public:
 private:
     bool _loaded{ false };
     // Program id
-    GLuint _id{ 0 };
+    GLuint _program_id{ 0 };
 };
 
 SSS_GL_END;

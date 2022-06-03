@@ -89,9 +89,9 @@ public :
         // Objects
         std::map<uint32_t, Shaders::Ptr> shaders;       // Shaders
         std::map<uint32_t, Renderer::Ptr> renderers;    // Renderers
-        std::map<uint32_t, Plane::Ptr> planes;          // Planes
         std::map<uint32_t, Texture::Ptr> textures;      // Textures
         std::map<uint32_t, Camera::Ptr> cameras;        // Cameras
+        std::map<uint32_t, Plane::Ptr> planes;          // Planes
     };
 
 private:
@@ -110,7 +110,7 @@ public:
     template<class T = Renderer>
     void createRenderer(uint32_t id) {
         _objects.renderers.try_emplace(id);
-        _objects.renderers.at(id).reset(new T(weak_from_this()));
+        _objects.renderers.at(id).reset(new T(weak_from_this(), id));
     }
     void removeRenderer(uint32_t id);
     void createPlane(uint32_t id);

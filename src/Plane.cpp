@@ -4,8 +4,8 @@
 
 SSS_GL_BEGIN;
 
-Plane::Plane(std::weak_ptr<Window> window) try
-    : Model(window)
+Plane::Plane(std::weak_ptr<Window> window, uint32_t id) try
+    : Model(window, id)
 {
 }
 CATCH_AND_RETHROW_METHOD_EXC;

@@ -22,13 +22,13 @@ SSS_GL_BEGIN;
  *  internal Basic::Texture.
  *  @sa Window::createTexture()
  */
-class Texture : public _internal::WindowObject {
+class Texture : public _internal::WindowObjectWithID {
 
     friend bool pollEverything();
     friend class Window;
 
 private:
-    Texture(std::weak_ptr<Window> window);
+    Texture(std::weak_ptr<Window> window, uint32_t id);
 
 public:
     /** Destructor, can log but otherwise default.*/
