@@ -202,25 +202,17 @@ void Window::removeRenderer(uint32_t id)
     }
 }
 
-void Window::createModel(uint32_t id, Model::Type type) try
+void Window::createPlane(uint32_t id) try
 {
-    switch (type) {
-    case Model::Type::Plane:
-        _objects.planes.try_emplace(id);
-        _objects.planes.at(id).reset(new Plane(weak_from_this()));
-        break;
-    }
+    _objects.planes.try_emplace(id);
+    _objects.planes.at(id).reset(new Plane(weak_from_this()));
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
-void Window::removeModel(uint32_t id, Model::Type type)
+void Window::removePlane(uint32_t id)
 {
-    switch (type) {
-    case Model::Type::Plane:
-        if (_objects.planes.count(id) != 0) {
-            _objects.planes.erase(_objects.planes.find(id));
-        }
-        break;
+    if (_objects.planes.count(id) != 0) {
+        _objects.planes.erase(_objects.planes.find(id));
     }
 }
 
@@ -313,7 +305,8 @@ CATCH_AND_RETHROW_METHOD_EXC;
 void Window::_updateHoveredModel()
 {
     // Reset hovering
-    _something_is_hovered = false;
+    _hovered_type = HoveredType::None;
+    double z = DBL_MAX;
 
     // If the cursor is disabled (Camera mode), then its relative position is at
     // the center of the window, which, on -1/+1 coordinates, is 0/0.
@@ -333,7 +326,6 @@ void Window::_updateHoveredModel()
         y = static_cast<float>(((y_offset / h * 2.0) - 1.0) * -1.0);
     }
 
-    double z = DBL_MAX;
     // Loop over each renderer (in reverse order) and find their nearest
     // models at mouse coordinates
     for (auto it = _objects.renderers.crbegin(); it != _objects.renderers.crend(); ++it) {
@@ -345,11 +337,10 @@ void Window::_updateHoveredModel()
         Plane::Renderer* renderer = dynamic_cast<Plane::Renderer*>(ptr);
         if (renderer != nullptr && renderer->_findNearestModel(x, y)) {
             // If a model was found, update hover status
-            _something_is_hovered = true;
             if (renderer->_hovered_z < z) {
                 z = renderer->_hovered_z;
-                _hovered_model_id = renderer->_hovered_id;
-                _hovered_model_type = Model::Type::Plane;
+                _hovered_id = renderer->_hovered_id;
+                _hovered_type = HoveredType::Plane;
             }
             // If the depth buffer was reset at least once by the renderer, previous
             // tested models will always be on top of all not-yet-tested models,
@@ -366,11 +357,11 @@ void Window::_updateHoveredModel()
                 break;
         }
     }
-    if (_something_is_hovered &&
-        Log::GL::Window::query(Log::GL::Window::get().hovered_model)) {
+    if (_hovered_type != HoveredType::None
+        && Log::GL::Window::query(Log::GL::Window::get().hovered_model)) {
         std::string model_type;
-        switch (_hovered_model_type) {
-        case Model::Type::Plane:
+        switch (_hovered_type) {
+        case HoveredType::Plane:
             model_type = "Plane";
             break;
         default:
@@ -378,7 +369,7 @@ void Window::_updateHoveredModel()
         }
         char buff[256];
         sprintf_s(buff, "'%s' -> Hovered: %s #%u",
-            _title.c_str(), model_type.c_str(), _hovered_model_id);
+            _title.c_str(), model_type.c_str(), _hovered_id);
         LOG_GL_MSG(buff);
     }
     _hover_waiting_time = std::chrono::nanoseconds(0);
@@ -420,8 +411,50 @@ void Window::_updateHoveredModelIfNeeded(std::chrono::steady_clock::time_point c
 
 void Window::_callPassiveFunctions()
 {
+    Shared win = shared_from_this();
+    if (!win) return;
+
+    // Call Planes' passive functions
     for (auto it = _objects.planes.cbegin(); it != _objects.planes.cend(); ++it) {
-        it->second->_callPassiveFunction(_window.get(), it->first);
+        Plane::Ptr const& plane = it->second;
+        if (Plane::passive_funcs.count(plane->_passive_func_id) == 0) {
+            continue;
+        }
+        Plane::PassiveFunc const f = Plane::passive_funcs.at(plane->_passive_func_id);
+        if (f != nullptr) {
+            f(win, plane);
+        }
+    }
+}
+
+void Window::_callOnClickFunction(int button, int action, int mods)
+{
+    Shared win = shared_from_this();
+    if (!win) return;
+
+    uint32_t const& id = _hovered_id;
+    switch (_hovered_type) {
+    // Nothing is hovered
+    case HoveredType::None:
+        break;
+    // A Plane is hovered
+    case HoveredType::Plane: {
+        if (_objects.planes.count(id) == 0)
+            break;
+        Plane::Ptr const& plane = _objects.planes.at(id);
+        if (!plane)
+            break;
+        if (Plane::on_click_funcs.count(plane->_on_click_func_id) == 0) {
+            break;
+        }
+        Plane::OnClickFunc const f = Plane::on_click_funcs.at(plane->_on_click_func_id);
+        if (f != nullptr) {
+            f(win, plane, button, action, mods);
+        }
+    }
+        break;
+    default:
+        break;
     }
 }
 

@@ -136,23 +136,7 @@ void mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) tr
         window->_updateHoveredModel();
     }
     // Call button function, if needed
-    if (window->_something_is_hovered) {
-        uint32_t const id = window->_hovered_model_id;
-        switch (window->_hovered_model_type) {
-        case Model::Type::Plane:
-        {
-            if (window->_objects.planes.count(id) == 0)
-                break;
-            Plane::Ptr const& plane = window->_objects.planes.at(id);
-            if (plane) {
-                plane->_callOnClickFunction(ptr, id, button, action, mods);
-            }
-        }
-        break;
-        default:
-            break;
-        }
-    }
+    window->_callOnClickFunction(button, action, mods);
 
     // Call user defined callback, if needed
     if (window->_mouse_button_callback != nullptr) {

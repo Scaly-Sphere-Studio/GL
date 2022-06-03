@@ -81,8 +81,8 @@ void Plane::_updateTexScaling()
     }
 }
 
-bool Plane::_hoverTriangle(glm::mat4 const& mvp, glm::vec4 const& A,
-    glm::vec4 const& B, glm::vec4 const& C, float x, float y,
+bool Plane::_hoverTriangle(glm::mat4 const& mvp, glm::vec3 const& A,
+    glm::vec3 const& B, glm::vec3 const& C, float x, float y,
     double& z, bool& is_hovered)
 {
     // Skip if one (or more) of the points is behind the camera
@@ -182,10 +182,10 @@ bool Plane::_isHovered(glm::mat4 const& VP, float x, float y, double &z) try
     glm::vec4 const C4 = mvp * glm::vec4(0.5, -0.5, 0, 1);   // Bottom right
     glm::vec4 const D4 = mvp * glm::vec4(0.5, 0.5, 0, 1);    // Top right
     // Normalize in screen coordinates
-    glm::vec4 const A = A4 / A4.w;
-    glm::vec4 const B = B4 / B4.w;
-    glm::vec4 const C = C4 / C4.w;
-    glm::vec4 const D = D4 / D4.w;
+    glm::vec3 const A = A4 / A4.w;
+    glm::vec3 const B = B4 / B4.w;
+    glm::vec3 const C = C4 / C4.w;
+    glm::vec3 const D = D4 / D4.w;
 
     // Test for ABC or CDA
     bool is_hovered = false;

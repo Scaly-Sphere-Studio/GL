@@ -13,8 +13,7 @@ void mouse_button_callback(GLFWwindow*, int, int, int); // Pre-declaration
 class PlaneRenderer;
 INTERNAL_END;
 
-class Plane : public Model {
-    friend void _internal::mouse_button_callback(GLFWwindow*, int, int, int);
+class Plane : public Model<Plane> {
     friend class _internal::PlaneRenderer;
     friend class Window;
     friend class Texture;
@@ -34,7 +33,7 @@ public:
     virtual glm::mat4 getModelMat4();
     virtual void getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles,
         glm::vec3& translation);
-    inline glm::vec3 getTexScaling() const noexcept { return _tex_scaling; };
+    //inline glm::vec3 getTexScaling() const noexcept { return _tex_scaling; };
 
     // Hitbox used to trigger 'on click' events
     enum class Hitbox {
@@ -61,8 +60,8 @@ protected:
     int _relative_y{ 0 };
 
     // Called from _isHovered
-    bool _hoverTriangle(glm::mat4 const& mvp, glm::vec4 const& A,
-        glm::vec4 const& B, glm::vec4 const& C, float x, float y,
+    bool _hoverTriangle(glm::mat4 const& mvp, glm::vec3 const& A,
+        glm::vec3 const& B, glm::vec3 const& C, float x, float y,
         double &z, bool& is_hovered);
     // Returns true and updates z if Plane is hovered
     bool _isHovered(glm::mat4 const& VP, float x, float y, double &z);

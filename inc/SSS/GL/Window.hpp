@@ -113,8 +113,8 @@ public:
         _objects.renderers.at(id).reset(new T(weak_from_this()));
     }
     void removeRenderer(uint32_t id);
-    void createModel(uint32_t id, Model::Type type);
-    void removeModel(uint32_t id, Model::Type type);
+    void createPlane(uint32_t id);
+    void removePlane(uint32_t id);
 
     void createTexture(uint32_t id);
     void removeTexture(uint32_t id);
@@ -136,12 +136,15 @@ private:
     std::chrono::steady_clock::duration _hover_waiting_time;
     bool _cursor_is_moving{ false };
     double _old_cursor_x{ 0 }, _old_cursor_y{ 0 };
-    bool _something_is_hovered{ false };
-    uint32_t _hovered_model_id{ 0 };
-    Model::Type _hovered_model_type{ Model::Type::Plane };
+    uint32_t _hovered_id{ 0 };
+    enum class HoveredType {
+        None = 0,
+        Plane
+    } _hovered_type{ HoveredType::None };
     void _updateHoveredModel();
     void _updateHoveredModelIfNeeded(std::chrono::steady_clock::time_point const& now);
     void _callPassiveFunctions();
+    void _callOnClickFunction(int button, int action, int mods);
 
 public:
     inline long long getFPS() { return _frame_timer.get(); };

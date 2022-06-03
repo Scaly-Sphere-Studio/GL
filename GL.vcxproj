@@ -46,7 +46,6 @@
     <ClCompile Include="src\Shaders.cpp" />
     <ClCompile Include="src\Texture.cpp" />
     <ClCompile Include="src\Camera.cpp" />
-    <ClCompile Include="src\Model.cpp" />
     <ClCompile Include="src\Plane.cpp" />
     <ClCompile Include="src\_internal\PlaneRenderer.cpp" />
     <ClCompile Include="src\_internal\loadPreSetShaders.cpp" />
