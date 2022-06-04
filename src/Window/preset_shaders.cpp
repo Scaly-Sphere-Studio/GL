@@ -37,7 +37,7 @@ void main()\n\
 }";
 }
 
-void Window::loadPreSetShaders() try
+void Window::_loadPresetShaders() try
 {
     Context const context(_window.get());
 

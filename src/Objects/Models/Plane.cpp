@@ -1,6 +1,6 @@
-#include "SSS/GL/Plane.hpp"
+#include "SSS/GL/Objects/Models/Plane.hpp"
+#include "SSS/GL/Objects/Texture.hpp"
 #include "SSS/GL/Window.hpp"
-#include "SSS/GL/Texture.hpp"
 
 SSS_GL_BEGIN;
 

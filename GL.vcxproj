@@ -27,30 +27,32 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\SSS\GL.hpp" />
-    <ClInclude Include="inc\SSS\GL\Globals.hpp" />
-    <ClInclude Include="inc\SSS\GL\Renderer.hpp" />
-    <ClInclude Include="inc\SSS\GL\Camera.hpp" />
-    <ClInclude Include="inc\SSS\GL\Model.hpp" />
-    <ClInclude Include="inc\SSS\GL\Shaders.hpp" />
-    <ClInclude Include="inc\SSS\GL\Plane.hpp" />
-    <ClInclude Include="inc\SSS\GL\Texture.hpp" />
+    <ClInclude Include="inc\SSS\GL\Objects\Renderer.hpp" />
+    <ClInclude Include="inc\SSS\GL\Objects\Camera.hpp" />
+    <ClInclude Include="inc\SSS\GL\Objects\Model.hpp" />
+    <ClInclude Include="inc\SSS\GL\Objects\Shaders.hpp" />
+    <ClInclude Include="inc\SSS\GL\Objects\Models\Plane.hpp" />
+    <ClInclude Include="inc\SSS\GL\Objects\Texture.hpp" />
     <ClInclude Include="inc\SSS\GL\Window.hpp" />
-    <ClInclude Include="inc\SSS\GL\_internal\callbacks.hpp" />
-    <ClInclude Include="inc\SSS\GL\_internal\PlaneRenderer.hpp" />
-    <ClInclude Include="inc\SSS\GL\_internal\_includes.hpp" />
-    <ClInclude Include="inc\SSS\GL\Basics.hpp" />
+    <ClInclude Include="inc\SSS\GL\internal\callbacks.hpp" />
+    <ClInclude Include="inc\SSS\GL\Objects\Models\PlaneRenderer.hpp" />
+    <ClInclude Include="inc\SSS\GL\internal\includes.hpp" />
+    <ClInclude Include="inc\SSS\GL\Objects\Basic.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Basics.cpp" />
-    <ClCompile Include="src\_internal\callbacks.cpp" />
-    <ClCompile Include="src\Shaders.cpp" />
-    <ClCompile Include="src\Texture.cpp" />
-    <ClCompile Include="src\Camera.cpp" />
-    <ClCompile Include="src\Plane.cpp" />
-    <ClCompile Include="src\_internal\PlaneRenderer.cpp" />
-    <ClCompile Include="src\_internal\loadPreSetShaders.cpp" />
-    <ClCompile Include="src\Window.cpp" />
-    <ClCompile Include="src\Globals.cpp" />
+    <ClCompile Include="src\internal\callbacks.cpp" />
+    <ClCompile Include="src\Objects\Basic.cpp" />
+    <ClCompile Include="src\Objects\Shaders.cpp" />
+    <ClCompile Include="src\Objects\Texture.cpp" />
+    <ClCompile Include="src\Objects\Camera.cpp" />
+    <ClCompile Include="src\Objects\Models\Plane.cpp" />
+    <ClCompile Include="src\Objects\Models\PlaneRenderer.cpp" />
+    <ClCompile Include="src\Window\Window.cpp" />
+    <ClCompile Include="src\Window\preset_shaders.cpp" />
+    <ClCompile Include="src\Window\handle_objects.cpp" />
+    <ClCompile Include="src\Window\draw_frame.cpp" />
+    <ClCompile Include="src\Window\pollEverything.cpp" />
+    <ClCompile Include="src\Window\Context.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Basics.hpp"
+#include "SSS/GL/Objects/Basic.hpp"
 #include <glm/gtx/matrix_decompose.hpp>
 
 /** @file

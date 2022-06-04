@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Model.hpp"
+#include "SSS/GL/Objects/Model.hpp"
 
 /** @file
  *  Defines class SSS::GL::Plane.

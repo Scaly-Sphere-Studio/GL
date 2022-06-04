@@ -1,6 +1,6 @@
 #pragma once
 
-#include "_includes.hpp"
+#include "SSS/GL/internal/includes.hpp"
 
 /** @file
  *  Defines internal callback functions (doesn't affect user callbacks).

@@ -1,4 +1,3 @@
-#include "SSS/GL/Globals.hpp"
 #include "SSS/GL/Window.hpp"
 
 SSS_GL_BEGIN;
@@ -6,6 +5,15 @@ SSS_GL_BEGIN;
 bool pollEverything() try
 {
     bool ret = false;
+    
+    // Print all frames
+    for (Window::Weak const& weak : Window::_instances) {
+        Window::Shared window = weak.lock();
+        if (!window) {
+            continue;
+        }
+        window->printFrame();
+    }
 
     // Poll events
     glfwPollEvents();

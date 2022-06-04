@@ -1,6 +1,6 @@
 #pragma once
 
-#include "_internal/_includes.hpp"
+#include "SSS/GL/internal/includes.hpp"
 
 /** @file
  *  Defines namespace SSS::GL::Basic and subsequent classes.

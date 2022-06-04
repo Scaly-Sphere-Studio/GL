@@ -12,11 +12,26 @@
     <Filter Include="vcpkg_scripts">
       <UniqueIdentifier>{2e9304bf-d336-4a17-b008-b6aeacc0770b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="inc\_internal">
+    <Filter Include="src\Window">
+      <UniqueIdentifier>{9172fe3e-970e-4380-a793-7f81ed53221b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Objects">
+      <UniqueIdentifier>{3d7dd7f3-2a8e-462d-8928-c8a057522211}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Objects\Models">
+      <UniqueIdentifier>{8bf49805-4cfd-40ff-b542-a00f6b524d11}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\internal">
+      <UniqueIdentifier>{c05fe4e6-f0e6-425c-993e-97ffdd617387}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\internal">
       <UniqueIdentifier>{f9ea9e25-94dc-4281-97ef-fe2c14826d64}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\_internal">
-      <UniqueIdentifier>{c05fe4e6-f0e6-425c-993e-97ffdd617387}</UniqueIdentifier>
+    <Filter Include="inc\Objects">
+      <UniqueIdentifier>{7fe84c3e-7ee5-4e8f-a770-f624ee3a9dfb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\Objects\Models">
+      <UniqueIdentifier>{9d8398b3-26dc-4d5f-9d23-f8605a965410}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -31,76 +46,82 @@
     <None Include="Doxyfile" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Window.cpp">
-      <Filter>src</Filter>
+    <ClCompile Include="src\internal\callbacks.cpp">
+      <Filter>src\internal</Filter>
     </ClCompile>
-    <ClCompile Include="src\Shaders.cpp">
-      <Filter>src</Filter>
+    <ClCompile Include="src\Window\Window.cpp">
+      <Filter>src\Window</Filter>
     </ClCompile>
-    <ClCompile Include="src\Plane.cpp">
-      <Filter>src</Filter>
+    <ClCompile Include="src\Window\handle_objects.cpp">
+      <Filter>src\Window</Filter>
     </ClCompile>
-    <ClCompile Include="src\_internal\callbacks.cpp">
-      <Filter>src\_internal</Filter>
+    <ClCompile Include="src\Window\draw_frame.cpp">
+      <Filter>src\Window</Filter>
     </ClCompile>
-    <ClCompile Include="src\Texture.cpp">
-      <Filter>src</Filter>
+    <ClCompile Include="src\Window\Context.cpp">
+      <Filter>src\Window</Filter>
     </ClCompile>
-    <ClCompile Include="src\Camera.cpp">
-      <Filter>src</Filter>
+    <ClCompile Include="src\Objects\Camera.cpp">
+      <Filter>src\Objects</Filter>
     </ClCompile>
-    <ClCompile Include="src\_internal\PlaneRenderer.cpp">
-      <Filter>src\_internal</Filter>
+    <ClCompile Include="src\Objects\Shaders.cpp">
+      <Filter>src\Objects</Filter>
     </ClCompile>
-    <ClCompile Include="src\_internal\loadPreSetShaders.cpp">
-      <Filter>src\_internal</Filter>
+    <ClCompile Include="src\Objects\Texture.cpp">
+      <Filter>src\Objects</Filter>
     </ClCompile>
-    <ClCompile Include="src\Basics.cpp">
-      <Filter>src</Filter>
+    <ClCompile Include="src\Objects\Models\Plane.cpp">
+      <Filter>src\Objects\Models</Filter>
     </ClCompile>
-    <ClCompile Include="src\Globals.cpp">
-      <Filter>src</Filter>
+    <ClCompile Include="src\Objects\Models\PlaneRenderer.cpp">
+      <Filter>src\Objects\Models</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Window\preset_shaders.cpp">
+      <Filter>src\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Objects\Basic.cpp">
+      <Filter>src\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Window\pollEverything.cpp">
+      <Filter>src\Window</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\SSS\GL\Window.hpp">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL\Shaders.hpp">
-      <Filter>inc</Filter>
-    </ClInclude>
     <ClInclude Include="inc\SSS\GL.hpp">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL\Plane.hpp">
-      <Filter>inc</Filter>
+    <ClInclude Include="inc\SSS\GL\internal\callbacks.hpp">
+      <Filter>inc\internal</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL\Model.hpp">
-      <Filter>inc</Filter>
+    <ClInclude Include="inc\SSS\GL\internal\includes.hpp">
+      <Filter>inc\internal</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL\_internal\callbacks.hpp">
-      <Filter>inc\_internal</Filter>
+    <ClInclude Include="inc\SSS\GL\Objects\Camera.hpp">
+      <Filter>inc\Objects</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL\_internal\_includes.hpp">
-      <Filter>inc\_internal</Filter>
+    <ClInclude Include="inc\SSS\GL\Objects\Model.hpp">
+      <Filter>inc\Objects</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL\Texture.hpp">
-      <Filter>inc</Filter>
+    <ClInclude Include="inc\SSS\GL\Objects\Shaders.hpp">
+      <Filter>inc\Objects</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL\Camera.hpp">
-      <Filter>inc</Filter>
+    <ClInclude Include="inc\SSS\GL\Objects\Texture.hpp">
+      <Filter>inc\Objects</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL\Renderer.hpp">
-      <Filter>inc</Filter>
+    <ClInclude Include="inc\SSS\GL\Objects\Renderer.hpp">
+      <Filter>inc\Objects</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL\_internal\PlaneRenderer.hpp">
-      <Filter>inc\_internal</Filter>
+    <ClInclude Include="inc\SSS\GL\Objects\Models\Plane.hpp">
+      <Filter>inc\Objects\Models</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL\Basics.hpp">
-      <Filter>inc</Filter>
+    <ClInclude Include="inc\SSS\GL\Objects\Models\PlaneRenderer.hpp">
+      <Filter>inc\Objects\Models</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL\Globals.hpp">
-      <Filter>inc</Filter>
+    <ClInclude Include="inc\SSS\GL\Objects\Basic.hpp">
+      <Filter>inc\Objects</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Shaders.hpp"
+#include "SSS/GL/Objects/Shaders.hpp"
 
 /** @file
  *  Defines abstract class SSS::GL::Renderer.

@@ -1,7 +1,6 @@
-#include "SSS/GL/_internal/PlaneRenderer.hpp"
-#include "SSS/GL/Plane.hpp"
+#include "SSS/GL/Objects/Models/PlaneRenderer.hpp"
+#include "SSS/GL/Objects/Models/Plane.hpp"
 #include "SSS/GL/Window.hpp"
-#include "SSS/GL/Texture.hpp"
 
 SSS_GL_BEGIN;
 INTERNAL_BEGIN;

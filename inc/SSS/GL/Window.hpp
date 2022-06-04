@@ -1,10 +1,10 @@
 #pragma once
 
-#include "_internal/callbacks.hpp"
-#include "Texture.hpp"
-#include "Camera.hpp"
-#include "Plane.hpp"
-#include "_internal/PlaneRenderer.hpp"
+#include "SSS/GL/internal/callbacks.hpp"
+#include "SSS/GL/Objects/Texture.hpp"
+#include "SSS/GL/Objects/Camera.hpp"
+#include "SSS/GL/Objects/Models/Plane.hpp"
+#include "SSS/GL/Objects/Models/PlaneRenderer.hpp"
 
 /** @file
  *  Defines class SSS::GL::Window and its bound class SSS::GL::Context.
@@ -28,6 +28,8 @@ namespace SSS::Log::GL {
 
 SSS_GL_BEGIN;
     
+bool pollEverything();
+
 class Window : public std::enable_shared_from_this<Window> {
     
     friend bool pollEverything();
@@ -98,7 +100,7 @@ private:
     // Stores all window objects
     Objects _objects;
     // To be called in create() as weak_from_this() is needed
-    void loadPreSetShaders();
+    void _loadPresetShaders();
 
 public:
     inline Objects const& getObjects() const noexcept { return _objects; };
@@ -113,8 +115,6 @@ public:
         _objects.renderers.at(id).reset(new T(weak_from_this(), id));
     }
     void removeRenderer(uint32_t id);
-    void createPlane(uint32_t id);
-    void removePlane(uint32_t id);
 
     void createTexture(uint32_t id);
     void removeTexture(uint32_t id);
@@ -122,6 +122,8 @@ public:
     void createCamera(uint32_t id);
     void removeCamera(uint32_t id);
 
+    void createPlane(uint32_t id);
+    void removePlane(uint32_t id);
 
 // --- Public methods ---
 
@@ -281,7 +283,6 @@ inline char const* windowTitle(std::weak_ptr<Window> win) noexcept
 #define WINDOW_TITLE(X) _internal::windowTitle(X)
 
 INTERNAL_END;
-
 
 class Context {
 private:

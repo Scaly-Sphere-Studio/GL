@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Renderer.hpp"
+#include "SSS/GL/Objects/Renderer.hpp"
 
 /** @file
  *  Defines internal class behind SSS::GL::Plane::Renderer alias.

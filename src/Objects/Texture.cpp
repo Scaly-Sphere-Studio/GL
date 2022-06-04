@@ -1,4 +1,4 @@
-#include "SSS/GL/Texture.hpp"
+#include "SSS/GL/Objects/Texture.hpp"
 #include "SSS/GL/Window.hpp"
 
 // Init STB
