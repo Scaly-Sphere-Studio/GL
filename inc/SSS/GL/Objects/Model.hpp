@@ -1,7 +1,9 @@
 #pragma once
 
 #include "SSS/GL/Objects/Basic.hpp"
+/** \cond INCLUDE*/
 #include <glm/gtx/matrix_decompose.hpp>
+/** \endcond*/
 
 /** @file
  *  Defines abstract class SSS::GL::Model.

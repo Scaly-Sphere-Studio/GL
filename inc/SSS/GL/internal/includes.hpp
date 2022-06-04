@@ -1,9 +1,5 @@
 #pragma once
 
-/** @dir SSS/GL/_internal
- *  Holds \b internal headers for the %SSS/GL library.
- */
-
 /** @file
  *  Base header including resources and defining macros used by other headers.
  */
