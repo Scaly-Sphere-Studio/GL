@@ -35,7 +35,7 @@ public:
      *  having to worry about their depth (Background, Scene, Text, UI...).\n
      *  Stored in Renderer::chunks.
      */
-    struct Chunk {
+    struct Chunk final {
         /** Optional title for UI purpose only.*/
         std::string title;
         /** Wether to clear the depth buffer before rendering this chunk,

@@ -71,14 +71,10 @@ private:
 };
 
 template <class T>
-std::map<uint32_t, typename Model<T>::OnClickFunc> Model<T>::on_click_funcs {
-    { 0, nullptr }
-};
+std::map<uint32_t, typename Model<T>::OnClickFunc> Model<T>::on_click_funcs {};
 
 template <class T>
-std::map<uint32_t, typename Model<T>::PassiveFunc> Model<T>::passive_funcs {
-    { 0, nullptr }
-};
+std::map<uint32_t, typename Model<T>::PassiveFunc> Model<T>::passive_funcs {};
 
 template <class T>
 Model<T>::Model(std::weak_ptr<Window> window, uint32_t id) try

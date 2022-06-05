@@ -9,7 +9,7 @@
 SSS_GL_BEGIN;
 INTERNAL_BEGIN;
 
-class PlaneRenderer : public Renderer {
+class PlaneRenderer final : public Renderer {
     friend class Window;
 
 private:

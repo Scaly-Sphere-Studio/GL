@@ -15,7 +15,7 @@ INTERNAL_END;
 /** Abstractization of View and Projection matrices, used in Renderer::Chunk.
  *  @sa Window::createCamera()
  */
-class Camera : _internal::WindowObjectWithID {
+class Camera final : _internal::WindowObjectWithID {
     friend void _internal::window_resize_callback(GLFWwindow*, int, int);
     friend class Window;
 

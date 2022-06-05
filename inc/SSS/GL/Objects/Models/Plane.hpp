@@ -9,31 +9,29 @@
 SSS_GL_BEGIN;
 
 INTERNAL_BEGIN;
-void mouse_button_callback(GLFWwindow*, int, int, int); // Pre-declaration
 class PlaneRenderer;
 INTERNAL_END;
 
-class Plane : public Model<Plane> {
+class Plane final : public Model<Plane> {
     friend class _internal::PlaneRenderer;
     friend class Window;
     friend class Texture;
 
-protected:
+private:
     Plane(std::weak_ptr<Window> window, uint32_t id);
 
 public:
     virtual ~Plane();
+
+    virtual glm::mat4 getModelMat4();
+    virtual void getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles,
+        glm::vec3& translation);
 
     using Ptr = std::unique_ptr<Plane>;
     using Renderer = _internal::PlaneRenderer;
     
     void setTextureID(uint32_t texture_id);
     inline uint32_t getTextureID() const noexcept { return _texture_id; };
-
-    virtual glm::mat4 getModelMat4();
-    virtual void getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles,
-        glm::vec3& translation);
-    //inline glm::vec3 getTexScaling() const noexcept { return _tex_scaling; };
 
     // Hitbox used to trigger 'on click' events
     enum class Hitbox {
@@ -44,7 +42,7 @@ public:
     inline void setHitbox(Hitbox hitbox) noexcept { _hitbox = hitbox; };
     inline Hitbox getHitbox() const noexcept { return _hitbox; };
 
-protected:
+private:
     uint32_t _texture_id{ 0 };
     bool _use_texture{ false };
     GLsizei _tex_w{ 0 }, _tex_h{ 0 };

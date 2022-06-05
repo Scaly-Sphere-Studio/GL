@@ -318,10 +318,8 @@ void Window::_callOnClickFunction(int button, int action, int mods)
 
     uint32_t const& id = _hovered_id;
     switch (_hovered_type) {
-        // Nothing is hovered
     case HoveredType::None:
         break;
-        // A Plane is hovered
     case HoveredType::Plane: {
         if (_objects.planes.count(id) == 0)
             break;

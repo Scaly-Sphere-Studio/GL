@@ -22,7 +22,7 @@ SSS_GL_BEGIN;
  *  internal Basic::Texture.
  *  @sa Window::createTexture()
  */
-class Texture : public _internal::WindowObjectWithID {
+class Texture final : public _internal::WindowObjectWithID {
 
     friend bool pollEverything();
     friend class Window;
@@ -125,7 +125,6 @@ private:
         int _w{ 0 };
         int _h{ 0 };
     } _loading_thread;
-    friend _AsyncLoading;
 
     // Update the texture scaling of all Planes using this texture
     void _updatePlanesScaling();

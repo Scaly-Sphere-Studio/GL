@@ -20,9 +20,8 @@ SSS_GL_BEGIN;
 /** Non-exhaustive abstractization of \b OpenGL shaders.
  *  @sa Window::createShaders(), Renderer::setShadersID()
  */
-class Shaders : public _internal::WindowObjectWithID {
+class Shaders final : public _internal::WindowObjectWithID {
     friend class Window;
-    friend class Renderer;
 
 private:
     // Constructor 

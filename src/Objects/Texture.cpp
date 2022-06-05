@@ -163,18 +163,10 @@ void Texture::_updatePlanesScaling()
         return;
     }
     Window::Objects const& objects = window->getObjects();
-    // Retrieve texture ID
-    uint32_t id = 0;
-    for (auto it = objects.textures.cbegin(); it != objects.textures.cend(); ++it) {
-        if (it->second.get() == this) {
-            id = it->first;
-            break;
-        }
-    }
     // Update texture scaling of all planes & buttons matching this texture
     for (auto it = objects.planes.cbegin(); it != objects.planes.cend(); ++it) {
         Plane::Ptr const& plane = it->second;
-        if (plane->_use_texture && plane->_texture_id == id) {
+        if (plane->_use_texture && plane->_texture_id == _id) {
             plane->_updateTexScaling();
         }
     }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SSS/GL/internal/callbacks.hpp"
+#include "SSS/GL/Objects/Shaders.hpp"
 #include "SSS/GL/Objects/Texture.hpp"
 #include "SSS/GL/Objects/Camera.hpp"
 #include "SSS/GL/Objects/Models/Plane.hpp"
@@ -30,7 +31,7 @@ SSS_GL_BEGIN;
     
 bool pollEverything();
 
-class Window : public std::enable_shared_from_this<Window> {
+class Window final : public std::enable_shared_from_this<Window> {
     
     friend bool pollEverything();
     friend void _internal::window_iconify_callback(GLFWwindow* ptr, int state);
@@ -41,10 +42,8 @@ class Window : public std::enable_shared_from_this<Window> {
     friend void _internal::key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods);
     friend void _internal::monitor_callback(GLFWmonitor* ptr, int event);
 
-    friend class Context;
-
 public:
-    struct CreateArgs {
+    struct CreateArgs final {
         int w{ 720 };
         int h{ 720 };
         std::string title{ "Untitled" };
@@ -68,6 +67,9 @@ private:
     // Private, to be called via Window::create();
     Window(CreateArgs const& args);
 
+    // To be called in create() as weak_from_this() is needed
+    void _loadPresetShaders();
+
 public :
     // Rule of 5
     ~Window();                                      // Destructor
@@ -80,7 +82,7 @@ public :
     static Shared get(GLFWwindow* ptr);
 
     // All context bound objects
-    struct Objects {
+    struct Objects final {
         // Rule of 5
         Objects()                           = default;  // Constructor
         ~Objects()                          = default;  // Destructor
@@ -99,8 +101,6 @@ public :
 private:
     // Stores all window objects
     Objects _objects;
-    // To be called in create() as weak_from_this() is needed
-    void _loadPresetShaders();
 
 public:
     inline Objects const& getObjects() const noexcept { return _objects; };
@@ -125,13 +125,12 @@ public:
     void createPlane(uint32_t id);
     void removePlane(uint32_t id);
 
-// --- Public methods ---
-
     // Draws objects inside renderers on the back buffer.
     void drawObjects();
     // Renders back buffer, clears front buffer, polls events.
     // Logs fps if specified in Log structure.
     void printFrame();
+
 private:
     FrameTimer _frame_timer;
     std::chrono::steady_clock::time_point _last_render_time;
@@ -284,7 +283,7 @@ inline char const* windowTitle(std::weak_ptr<Window> win) noexcept
 
 INTERNAL_END;
 
-class Context {
+class Context final {
 private:
     void _init(GLFWwindow* ptr);
 public:

@@ -24,7 +24,7 @@ Context::Context(std::weak_ptr<Window> ptr)
     if (!window) {
         return;
     }
-    _init(window->_window.get());
+    _init(window->getGLFWwindow());
 }
 
 Context::Context(GLFWwindow* ptr)
