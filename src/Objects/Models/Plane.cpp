@@ -10,10 +10,6 @@ Plane::Plane(std::weak_ptr<Window> window, uint32_t id) try
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
-Plane::~Plane()
-{
-}
-
 void Plane::setTextureID(uint32_t texture_id)
 {
     _texture_id = texture_id;

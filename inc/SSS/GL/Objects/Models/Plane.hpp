@@ -12,6 +12,7 @@ INTERNAL_BEGIN;
 class PlaneRenderer;
 INTERNAL_END;
 
+/** 2D plane derived from Model.*/
 class Plane final : public Model<Plane> {
     friend class _internal::PlaneRenderer;
     friend class Window;
@@ -21,25 +22,39 @@ private:
     Plane(std::weak_ptr<Window> window, uint32_t id);
 
 public:
-    virtual ~Plane();
+    /** Destructor, default.*/
+    virtual ~Plane() = default;
+
+    /** Unique ptr stored in Window objects.*/
+    using Ptr = std::unique_ptr<Plane>;
+    /** Internal Renderer implementation for the Plane class.*/
+    using Renderer = _internal::PlaneRenderer;
 
     virtual glm::mat4 getModelMat4();
     virtual void getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles,
         glm::vec3& translation);
-
-    using Ptr = std::unique_ptr<Plane>;
-    using Renderer = _internal::PlaneRenderer;
     
+    /** Sets the Texture ID to be used for this instance.*/
     void setTextureID(uint32_t texture_id);
+    /** Returns the Texture ID used for this instance.*/
     inline uint32_t getTextureID() const noexcept { return _texture_id; };
 
-    // Hitbox used to trigger 'on click' events
+    /** Types of hitboxes for on-click events to proc (or not)
+     *  when in %Plane coordinates.
+     */
     enum class Hitbox {
-        None,   // No hitbox.
-        Alpha,  // Hitbox if alpha > 0.
-        Full    // Hitbox if within plane coordinates.
+        /** No hitbox, click events never proc.*/
+        None,
+        /** %Alpha hitbox, click events proc when clicking on
+         *  \b (alpha > 0) parts of corresponding Texture.
+         */
+        Alpha,
+        /** %Full hitbox, click events always proc.*/
+        Full
     };
+    /** Sets the Hitbox type of this instance (default: Hitbox::None)*/
     inline void setHitbox(Hitbox hitbox) noexcept { _hitbox = hitbox; };
+    /** Returns the Hitbox type of this instance.*/
     inline Hitbox getHitbox() const noexcept { return _hitbox; };
 
 private:
