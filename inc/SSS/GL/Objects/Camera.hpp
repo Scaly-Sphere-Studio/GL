@@ -135,7 +135,7 @@ private:
     glm::mat4 _view{ 1 };
     void _computeView();
 
-    float _screen_ratio{ 1.f };
+    float _window_ratio{ 1.f };
     float _fov{ 70.f };
     float _z_near{ 0.1f }, _z_far{ 100.f };
     Projection _projection_type{ Projection::Ortho };

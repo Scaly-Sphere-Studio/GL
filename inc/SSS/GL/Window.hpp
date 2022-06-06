@@ -29,8 +29,17 @@ namespace SSS::Log::GL {
 
 SSS_GL_BEGIN;
     
+/** Global function which polls everything in the library.
+ *  Process is as follow:
+ * - Calls glfwPollEvents().
+ * - Calls all TR::Area::update().
+ * - Calls all Model's passive function.
+ * - Edits every Texture with a pending thread (file load / text area).
+ * - \b Returns \c true if at least one Window is visible, and \c false otherwise.
+ */
 bool pollEverything();
 
+/** Abstractization of \c GLFWwindow logic.*/
 class Window final : public std::enable_shared_from_this<Window> {
     
     friend bool pollEverything();
@@ -43,46 +52,106 @@ class Window final : public std::enable_shared_from_this<Window> {
     friend void _internal::monitor_callback(GLFWmonitor* ptr, int event);
 
 public:
+    /** Window::create() parameters.*/
     struct CreateArgs final {
+        /** Width of the window (auto-shrinks to fit monitor).*/
         int w{ 720 };
+        /** Height of the window (auto-shrinks to fit monitor).*/
         int h{ 720 };
+        /** Title of the window.*/
         std::string title{ "Untitled" };
+        /** Monitor ID of the window (auto-shrinks to closest valid value).*/
         int monitor_id{ 0 };
+        /** Whether to put the window in fullscreen.*/
         bool fullscreen{ false };
+        /** Whether to maximize the window.*/
         bool maximized{ false };
+        /** Whether to iconify the window.*/
         bool iconified{ false };
+        /** Whether to hide the window.*/
         bool hidden{ false };
     };
 
+    /** %Shared instance, retrivable with Window::get().*/
     using Shared = std::shared_ptr<Window>;
 
 private:
-    using Weak = std::weak_ptr<Window>;
-    // All Window instances
-    static std::vector<Weak> _instances;
-    // All connected monitors
-    static std::vector<GLFWmonitor*> _monitors;
+    using Weak = std::weak_ptr<Window>;         // Weak ptr to Window instance
+    static std::vector<Weak> _instances;        // All Window instances
+    static std::vector<GLFWmonitor*> _monitors; // All connected monitors
 
     // Constructor, creates a window
     // Private, to be called via Window::create();
     Window(CreateArgs const& args);
 
-    // To be called in create() as weak_from_this() is needed
+    // To be called in create(), as weak_from_this() is needed
     void _loadPresetShaders();
 
 public :
+    /** Destructor, calls cleanObjects(), removes instance from internal
+     *  vector, and terminates glfw if no Window exists anymore.
+     *  @sa create(), shouldClose()
+     */
+    ~Window();
+
+    /** \cond INTERNAL*/
     // Rule of 5
-    ~Window();                                      // Destructor
     Window(const Window&)               = delete;   // Copy constructor
     Window(Window&&)                    = delete;   // Move constructor
     Window& operator=(const Window&)    = delete;   // Copy assignment
     Window& operator=(Window&&)         = delete;   // Move assignment
+    /** \endcond*/
 
+    /** Inits glfw if no Window exists yet, and creates a Shared
+     *  instance with given parameters.
+     *  @sa Window::get(), shouldClose(), ~Window()
+     */
     static Shared create(CreateArgs const& args);
+    /** Retrieves the Shared instance matching given GLFWwindow pointer.
+     *  @sa Window::create()
+     */
     static Shared get(GLFWwindow* ptr);
 
-    // All context bound objects
+    /** Returns \c true if the user requested to close the window,
+     *  and \c false otherwiser.
+     *  Effectively calls glfwWindowShouldClose().
+     *  @sa ~Window()
+     */
+    bool shouldClose() const noexcept;
+    /** Sets a corresponding callback.
+     *  @usage
+     *  @code
+     *  void key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods)
+     *  {
+     *      Window::Shared window = Window::get(ptr);
+     *      // Process input ...
+     *  }
+     *  
+     *  int main()
+     *  {
+     *      // Setup window ...
+     *      window->setCallback(glfwSetKeyCallback, key_callback);
+     *  }
+     *  @endcode
+     *  @sa getKeyInputs()
+     */
+    template<typename Callback>
+    void setCallback(Callback(*set)(GLFWwindow*, Callback), Callback callback);
+
+    /** Array storing currently-pressed keys (see glfw key macros).
+     *  @sa getKeyInputs()
+     */
+    using KeyInputs = std::array<bool, GLFW_KEY_LAST + 1>;
+    /** Returns an array storing currently-pressed keys (see glfw key macros).
+     *  @sa setCallback()
+     */
+    inline KeyInputs const& getKeyInputs() const noexcept { return _key_inputs; }
+
+    /** Stores all Window-bound objects in ID maps.
+     *  @sa Window::getObjects()
+     */
     struct Objects final {
+        /** \cond INTERNAL*/
         // Rule of 5
         Objects()                           = default;  // Constructor
         ~Objects()                          = default;  // Destructor
@@ -90,7 +159,7 @@ public :
         Objects(Objects&&)                  = delete;   // Move constructor
         Objects& operator=(const Objects&)  = delete;   // Copy assignment
         Objects& operator=(Objects&&)       = delete;   // Move assignment
-        // Objects
+        /** \endcond*/
         std::map<uint32_t, Shaders::Ptr> shaders;       // Shaders
         std::map<uint32_t, Renderer::Ptr> renderers;    // Renderers
         std::map<uint32_t, Texture::Ptr> textures;      // Textures
@@ -99,36 +168,70 @@ public :
     };
 
 private:
-    // Stores all window objects
-    Objects _objects;
+    Objects _objects;   // All Window-bound objects
 
 public:
+    /** Returns all Window-bound Objects.
+     *  @sa cleanObjects()
+     */
     inline Objects const& getObjects() const noexcept { return _objects; };
+    /** Removes all objects from internal Window::Objects (except preset shaders).
+     *  @sa getObjects()
+     */
     void cleanObjects() noexcept;
 
+    /** Creates a Shaders::Ptr in Objects::shaders at given ID (see Shaders::Preset).
+     *  @sa removeShaders()
+     */
     void createShaders(uint32_t id);
-    void removeShaders(uint32_t id);
-
-    template<class T = Renderer>
-    void createRenderer(uint32_t id) {
-        _objects.renderers.try_emplace(id);
-        _objects.renderers.at(id).reset(new T(weak_from_this(), id));
-    }
-    void removeRenderer(uint32_t id);
-
+    /** Creates a derived Renderer::Ptr in Objects::renderers at given ID.
+     *  @sa removeRenderer()
+     */
+    template<class Derived = Renderer>
+    void createRenderer(uint32_t id);
+    /** Creates a Texture::Ptr in Objects::textures at given ID.
+     *  @sa removeTexture()
+     */
     void createTexture(uint32_t id);
-    void removeTexture(uint32_t id);
-
+    /** Creates a Camera::Ptr in Objects::cameras at given ID.
+     *  @sa removeCamera()
+     */
     void createCamera(uint32_t id);
-    void removeCamera(uint32_t id);
-
+    /** Creates a Plane::Ptr in Objects::planes at given ID.
+     *  @sa removePlane()
+     */
     void createPlane(uint32_t id);
+
+    /** Removes the Shaders::Ptr in Objects::shaders at given ID (see Shaders::Preset).
+     *  @sa createShaders()
+     */
+    void removeShaders(uint32_t id);
+    /** Removes the Renderer::Ptr in Objects::renderers at given ID.
+     *  @sa createRenderer()
+     */
+    void removeRenderer(uint32_t id);
+    /** Removes the Texture::Ptr in Objects::textures at given ID.
+     *  @sa createTexture()
+     */
+    void removeTexture(uint32_t id);
+    /** Removes the Camera::Ptr in Objects::cameras at given ID.
+     *  @sa createCamera()
+     */
+    void removeCamera(uint32_t id);
+    /** Removes the Plane::Ptr in Objects::planes at given ID.
+     *  @sa createPlane()
+     */
     void removePlane(uint32_t id);
 
-    // Draws objects inside renderers on the back buffer.
+    /** Draws everything as defined in Objects::renderers.
+     *  @sa printFrame()
+     */
     void drawObjects();
-    // Renders back buffer, clears front buffer, polls events.
-    // Logs fps if specified in Log structure.
+
+    /** Swaps internal buffers (prints frame) if the instance is visible.
+     *  Sleeps (if needed) to follow FPS limit, and updates mouse hovering status.
+     *  @sa drawObjects()
+     */
     void printFrame();
 
 private:
@@ -148,81 +251,103 @@ private:
     void _callOnClickFunction(int button, int action, int mods);
 
 public:
+    /** Returns the last computed FPS.
+     *  @sa printFrame(), setFPSLimit()
+     */
     inline long long getFPS() { return _frame_timer.get(); };
-
-    // Wether the user requested to close the window.
-    // NOTE: this simply is a call to glfwWindowShouldClose
-    bool shouldClose() const noexcept;
-
+    /** Sets an FPS limit (<= 0 means no limit).
+     *  @sa printFrame(), getFPS(), getFPSLimit()
+     */
     void setFPSLimit(int fps_limit);
+    /** Returns the current FPS limit (<= 0 means no limit).
+     *  @sa getFPS(), setFPSLimit()
+     */
     inline int getFPSLimit() const noexcept { return _fps_limit; };
     
-    // Enables or disables the VSYNC of the window
+    /** Enables or disable vertical synchronization (VSYNC).
+     *  @sa getVSYNC()
+     */
     void setVSYNC(bool state);
+    /** Returns \c true if the vertical synchronization (VSYNC) is
+     *  enabled, and \c false otherwise.
+     *  @sa setVSYNC()
+     */
     inline bool getVSYNC() const noexcept { return _vsync; };
-    
-    // Sets a corresponding callback
-    template<typename _Func>
-    void setCallback(_Func(*set)(GLFWwindow*, _Func), _Func callback)
-    {
-        void const* ptr(set);
-        if (ptr == (void*)(&glfwSetWindowIconifyCallback)) {
-            _iconify_callback = GLFWwindowiconifyfun(callback);
-        }
-        else if (ptr == (void*)(&glfwSetWindowSizeCallback)) {
-            _resize_callback = GLFWwindowsizefun(callback);
-        }
-        else if (ptr == (void*)(&glfwSetWindowPosCallback)) {
-            _pos_callback = GLFWwindowposfun(callback);
-        }
-        else if (ptr == (void*)(&glfwSetKeyCallback)) {
-            _key_callback = GLFWkeyfun(callback);
-        }
-        else if (ptr == (void*)(&glfwSetCursorPosCallback)) {
-            _mouse_position_callback = GLFWcursorposfun(callback);
-        }
-        else if (ptr == (void*)(&glfwSetMouseButtonCallback)) {
-            _mouse_button_callback = GLFWmousebuttonfun(callback);
-        }
-        else {
-            set(_window.get(), callback);
-        }
-    };
 
-    using KeyInputs = std::array<bool, GLFW_KEY_LAST + 1>;
-    inline KeyInputs const& getKeyInputs() const noexcept { return _key_inputs; }
-
-    // Returns raw GLFWwindow ptr.
-    inline GLFWwindow* getGLFWwindow() const { return _window.get(); };
-    // Returns the monitor on which the windowed is considered to be.
-    // -> See internal callback window_pos_callback();
-    inline GLFWmonitor* getMonitor() const noexcept { return _main_monitor; }
-
+    /** Sets the window title.
+     *  @sa getTitle()
+     */
     void setTitle(std::string const& title);
+    /** Returns the current window title.
+     *  @sa setTitle()
+     */
     inline std::string const& getTitle() const noexcept { return _title; };
 
+    /** Resizes the window to given dimensions.
+     *  @sa getDimensions(), getRatio()
+     */
     inline void setDimensions(int w, int h) { glfwSetWindowSize(_window.get(), w, h); };
+    /** Returns the current window dimensions in given parameters.
+     *  @sa setDimensions(), getRatio()
+     */
     inline void getDimensions(int& w, int& h) const noexcept { w = _w; h = _h; };
-    inline float getScreenRatio() const noexcept
+    /** Returns the current window ratio (width / height).
+     *  @sa setDimensions(), getDimensions()
+     */
+    inline float getRatio() const noexcept
         { return static_cast<float>(_w) / static_cast<float>(_h); }
 
+    /** Moves the window to given screen coordinates.
+     *  @sa getPosition()
+     */
     inline void setPosition(int x0, int y0) { glfwSetWindowPos(_window.get(), x0, y0); };
+    /** Returns the window's screen coordinates in given parameters.
+     *  @sa getPosition()
+     */
     inline void getPosition(int& x0, int& y0) const noexcept
         { glfwGetWindowPos(_window.get(), &x0, &y0); };
 
-    // Enables or disables fullscreen mode on given screen
-    void setFullscreen(bool state, int screen_id = -1);
+    /** Enables or disables fullscreen mode on given monitor.
+     *  If \c monitor_id is negative, the window's main monitor is used.
+     *  @sa isFullscreen()
+     */
+    void setFullscreen(bool state, int monitor_id = -1);
+    /** Returns \c true if the window is in fullscreen mode,
+     *  and \c false otherwise.
+     *  @sa setFullscreen()
+     */
     inline bool isFullscreen() const noexcept
         { return glfwGetWindowMonitor(_window.get()) != nullptr; };
 
+    /** Iconifies or restores the window.
+     *  @sa isIconified()
+     */
     void setIconification(bool iconify);
+    /** Returns \c true if the window is iconified, and \c false otherwise
+     *  @sa setIconification()
+     */
     inline bool isIconified() const noexcept { return _is_iconified; };
 
+    /** Maximizes or restores the window.
+     *  @sa isMaximized()
+     */
     void setMaximization(bool maximize);
+    /** Returns \c true if the window is maximized, and \c false otherwise
+     *  @sa setMaximization()
+     */
     bool isMaximized() const;
 
+    /** Show (\c true) or hide (\c false) the window.
+     *  @sa isVisible()
+     */
     void setVisibility(bool show);
+    /** Returns \c true if the window is visible, and \c false otherwise.
+     *  @sa setVisibility()
+     */
     bool isVisible() const;
+
+    /** Returns the corresponding \c GLFWwindow pointer, be careful with it.*/
+    inline GLFWwindow* getGLFWwindow() const { return _window.get(); };
 
 private:
 // --- Private variables ---
@@ -266,6 +391,40 @@ private:
     void _setMainMonitor(int id);
 };
 
+template<class Derived>
+inline void Window::createRenderer(uint32_t id)
+{
+    _objects.renderers.try_emplace(id);
+    _objects.renderers.at(id).reset(new Derived(weak_from_this(), id));
+}
+
+template<typename Callback>
+inline void Window::setCallback(Callback(*set)(GLFWwindow*, Callback), Callback callback)
+{
+    void const* ptr(set);
+    if (ptr == (void*)(&glfwSetWindowIconifyCallback)) {
+        _iconify_callback = GLFWwindowiconifyfun(callback);
+    }
+    else if (ptr == (void*)(&glfwSetWindowSizeCallback)) {
+        _resize_callback = GLFWwindowsizefun(callback);
+    }
+    else if (ptr == (void*)(&glfwSetWindowPosCallback)) {
+        _pos_callback = GLFWwindowposfun(callback);
+    }
+    else if (ptr == (void*)(&glfwSetKeyCallback)) {
+        _key_callback = GLFWkeyfun(callback);
+    }
+    else if (ptr == (void*)(&glfwSetCursorPosCallback)) {
+        _mouse_position_callback = GLFWcursorposfun(callback);
+    }
+    else if (ptr == (void*)(&glfwSetMouseButtonCallback)) {
+        _mouse_button_callback = GLFWmousebuttonfun(callback);
+    }
+    else {
+        set(_window.get(), callback);
+    }
+};
+
 INTERNAL_BEGIN;
 inline char const* windowTitle(Window::Shared win) noexcept
 {
@@ -283,18 +442,40 @@ inline char const* windowTitle(std::weak_ptr<Window> win) noexcept
 
 INTERNAL_END;
 
+/** Abstractization of glfw contexts, inspired by std::lock.
+ *  Make given context current in scope.
+ *  @usage
+ *  @code
+ *  // Context is set to something
+ *  
+ *  void func(Window::Shared window)
+ *  {
+ *      // Set context to given window
+ *      Context const context(window);
+ *      
+ *      // OpenGL operations ...
+ *  }
+ * 
+ *  // Context is back to previous
+ *  @endcode
+ */
 class Context final {
 private:
     void _init(GLFWwindow* ptr);
 public:
+    /** Make given context current if needed.*/
+    Context(std::weak_ptr<Window> ptr);
+    /** Make given context current if needed.*/
+    Context(GLFWwindow* ptr);
+    /** Swap to previous context if it was changed in constructor.*/
+    ~Context();
+    /** @cond INTERNAL*/
     Context()                           = delete;   // Default constructor
-    Context(std::weak_ptr<Window> ptr);             // Constructor
-    Context(GLFWwindow* ptr);                       // Constructor
-    ~Context();                                     // Destructor
     Context(const Context&)             = delete;   // Copy constructor
     Context(Context&&)                  = delete;   // Move constructor
     Context& operator=(const Context&)  = delete;   // Copy assignment
     Context& operator=(Context&&)       = delete;   // Move assignment
+    /** @endcond*/
 private:
     GLFWwindow* _given{ nullptr };
     GLFWwindow* _previous{ nullptr };

@@ -10,7 +10,7 @@ Camera::Camera(std::weak_ptr<Window> weak_window, uint32_t id)
     if (!window) {
         return;
     }
-    _screen_ratio = window->getScreenRatio();
+    _window_ratio = window->getRatio();
     _computeView();
     _computeProjection();
 }
@@ -118,13 +118,13 @@ void Camera::_computeProjection()
 {
     switch (_projection_type) {
     case Projection::Ortho: {
-        float const x = _screen_ratio > 1.f ? _screen_ratio : 1.f;
-        float const y = _screen_ratio > 1.f ? 1.f : 1.f / _screen_ratio;
+        float const x = _window_ratio > 1.f ? _window_ratio : 1.f;
+        float const y = _window_ratio > 1.f ? 1.f : 1.f / _window_ratio;
         _projection = glm::ortho(-x, x, -y, y, _z_near, _z_far);
     }
                           break;
     case Projection::Perspective:
-        _projection = glm::perspective(glm::radians(_fov), _screen_ratio, _z_near, _z_far);
+        _projection = glm::perspective(glm::radians(_fov), _window_ratio, _z_near, _z_far);
         break;
     }
     _computeVP();

@@ -194,20 +194,20 @@ void Window::setVSYNC(bool state)
 }
 
 // Enables or disables fullscreen mode on given screen
-// -> screen_id of -1 (default) takes the monitor the window is on
-void Window::setFullscreen(bool state, int screen_id)
+// -> monitor_id of -1 (default) takes the monitor the window is on
+void Window::setFullscreen(bool state, int monitor_id)
 {
     // Retrieve current fullscreen monitor (nullptr when windowed)
     GLFWmonitor* fullscreenMonitor = glfwGetWindowMonitor(_window.get());
-    
+
     if (state) {
         // Ensure given ID is in range
-        if (screen_id >= static_cast<int>(_monitors.size())) {
-            LOG_METHOD_WRN("screen_id out of range.");
+        if (monitor_id >= static_cast<int>(_monitors.size())) {
+            LOG_METHOD_WRN("monitor_id out of range.");
             return;
         }
         // Select monitor
-        GLFWmonitor* monitor = screen_id < 0 ? _main_monitor : _monitors[screen_id];
+        GLFWmonitor* monitor = monitor_id < 0 ? _main_monitor : _monitors[monitor_id];
         // Ensure window isn't already fullscreen on given ID
         if (fullscreenMonitor == monitor) {
             LOG_METHOD_WRN("window is already fullscreen on given screen");

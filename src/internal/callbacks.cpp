@@ -29,7 +29,7 @@ void window_resize_callback(GLFWwindow* ptr, int w, int h) try
         auto const& cameras = window->_objects.cameras;
         for (auto it = cameras.cbegin(); it != cameras.cend(); ++it) {
             if (it->second) {
-                it->second->_screen_ratio = window->getScreenRatio();
+                it->second->_window_ratio = window->getRatio();
                 it->second->_computeProjection();
             }
         }
@@ -161,7 +161,7 @@ void key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods) 
     if (key >= 0 && key <= GLFW_KEY_LAST) {
         window->_key_inputs[key] = action != GLFW_RELEASE;
     }
-
+    
     // Call user defined callback, if needed
     if (window->_key_callback != nullptr) {
         window->_key_callback(ptr, key, scancode, action, mods);
