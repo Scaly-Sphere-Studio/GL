@@ -74,6 +74,12 @@ namespace Basic {
         glBindVertexArray(id);
     }
 
+    void VAO::unbind() const
+    {
+        Context const context(_window);
+        glBindVertexArray(0);
+    }
+
     VBO::VBO(std::weak_ptr<Window> window) try
         :   _internal::WindowObject(window),
             id([&]()->GLuint {

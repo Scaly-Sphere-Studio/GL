@@ -144,6 +144,7 @@ void PlaneRenderer::render() try
         }
     }
     _renderPart(shader, count, false);
+    _vao->unbind();
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
