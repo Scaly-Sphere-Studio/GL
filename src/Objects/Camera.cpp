@@ -122,7 +122,16 @@ void Camera::_computeProjection()
         float const y = _window_ratio > 1.f ? 1.f : 1.f / _window_ratio;
         _projection = glm::ortho(-x, x, -y, y, _z_near, _z_far);
     }
-                          break;
+        break;
+    case Projection::OrthoFixed: {
+        Window::Shared window = _window.lock();
+        int w, h;
+        window->getDimensions(w, h);
+        float const x = static_cast<float>(w) / 2.f;
+        float const y = static_cast<float>(h) / 2.f;
+        _projection = glm::ortho(-x, x, -y, y, _z_near, _z_far);
+    }
+        break;
     case Projection::Perspective:
         _projection = glm::perspective(glm::radians(_fov), _window_ratio, _z_near, _z_far);
         break;

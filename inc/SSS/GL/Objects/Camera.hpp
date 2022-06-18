@@ -86,6 +86,8 @@ public:
     enum class Projection {
         /** Orthographic projection (2D).*/
         Ortho,
+        /** Orthographic projection (2D) with a fixed pixel size.*/
+        OrthoFixed,
         /** Perspective projection (3D).*/
         Perspective
     };
