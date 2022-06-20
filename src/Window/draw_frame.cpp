@@ -1,4 +1,8 @@
 #include "SSS/GL/Window.hpp"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#pragma warning(suppress : 4996)
+#include <stb_image_write.h>
+#include <filesystem>
 
 SSS_GL_BEGIN;
 
@@ -125,6 +129,71 @@ void Window::_updateHoveredModelIfNeeded(std::chrono::steady_clock::time_point c
     }
 }
 
+void Window::AsyncScreenshot::_asyncFunction(int w, int h, std::vector<uint8_t> pixels,
+    std::string filename)
+{
+    // Reverse image
+    for (int line = 0; line != h / 2; ++line) {
+        std::swap_ranges(
+            pixels.begin() + 3 * w * line,          // Source (start)
+            pixels.begin() + 3 * w * (line + 1),    // Source (end)
+            pixels.begin() + 3 * w * (h - line - 1) // Destination
+        );
+    }
+
+    stbi_write_png(filename.c_str(), w, h, 3, &pixels[0], 0);
+}
+
+void Window::_saveScreenshot()
+{
+    if (!take_screenshot) {
+        return;
+    }
+
+    // Remove finished operations
+    _screenshots.remove_if([](AsyncPair const& pair) { return !pair.first.isRunning(); });
+    
+    // Read frame buffer
+    std::vector<uint8_t> pixels(3 * _w * _h);
+    glReadPixels(0, 0, _w, _h, GL_RGB, GL_UNSIGNED_BYTE, &pixels[0]);
+    
+    // Create screenshot directory if needed
+    std::string const dir = SSS::PWD + "screenshots/";
+    std::filesystem::create_directory(dir);
+
+    // Format time
+    std::string time = std::format("{:%Y%m%d%H%M%S}", std::chrono::system_clock::now());
+    size_t const index = time.find('.');
+    if (index < time.size()) {
+        time.resize(index);
+    }
+
+    // Ensure filename is unique
+    std::string filename;
+    for (int i = 1;; ++i) {
+        filename = dir + time + "_" + std::to_string(i) + ".png";
+        bool loop = false;
+        for (AsyncPair const& pair : _screenshots) {
+            if (pair.second == filename) {
+                loop = true;
+                break;
+            }
+        }
+        if (pathIsFile(filename)) {
+            loop = true;
+        }
+        if (!loop) break;
+    }
+
+    // Run async file writing
+    AsyncPair& pair = _screenshots.emplace_back();
+    pair.first.run(_w, _h, pixels, filename);
+    pair.second = filename;
+
+    // Reset state
+    take_screenshot = false;
+}
+
 // Renders back buffer, clears front buffer, polls events.
 // Logs fps and/or longest_frame if specified in LOG structure.
 void Window::printFrame() try
@@ -141,6 +210,8 @@ void Window::printFrame() try
 
         // Render back buffer
         glfwSwapBuffers(_window.get());
+        // Take screenshot if required
+        _saveScreenshot();
         // Update hovering status
         _updateHoveredModelIfNeeded(now);
         // Update last render time

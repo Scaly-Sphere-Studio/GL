@@ -234,7 +234,20 @@ public:
      */
     void printFrame();
 
+    inline void saveScreenshot() noexcept { take_screenshot = true; };
+
 private:
+    class AsyncScreenshot : public AsyncBase
+        < int, int, std::vector<uint8_t>, std::string >
+    {
+        void _asyncFunction(int w, int h, std::vector<uint8_t> pixels,
+            std::string filename);
+    };
+    using AsyncPair = std::pair<AsyncScreenshot, std::string>;
+    std::list<AsyncPair> _screenshots;
+    bool take_screenshot{ false };
+    void _saveScreenshot();
+
     FrameTimer _frame_timer;
     std::chrono::steady_clock::time_point _last_render_time;
     std::chrono::steady_clock::duration _hover_waiting_time;

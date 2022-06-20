@@ -19,6 +19,7 @@
 // STL
 #include <array>
 #include <deque>
+#include <list>
 #include <map>
 #include <fstream>
 #include <mutex>
