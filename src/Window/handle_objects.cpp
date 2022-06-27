@@ -15,14 +15,40 @@ void Window::cleanObjects() noexcept
     _objects.cameras.clear();
 }
 
-void Window::createShaders(uint32_t id) try
+Shaders::Ptr const& Window::createShaders(uint32_t id) try
 {
     if (id >= static_cast<uint32_t>(Shaders::Preset::First)) {
+        static Shaders::Ptr n(nullptr);
         LOG_METHOD_CTX_WRN("Given ID is in reserved values", id);
-        return;
+        return n;
     }
-    _objects.shaders.try_emplace(id);
-    _objects.shaders.at(id).reset(new Shaders(weak_from_this(), id));
+    Shaders::Ptr& ptr = _objects.shaders[id];
+    ptr.reset(new Shaders(weak_from_this(), id));
+    return ptr;
+}
+CATCH_AND_RETHROW_METHOD_EXC;
+
+Texture::Ptr const& Window::createTexture(uint32_t id) try
+{
+    Texture::Ptr& ptr = _objects.textures[id];
+    ptr.reset(new Texture(weak_from_this(), id));
+    return ptr;
+}
+CATCH_AND_RETHROW_METHOD_EXC;
+
+Camera::Ptr const& Window::createCamera(uint32_t id) try
+{
+    Camera::Ptr& ptr = _objects.cameras[id];
+    ptr.reset(new Camera(weak_from_this(), id));
+    return ptr;
+}
+CATCH_AND_RETHROW_FUNC_EXC;
+
+Plane::Ptr const& Window::createPlane(uint32_t id) try
+{
+    Plane::Ptr& ptr = _objects.planes[id];
+    ptr.reset(new Plane(weak_from_this(), id));
+    return ptr;
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
@@ -44,13 +70,6 @@ void Window::removeRenderer(uint32_t id)
     }
 }
 
-void Window::createTexture(uint32_t id) try
-{
-    _objects.textures.try_emplace(id);
-    _objects.textures.at(id).reset(new Texture(weak_from_this(), id));
-}
-CATCH_AND_RETHROW_METHOD_EXC;
-
 void Window::removeTexture(uint32_t id)
 {
     if (_objects.textures.count(id) != 0) {
@@ -58,26 +77,12 @@ void Window::removeTexture(uint32_t id)
     }
 }
 
-void Window::createCamera(uint32_t id) try
-{
-    _objects.cameras.try_emplace(id);
-    _objects.cameras.at(id).reset(new Camera(weak_from_this(), id));
-}
-CATCH_AND_RETHROW_FUNC_EXC;
-
 void Window::removeCamera(uint32_t id)
 {
     if (_objects.cameras.count(id) != 0) {
         _objects.cameras.erase(_objects.cameras.find(id));
     }
 }
-
-void Window::createPlane(uint32_t id) try
-{
-    _objects.planes.try_emplace(id);
-    _objects.planes.at(id).reset(new Plane(weak_from_this(), id));
-}
-CATCH_AND_RETHROW_METHOD_EXC;
 
 void Window::removePlane(uint32_t id)
 {

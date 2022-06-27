@@ -185,24 +185,24 @@ public:
     /** Creates a Shaders::Ptr in Objects::shaders at given ID (see Shaders::Preset).
      *  @sa removeShaders()
      */
-    void createShaders(uint32_t id);
+    Shaders::Ptr const& createShaders(uint32_t id);
     /** Creates a derived Renderer::Ptr in Objects::renderers at given ID.
      *  @sa removeRenderer()
      */
     template<class Derived = Renderer>
-    void createRenderer(uint32_t id);
+    Renderer::Ptr const& createRenderer(uint32_t id);
     /** Creates a Texture::Ptr in Objects::textures at given ID.
      *  @sa removeTexture()
      */
-    void createTexture(uint32_t id);
+    Texture::Ptr const& createTexture(uint32_t id);
     /** Creates a Camera::Ptr in Objects::cameras at given ID.
      *  @sa removeCamera()
      */
-    void createCamera(uint32_t id);
+    Camera::Ptr const& createCamera(uint32_t id);
     /** Creates a Plane::Ptr in Objects::planes at given ID.
      *  @sa removePlane()
      */
-    void createPlane(uint32_t id);
+    Plane::Ptr const& createPlane(uint32_t id);
 
     /** Removes the Shaders::Ptr in Objects::shaders at given ID (see Shaders::Preset).
      *  @sa createShaders()
@@ -407,10 +407,11 @@ private:
 };
 
 template<class Derived>
-inline void Window::createRenderer(uint32_t id)
+inline Renderer::Ptr const& Window::createRenderer(uint32_t id)
 {
-    _objects.renderers.try_emplace(id);
-    _objects.renderers.at(id).reset(new Derived(weak_from_this(), id));
+    Renderer::Ptr& ptr = _objects.renderers[id];
+    ptr.reset(new Derived(weak_from_this(), id));
+    return ptr;
 }
 
 template<typename Callback>
@@ -470,8 +471,7 @@ Renderer::Ptr const& Renderer::create()
         while (map.count(id) != 0) {
             ++id;
         }
-        win->createRenderer<T>(id);
-        return map.at(id);
+        return win->createRenderer<T>(id);
     }
     catch (std::exception const& e) {
         static Ptr n(nullptr);

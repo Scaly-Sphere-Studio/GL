@@ -52,8 +52,7 @@ Texture::Ptr const& Texture::create()
         while (map.count(id) != 0) {
             ++id;
         }
-        win->createTexture(id);
-        return map.at(id);
+        return win->createTexture(id);
     }
     catch (std::exception const& e) {
         static Ptr n(nullptr);

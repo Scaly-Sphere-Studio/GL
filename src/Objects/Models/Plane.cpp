@@ -29,8 +29,7 @@ Plane::Ptr const& Plane::create()
         while (map.count(id) != 0) {
             ++id;
         }
-        win->createPlane(id);
-        return map.at(id);
+        return win->createPlane(id);
     }
     catch (std::exception const& e) {
         static Ptr n(nullptr);
