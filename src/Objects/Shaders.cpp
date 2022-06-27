@@ -106,6 +106,38 @@ static GLuint loadShaders(std::string const& vertex_data, std::string const& fra
 	return program_id;
 }
 
+Shaders::Ptr const& Shaders::create()
+{
+	try {
+		// Retrieve first window
+		Window::Shared win = Window::getFirst();
+		// Retrieve map
+		auto const& map = win->getObjects().shaders;
+		// Increment ID until no similar value is found
+		uint32_t id = 0;
+		while (map.count(id) != 0) {
+			++id;
+		}
+		win->createShaders(id);
+		return map.at(id);
+	}
+	catch (std::exception const& e) {
+		static Ptr n(nullptr);
+		LOG_FUNC_ERR(e.what());
+		return n;
+	}
+}
+
+Shaders::Ptr const& Shaders::create(std::string const& vertex_fp,
+	std::string const& fragment_fp)
+{
+	Ptr const& shader = create();
+	if (shader) {
+		shader->loadFromFiles(vertex_fp, fragment_fp);
+	}
+	return shader;
+}
+
 void Shaders::loadFromStrings(std::string const& vertex_data, std::string const& fragment_data) try
 {
 	Context const context(_window);

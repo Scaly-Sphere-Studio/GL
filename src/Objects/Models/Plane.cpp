@@ -17,6 +17,28 @@ void Plane::setTextureID(uint32_t texture_id)
     _updateTexScaling();
 }
 
+Plane::Ptr const& Plane::create()
+{
+    try {
+        // Retrieve first window
+        Window::Shared win = Window::getFirst();
+        // Retrieve map
+        auto const& map = win->getObjects().planes;
+        // Increment ID until no similar value is found
+        uint32_t id = 0;
+        while (map.count(id) != 0) {
+            ++id;
+        }
+        win->createPlane(id);
+        return map.at(id);
+    }
+    catch (std::exception const& e) {
+        static Ptr n(nullptr);
+        LOG_FUNC_ERR(e.what());
+        return n;
+    }
+}
+
 glm::mat4 Plane::getModelMat4()
 {
     if (_should_compute_mat4) {

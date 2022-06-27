@@ -40,6 +40,28 @@ Texture::~Texture()
     }
 }
 
+Texture::Ptr const& Texture::create()
+{
+    try {
+        // Retrieve first window
+        Window::Shared win = Window::getFirst();
+        // Retrieve map
+        auto const& map = win->getObjects().textures;
+        // Increment ID until no similar value is found
+        uint32_t id = 0;
+        while (map.count(id) != 0) {
+            ++id;
+        }
+        win->createTexture(id);
+        return map.at(id);
+    }
+    catch (std::exception const& e) {
+        static Ptr n(nullptr);
+        LOG_FUNC_ERR(e.what());
+        return n;
+    }
+}
+
 void Texture::setType(Type type) noexcept
 {
     if (type == _type) {

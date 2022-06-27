@@ -29,6 +29,8 @@ public:
     
     /** Unique ptr stored in Window objects.*/
     using Ptr = std::unique_ptr<Renderer>;
+    template <class T>
+    static Ptr const& create();
 
     /** Specify a chunk of objects to be rendered.
      *  This is useful to enforce specific orders of chunks without

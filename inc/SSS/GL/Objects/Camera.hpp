@@ -38,6 +38,8 @@ public:
     /** Unique ptr stored in Window objects.*/
     using Ptr = std::unique_ptr<Camera>;
 
+    static Ptr const& create();
+
     /** Sets the position coordinates of the camera.
      *  The default coordinates are (0, 0, 0).
      *  @sa move(), getPosition()

@@ -23,6 +23,7 @@ private:
 
 public:
     virtual void render();
+    static inline Ptr const& create() { return Renderer::create<PlaneRenderer>(); };
 
 private:
     Basic::VAO::Ptr _vao;

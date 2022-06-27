@@ -160,6 +160,14 @@ Window::Shared Window::get(GLFWwindow* ptr) try
 }
 CATCH_AND_RETHROW_FUNC_EXC;
 
+Window::Shared Window::getFirst()
+{
+    if (_instances.empty()) {
+        return Shared(nullptr);
+    }
+    return _instances[0].lock();
+}
+
 // Wether the user requested to close the window.
 // NOTE: this simply is a call to glfwWindowShouldClose
 bool Window::shouldClose() const noexcept

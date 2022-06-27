@@ -43,6 +43,9 @@ public:
         Plane
     };
 
+    Ptr const& create();
+    Ptr const& create(std::string const& vert_file, std::string const& frag_file);
+
     /** Loads shaders from raw strings (useful for Preset shaders).
      *  Context will always be accurately set.
      *  @sa loadFromFiles()

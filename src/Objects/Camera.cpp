@@ -15,6 +15,28 @@ Camera::Camera(std::weak_ptr<Window> weak_window, uint32_t id)
     _computeProjection();
 }
 
+Camera::Ptr const& Camera::create()
+{
+    try {
+        // Retrieve first window
+        Window::Shared win = Window::getFirst();
+        // Retrieve map
+        auto const& map = win->getObjects().cameras;
+        // Increment ID until no similar value is found
+        uint32_t id = 0;
+        while (map.count(id) != 0) {
+            ++id;
+        }
+        win->createCamera(id);
+        return map.at(id);
+    }
+    catch (std::exception const& e) {
+        static Ptr n(nullptr);
+        LOG_FUNC_ERR(e.what());
+        return n;
+    }
+}
+
 void Camera::setPosition(glm::vec3 position)
 {
     _position = position;

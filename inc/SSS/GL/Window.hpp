@@ -112,6 +112,8 @@ public :
      */
     static Shared get(GLFWwindow* ptr);
 
+    static Shared getFirst();
+
     /** Returns \c true if the user requested to close the window,
      *  and \c false otherwiser.
      *  Effectively calls glfwWindowShouldClose().
@@ -454,6 +456,29 @@ inline char const* windowTitle(std::weak_ptr<Window> win) noexcept
 #define WINDOW_TITLE(X) _internal::windowTitle(X)
 
 INTERNAL_END;
+
+template<class T>
+Renderer::Ptr const& Renderer::create()
+{
+    try {
+        // Retrieve first window
+        Window::Shared win = Window::getFirst();
+        // Retrieve map
+        auto const& map = win->getObjects().renderers;
+        // Increment ID until no similar value is found
+        uint32_t id = 0;
+        while (map.count(id) != 0) {
+            ++id;
+        }
+        win->createRenderer<T>(id);
+        return map.at(id);
+    }
+    catch (std::exception const& e) {
+        static Ptr n(nullptr);
+        LOG_FUNC_ERR(e.what());
+        return n;
+    }
+}
 
 /** Abstractization of glfw contexts, inspired by std::lock.
  *  Make given context current in scope.

@@ -30,6 +30,8 @@ public:
     /** Internal Renderer implementation for the Plane class.*/
     using Renderer = _internal::PlaneRenderer;
 
+    static Ptr const& create();
+
     virtual glm::mat4 getModelMat4();
     virtual void getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles,
         glm::vec3& translation);
