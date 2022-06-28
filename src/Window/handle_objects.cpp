@@ -28,6 +28,18 @@ Shaders::Ptr const& Window::createShaders(uint32_t id) try
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
+Shaders::Ptr const& Window::createShaders()
+{
+    try {
+        return createShaders(getAvailableID(_objects.shaders));
+    }
+    catch (std::exception const& e) {
+        static Shaders::Ptr n(nullptr);
+        LOG_FUNC_ERR(e.what());
+        return n;
+    }
+}
+
 Texture::Ptr const& Window::createTexture(uint32_t id) try
 {
     Texture::Ptr& ptr = _objects.textures[id];
@@ -35,6 +47,18 @@ Texture::Ptr const& Window::createTexture(uint32_t id) try
     return ptr;
 }
 CATCH_AND_RETHROW_METHOD_EXC;
+
+Texture::Ptr const& Window::createTexture()
+{
+    try {
+        return createTexture(getAvailableID(_objects.textures));
+    }
+    catch (std::exception const& e) {
+        static Texture::Ptr n(nullptr);
+        LOG_FUNC_ERR(e.what());
+        return n;
+    }
+}
 
 Camera::Ptr const& Window::createCamera(uint32_t id) try
 {
@@ -44,6 +68,18 @@ Camera::Ptr const& Window::createCamera(uint32_t id) try
 }
 CATCH_AND_RETHROW_FUNC_EXC;
 
+Camera::Ptr const& Window::createCamera()
+{
+    try {
+        return createCamera(getAvailableID(_objects.cameras));
+    }
+    catch (std::exception const& e) {
+        static Camera::Ptr n(nullptr);
+        LOG_FUNC_ERR(e.what());
+        return n;
+    }
+}
+
 Plane::Ptr const& Window::createPlane(uint32_t id) try
 {
     Plane::Ptr& ptr = _objects.planes[id];
@@ -51,6 +87,18 @@ Plane::Ptr const& Window::createPlane(uint32_t id) try
     return ptr;
 }
 CATCH_AND_RETHROW_METHOD_EXC;
+
+Plane::Ptr const& Window::createPlane()
+{
+    try {
+        return createPlane(getAvailableID(_objects.planes));
+    }
+    catch (std::exception const& e) {
+        static Plane::Ptr n(nullptr);
+        LOG_FUNC_ERR(e.what());
+        return n;
+    }
+}
 
 void Window::removeShaders(uint32_t id)
 {

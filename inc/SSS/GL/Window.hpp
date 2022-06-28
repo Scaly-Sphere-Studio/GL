@@ -39,6 +39,16 @@ SSS_GL_BEGIN;
  */
 bool pollEverything();
 
+template <class T>
+uint32_t getAvailableID(std::map<uint32_t, T> const& map)
+{
+    uint32_t id = 0;
+    while (id < UINT32_MAX && map.count(id) != 0) {
+        ++id;
+    }
+    return id;
+}
+
 /** Abstractization of \c GLFWwindow logic.*/
 class Window final : public std::enable_shared_from_this<Window> {
     
@@ -186,23 +196,29 @@ public:
      *  @sa removeShaders()
      */
     Shaders::Ptr const& createShaders(uint32_t id);
+    Shaders::Ptr const& createShaders();
     /** Creates a derived Renderer::Ptr in Objects::renderers at given ID.
      *  @sa removeRenderer()
      */
     template<class Derived = Renderer>
     Renderer::Ptr const& createRenderer(uint32_t id);
+    template<class Derived = Renderer>
+    Renderer::Ptr const& createRenderer();
     /** Creates a Texture::Ptr in Objects::textures at given ID.
      *  @sa removeTexture()
      */
     Texture::Ptr const& createTexture(uint32_t id);
+    Texture::Ptr const& createTexture();
     /** Creates a Camera::Ptr in Objects::cameras at given ID.
      *  @sa removeCamera()
      */
     Camera::Ptr const& createCamera(uint32_t id);
+    Camera::Ptr const& createCamera();
     /** Creates a Plane::Ptr in Objects::planes at given ID.
      *  @sa removePlane()
      */
     Plane::Ptr const& createPlane(uint32_t id);
+    Plane::Ptr const& createPlane();
 
     /** Removes the Shaders::Ptr in Objects::shaders at given ID (see Shaders::Preset).
      *  @sa createShaders()
@@ -414,6 +430,19 @@ inline Renderer::Ptr const& Window::createRenderer(uint32_t id)
     return ptr;
 }
 
+template<class Derived>
+inline Renderer::Ptr const& Window::createRenderer()
+{
+    try {
+        return createRenderer<Derived>(getAvailableID(_objects.renderers));
+    }
+    catch (std::exception const& e) {
+        static Renderer::Ptr n(nullptr);
+        LOG_FUNC_ERR(e.what());
+        return n;
+    }
+}
+
 template<typename Callback>
 inline void Window::setCallback(Callback(*set)(GLFWwindow*, Callback), Callback callback)
 {
@@ -461,23 +490,7 @@ INTERNAL_END;
 template<class T>
 Renderer::Ptr const& Renderer::create()
 {
-    try {
-        // Retrieve first window
-        Window::Shared win = Window::getFirst();
-        // Retrieve map
-        auto const& map = win->getObjects().renderers;
-        // Increment ID until no similar value is found
-        uint32_t id = 0;
-        while (map.count(id) != 0) {
-            ++id;
-        }
-        return win->createRenderer<T>(id);
-    }
-    catch (std::exception const& e) {
-        static Ptr n(nullptr);
-        LOG_FUNC_ERR(e.what());
-        return n;
-    }
+    return Window::getFirst()->createRenderer<T>();
 }
 
 /** Abstractization of glfw contexts, inspired by std::lock.

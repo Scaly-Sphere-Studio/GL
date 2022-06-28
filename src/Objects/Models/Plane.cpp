@@ -19,23 +19,7 @@ void Plane::setTextureID(uint32_t texture_id)
 
 Plane::Ptr const& Plane::create()
 {
-    try {
-        // Retrieve first window
-        Window::Shared win = Window::getFirst();
-        // Retrieve map
-        auto const& map = win->getObjects().planes;
-        // Increment ID until no similar value is found
-        uint32_t id = 0;
-        while (map.count(id) != 0) {
-            ++id;
-        }
-        return win->createPlane(id);
-    }
-    catch (std::exception const& e) {
-        static Ptr n(nullptr);
-        LOG_FUNC_ERR(e.what());
-        return n;
-    }
+    return Window::getFirst()->createPlane();
 }
 
 glm::mat4 Plane::getModelMat4()
