@@ -5,6 +5,8 @@
 SSS_GL_BEGIN;
 INTERNAL_BEGIN;
 
+uint32_t PlaneRenderer::glsl_max_array_size{ 128 };
+
 PlaneRenderer::PlaneRenderer(std::weak_ptr<Window> window, uint32_t id) try
     : Renderer(window, id)
 {
@@ -94,6 +96,8 @@ void PlaneRenderer::render() try
     _vao->bind();
 
     uint32_t count = 0;
+    _VPs.resize(glsl_max_array_size);
+    _Models.resize(glsl_max_array_size);
     // Loop over each Renderer::Chunk
     for (Renderer::Chunk const& chunk : chunks) {
         // Check if we can't cache more instances and need to make a draw call.

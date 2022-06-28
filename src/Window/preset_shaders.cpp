@@ -50,10 +50,23 @@ void Window::_loadPresetShaders() try
         Shaders::Ptr& shader = _objects.shaders[id];
         // Allocate new shader
         shader.reset(new Shaders(weak_from_this(), id));
-        // Retrieve shader data
-        _planeShadersData(vertex_data, fragment_data, Plane::Renderer::glsl_max_array_size);
-        // Load shader
-        shader->loadFromStrings(vertex_data, fragment_data);
+        // Loop until finding the right size
+        while (Plane::Renderer::glsl_max_array_size != 0) try {
+            // Retrieve shader data
+            _planeShadersData(vertex_data, fragment_data, Plane::Renderer::glsl_max_array_size);
+            // Load shader
+            shader->loadFromStrings(vertex_data, fragment_data);
+            // Break if no error occured
+            break;
+        }
+        catch (...) {
+            // Decrement max size
+            Plane::Renderer::glsl_max_array_size /= 2;
+        }
+        // Check that shaders could be loaded
+        if (Plane::Renderer::glsl_max_array_size == 0) {
+            SSS::throw_exc("CRITICAL ERROR - GLSL max array size is 0.");
+        }
     }
 
 }

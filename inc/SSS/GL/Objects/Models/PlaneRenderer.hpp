@@ -13,11 +13,11 @@ class PlaneRenderer final : public Renderer {
     friend class Window;
 
 private:
-    static constexpr uint32_t glsl_max_array_size = 128;
+    static uint32_t glsl_max_array_size;
 
     PlaneRenderer(std::weak_ptr<Window> window, uint32_t id);
 
-    using Mat4_array = std::array<glm::mat4, glsl_max_array_size>;
+    using Mat4_array = std::vector<glm::mat4>;
     void _renderPart(Shaders::Ptr const& shader,
         uint32_t& count, bool reset_depth) const;
 
