@@ -32,6 +32,10 @@ public:
     template <class T>
     static Ptr const& create();
 
+    template< class Derived,
+        typename = std::enable_if_t< std::is_base_of_v<Renderer, Derived> > >
+    Derived& castAs();
+
     /** Specify a chunk of objects to be rendered.
      *  This is useful to enforce specific orders of chunks without
      *  having to worry about their depth (Background, Scene, Text, UI...).\n
@@ -76,6 +80,16 @@ public:
     inline void setActivity(bool state) noexcept { _is_active = state; };
     /** Whether the renderer is enabled or disabled.*/
     inline bool isActive() const noexcept { return _is_active; };
+};
+
+template< class Derived, typename >
+inline Derived& Renderer::castAs()
+{
+    Derived* ptr = dynamic_cast<Derived*>(this);
+    if (ptr == nullptr) {
+        throw_exc(METHOD_MSG("Specified type differs from original"));
+    }
+    return *ptr;
 };
 
 SSS_GL_END;
