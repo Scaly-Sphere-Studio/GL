@@ -6,6 +6,8 @@
 #include "SSS/GL/Objects/Camera.hpp"
 #include "SSS/GL/Objects/Models/Plane.hpp"
 #include "SSS/GL/Objects/Models/PlaneRenderer.hpp"
+#include "SSS/GL/Objects/Models/Line.hpp"
+#include "SSS/GL/Objects/Models/LineRenderer.hpp"
 
 /** @file
  *  Defines class SSS::GL::Window and its bound class SSS::GL::Context.

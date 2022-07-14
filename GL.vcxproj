@@ -27,6 +27,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\SSS\GL.hpp" />
+    <ClInclude Include="inc\SSS\GL\Objects\Models\Line.hpp" />
     <ClInclude Include="inc\SSS\GL\Objects\Renderer.hpp" />
     <ClInclude Include="inc\SSS\GL\Objects\Camera.hpp" />
     <ClInclude Include="inc\SSS\GL\Objects\Model.hpp" />
@@ -38,6 +39,7 @@
     <ClInclude Include="inc\SSS\GL\Objects\Models\PlaneRenderer.hpp" />
     <ClInclude Include="inc\SSS\GL\internal\includes.hpp" />
     <ClInclude Include="inc\SSS\GL\Objects\Basic.hpp" />
+    <ClInclude Include="inc\SSS\GL\Objects\Models\LineRenderer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\internal\callbacks.cpp" />
@@ -45,6 +47,8 @@
     <ClCompile Include="src\Objects\Shaders.cpp" />
     <ClCompile Include="src\Objects\Texture.cpp" />
     <ClCompile Include="src\Objects\Camera.cpp" />
+    <ClCompile Include="src\Objects\Models\Line.cpp" />
+    <ClCompile Include="src\Objects\Models\LineRenderer.cpp" />
     <ClCompile Include="src\Objects\Models\Plane.cpp" />
     <ClCompile Include="src\Objects\Models\PlaneRenderer.cpp" />
     <ClCompile Include="src\Window\Window.cpp" />

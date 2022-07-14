@@ -4,6 +4,10 @@
  *  Base header including resources and defining macros used by other headers.
  */
 
+ // SSS libs
+#include <SSS/Math.hpp>
+#include <SSS/Commons.hpp>
+
 // OpenGL headers
 #include <glad/glad.h>              // glad
 #include <GLFW/glfw3.h>             // glfw
@@ -12,8 +16,6 @@
 #include <glm/gtc/quaternion.hpp>   // glm
 #include <glm/gtx/quaternion.hpp>   // glm
 
-// SSS libs
-#include <SSS/Commons.hpp>
 
 /** \cond INCLUDE*/
 // STL

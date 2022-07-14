@@ -85,6 +85,12 @@
     <ClCompile Include="src\Window\pollEverything.cpp">
       <Filter>src\Window</Filter>
     </ClCompile>
+    <ClCompile Include="src\Objects\Models\Line.cpp">
+      <Filter>src\Objects\Models</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Objects\Models\LineRenderer.cpp">
+      <Filter>src\Objects\Models</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\SSS\GL\Window.hpp">
@@ -122,6 +128,12 @@
     </ClInclude>
     <ClInclude Include="inc\SSS\GL\Objects\Basic.hpp">
       <Filter>inc\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\SSS\GL\Objects\Models\LineRenderer.hpp">
+      <Filter>inc\Objects\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\SSS\GL\Objects\Models\Line.hpp">
+      <Filter>inc\Objects\Models</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
