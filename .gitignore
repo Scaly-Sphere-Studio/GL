@@ -1,6 +1,7 @@
 doxygen/
 Release/
 Debug/
+Demo/
 export/
 .vs/
 *.vcxproj.user

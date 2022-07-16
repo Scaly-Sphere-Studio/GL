@@ -33,6 +33,9 @@
     <Filter Include="inc\Objects\Models">
       <UniqueIdentifier>{9d8398b3-26dc-4d5f-9d23-f8605a965410}</UniqueIdentifier>
     </Filter>
+    <Filter Include="glsl">
+      <UniqueIdentifier>{72b66689-06ab-4d59-8848-6c86a0368b65}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="DownloadVcpkgScripts.ps1" />
@@ -44,6 +47,12 @@
       <Filter>vcpkg_scripts</Filter>
     </None>
     <None Include="Doxyfile" />
+    <None Include="glsl\line.frag">
+      <Filter>glsl</Filter>
+    </None>
+    <None Include="glsl\line.vert">
+      <Filter>glsl</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\internal\callbacks.cpp">
@@ -90,6 +99,9 @@
     </ClCompile>
     <ClCompile Include="src\Objects\Models\LineRenderer.cpp">
       <Filter>src\Objects\Models</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DemoMain.cpp">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
