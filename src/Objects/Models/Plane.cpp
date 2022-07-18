@@ -151,7 +151,7 @@ bool Plane::_hoverTriangle(glm::mat4 const& mvp, glm::vec3 const& A,
         TR::Area::Ptr const& text_area = texture->getTextArea();
         if (text_area) {
             int w, h;
-            text_area->getDimensions(w, h);
+            text_area->pixelsGetDimensions(w, h);
             size_t const size = static_cast<size_t>(w) * static_cast<size_t>(h);
             if (pixel < size) {
                 void const* pixels = text_area->pixelsGet();

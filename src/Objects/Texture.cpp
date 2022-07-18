@@ -61,7 +61,7 @@ void Texture::setType(Type type) noexcept
     else if (type == Type::Text) {
         TR::Area::Ptr const& text_area = getTextArea();
         if (text_area) {
-            text_area->getDimensions(_text_w, _text_h);
+            text_area->pixelsGetDimensions(_text_w, _text_h);
             _updatePlanesScaling();
             _raw_texture.edit(text_area->pixelsGet(), _text_w, _text_h);
         }
@@ -114,7 +114,7 @@ void Texture::setTextAreaID(uint32_t id)
     TR::Area::Ptr const& text_area = getTextArea();
     if (_type == Type::Text && text_area) {
         int w, h;
-        text_area->getDimensions(w, h);
+        text_area->pixelsGetDimensions(w, h);
         _internalEdit(text_area->pixelsGet(), w, h);
     }
 }

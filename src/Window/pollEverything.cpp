@@ -57,7 +57,7 @@ bool pollEverything() try
                 }
                 // Retrieve dimensions
                 int new_w, new_h;
-                text_area->getDimensions(new_w, new_h);
+                text_area->pixelsGetDimensions(new_w, new_h);
                 // Update dimensions if needed, edit OpenGL texture
                 tex->_internalEdit(text_area->pixelsGet(), new_w, new_h);
             }
