@@ -59,6 +59,8 @@ public:
     /** Returns the Hitbox type of this instance.*/
     inline Hitbox getHitbox() const noexcept { return _hitbox; };
 
+    inline void getRelativeCoords(int& x, int& y) const noexcept { x = _relative_x; y = _relative_y; };
+
 private:
     uint32_t _texture_id{ 0 };
     bool _use_texture{ false };
