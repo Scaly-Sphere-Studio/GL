@@ -15,12 +15,12 @@ SSS_GL_BEGIN;
  *  @sa Plane
  */
 template <class T>
-class Model : public _internal::WindowObjectWithID {
+class Model : public _internal::WindowObject {
     friend class Window;
 
 protected:
     /** Constructor, ensures the renderer is bound to a Window instance.*/
-    Model(std::weak_ptr<Window> window, uint32_t id);
+    Model(std::weak_ptr<Window> window);
 
 public:
     /** Virtual destructor, default.*/
@@ -47,15 +47,15 @@ public:
         glm::vec3& translation);
    
     /** Function format which is called every frame (from pollEverything()).
-     *  Parameters are Window::Shared, and the derived %Model's unique_ptr
+     *  Parameters are Window::Shared, and the derived %Model's shared_ptr
      */
-    using PassiveFunc = void(*)(std::shared_ptr<Window>, std::unique_ptr<T> const&);
+    using PassiveFunc = void(*)(std::shared_ptr<Window>, std::shared_ptr<T>);
     /** Function format which is called on mouse-click events.
-     *  Parameters are Window::Shared, the derived %Model's unique_ptr,
+     *  Parameters are Window::Shared, the derived %Model's shared_ptr,
      *  and then follows glfw mouse-click event syntax.
      */
     using OnClickFunc = void(*)(std::shared_ptr<Window>,
-        std::unique_ptr<T> const&, int, int, int);
+        std::shared_ptr<T>, int, int, int);
     /** Map of user-defined #PassiveFunc (0 is reserved for nullptr).*/
     static std::map<uint32_t, PassiveFunc> passive_funcs;
     /** Map of user-defined #OnClickFunc (0 is reserved for nullptr).*/
@@ -95,8 +95,8 @@ template <class T>
 std::map<uint32_t, typename Model<T>::OnClickFunc> Model<T>::on_click_funcs {};
 
 template <class T>
-Model<T>::Model(std::weak_ptr<Window> window, uint32_t id) try
-    : _internal::WindowObjectWithID(window, id)
+Model<T>::Model(std::weak_ptr<Window> window) try
+    : _internal::WindowObject(window)
 {
     setScaling();
     setRotation();

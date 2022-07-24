@@ -177,8 +177,6 @@ public :
         std::map<uint32_t, Shaders::Ptr> shaders;       // Shaders
         std::map<uint32_t, Renderer::Ptr> renderers;    // Renderers
         std::map<uint32_t, Texture::Ptr> textures;      // Textures
-        std::map<uint32_t, Camera::Ptr> cameras;        // Cameras
-        std::map<uint32_t, Plane::Ptr> planes;          // Planes
     };
 
 private:
@@ -211,16 +209,6 @@ public:
      */
     Texture::Ptr const& createTexture(uint32_t id);
     Texture::Ptr const& createTexture();
-    /** Creates a Camera::Ptr in Objects::cameras at given ID.
-     *  @sa removeCamera()
-     */
-    Camera::Ptr const& createCamera(uint32_t id);
-    Camera::Ptr const& createCamera();
-    /** Creates a Plane::Ptr in Objects::planes at given ID.
-     *  @sa removePlane()
-     */
-    Plane::Ptr const& createPlane(uint32_t id);
-    Plane::Ptr const& createPlane();
 
     /** Removes the Shaders::Ptr in Objects::shaders at given ID (see Shaders::Preset).
      *  @sa createShaders()
@@ -234,14 +222,6 @@ public:
      *  @sa createTexture()
      */
     void removeTexture(uint32_t id);
-    /** Removes the Camera::Ptr in Objects::cameras at given ID.
-     *  @sa createCamera()
-     */
-    void removeCamera(uint32_t id);
-    /** Removes the Plane::Ptr in Objects::planes at given ID.
-     *  @sa createPlane()
-     */
-    void removePlane(uint32_t id);
 
     /** Draws everything as defined in Objects::renderers.
      *  @sa printFrame()
@@ -382,6 +362,8 @@ public:
     /** Returns the corresponding \c GLFWwindow pointer, be careful with it.*/
     inline GLFWwindow* getGLFWwindow() const { return _window.get(); };
 
+    inline uint32_t maxGLSLTextureUnits() const noexcept { return _max_glsl_tex_units; };
+
 private:
 // --- Private variables ---
 
@@ -405,6 +387,8 @@ private:
 
     // GLFWwindow ptr
     C_Ptr <GLFWwindow, void(*)(GLFWwindow*), glfwDestroyWindow> _window;
+    // Max GLSL texture units
+    uint32_t _max_glsl_tex_units;
     // Main monitor the window is on
     GLFWmonitor* _main_monitor;
     int _main_monitor_id{ 0 };

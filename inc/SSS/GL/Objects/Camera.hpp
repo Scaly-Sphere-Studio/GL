@@ -15,17 +15,17 @@ INTERNAL_END;
 /** Abstractization of View and Projection matrices, used in Renderer::Chunk.
  *  @sa Window::createCamera()
  */
-class Camera final : public _internal::WindowObjectWithID {
+class Camera final : public _internal::WindowObject {
     friend void _internal::window_resize_callback(GLFWwindow*, int, int);
     friend class Window;
 
 private:
-    Camera(std::weak_ptr<Window> window, uint32_t id);  // Constructor
+    Camera(std::weak_ptr<Window> window);           // Constructor
 public:
     /** Destructor, default
      *  @sa Window::removeCamera()
      */
-    ~Camera()                           = default;  // Destructor
+    ~Camera();                                      // Destructor
     /** \cond INTERNAL*/
     // Rule of 5
     Camera()                            = delete;   // Constructor (deleted)
@@ -36,9 +36,14 @@ public:
     /** \endcond*/
 
     /** Unique ptr stored in Window objects.*/
-    using Ptr = std::unique_ptr<Camera>;
+    using Shared = std::shared_ptr<Camera>;
 
-    static Ptr const& create();
+private:
+    using Weak = std::weak_ptr<Camera>;
+    static std::vector<Weak> _instances;
+
+public:
+    static Shared create(std::shared_ptr<Window> win = nullptr);
 
     /** Sets the position coordinates of the camera.
      *  The default coordinates are (0, 0, 0).

@@ -118,7 +118,7 @@ void LineRenderer::render()
     auto const& objects = _window.lock()->getObjects();
 
     auto const& shader = objects.shaders.at(getShadersID());
-    glm::mat4 const mvp = objects.cameras.at(cam_id)->getVP();
+    glm::mat4 const mvp = camera ? camera->getVP() : glm::mat4(1);
     shader->use();
     shader->setUniformMat4fv("u_MVP", 1, GL_FALSE, &mvp[0][0]);
 

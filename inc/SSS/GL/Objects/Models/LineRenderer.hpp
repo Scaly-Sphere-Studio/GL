@@ -2,6 +2,7 @@
 
 #include "Line.hpp"
 #include "../Renderer.hpp"
+#include "../Camera.hpp"
 
 SSS_GL_BEGIN;
 
@@ -12,7 +13,7 @@ private:
     LineRenderer(std::weak_ptr<Window> win, uint32_t id);
 
 public:
-    uint32_t cam_id{ 0 };
+    Camera::Shared camera;
     void render();
 
 private:

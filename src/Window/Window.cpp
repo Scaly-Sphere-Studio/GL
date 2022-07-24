@@ -105,6 +105,11 @@ Window::Window(CreateArgs const& args) try
     glfwSetCursorPosCallback(_window.get(), _internal::mouse_position_callback);
     glfwSetMouseButtonCallback(_window.get(), _internal::mouse_button_callback);
     glfwSetKeyCallback(_window.get(), _internal::key_callback);
+    
+    // Retrieve max number of GLSL texture units
+    int max_units;
+    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_units);
+    _max_glsl_tex_units = static_cast<uint32_t>(max_units);
 
     // Log
     if (Log::GL::Window::query(Log::GL::Window::get().life_state)) {
@@ -304,10 +309,8 @@ void Window::_callPassiveFunctions()
     if (!win) return;
 
     // Call Planes' passive functions
-    for (auto it = _objects.planes.cbegin(); it != _objects.planes.cend(); ++it) {
-        Plane::Ptr const& plane = it->second;
-        if (!plane)
-            continue;
+    for (Plane::Weak const& weak : Plane::_instances) {
+        Plane::Shared plane = weak.lock();
         uint32_t const func_id = plane->_passive_func_id;
         if (func_id == 0 || Plane::passive_funcs.count(func_id) == 0) {
             continue;
@@ -329,9 +332,7 @@ void Window::_callOnClickFunction(int button, int action, int mods)
     case HoveredType::None:
         break;
     case HoveredType::Plane: {
-        if (_objects.planes.count(id) == 0)
-            break;
-        Plane::Ptr const& plane = _objects.planes.at(id);
+        Plane::Shared plane = Plane::getHovered();
         if (!plane)
             break;
         uint32_t const func_id = plane->_on_click_func_id;

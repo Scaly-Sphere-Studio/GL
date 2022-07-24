@@ -169,8 +169,8 @@ void Texture::_updatePlanesScaling()
     }
     Window::Objects const& objects = window->getObjects();
     // Update texture scaling of all planes & buttons matching this texture
-    for (auto it = objects.planes.cbegin(); it != objects.planes.cend(); ++it) {
-        Plane::Ptr const& plane = it->second;
+    for (Plane::Weak const& weak : Plane::_instances) {
+        Plane::Shared plane = weak.lock();
         if (plane->_use_texture && plane->_texture_id == _id) {
             plane->_updateTexScaling();
         }

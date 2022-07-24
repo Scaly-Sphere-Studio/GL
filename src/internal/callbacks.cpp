@@ -26,11 +26,11 @@ void window_resize_callback(GLFWwindow* ptr, int w, int h) try
         }
 
         // Update screen_ratio of cameras
-        auto const& cameras = window->_objects.cameras;
-        for (auto it = cameras.cbegin(); it != cameras.cend(); ++it) {
-            if (it->second) {
-                it->second->_window_ratio = window->getRatio();
-                it->second->_computeProjection();
+        for (Camera::Weak weak : Camera::_instances) {
+            Camera::Shared camera = weak.lock();
+            if (camera) {
+                camera->_window_ratio = window->getRatio();
+                camera->_computeProjection();
             }
         }
     }

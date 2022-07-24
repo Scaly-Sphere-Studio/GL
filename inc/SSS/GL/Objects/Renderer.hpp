@@ -36,29 +36,6 @@ public:
         typename = std::enable_if_t< std::is_base_of_v<Renderer, Derived> > >
     Derived& castAs();
 
-    /** Specify a chunk of objects to be rendered.
-     *  This is useful to enforce specific orders of chunks without
-     *  having to worry about their depth (Background, Scene, Text, UI...).\n
-     *  Stored in Renderer::chunks.
-     */
-    struct Chunk final {
-        /** Optional title for UI purpose only.*/
-        std::string title;
-        /** Wether to clear the depth buffer before rendering this chunk,
-         *  so that future objects will always be on top of previously
-         *  rendered stuff.
-         */
-        bool reset_depth_before{ false };
-        /** Wether this chunk should use the specified Camera in the MVP matrices.*/
-        bool use_camera{ true };
-        /** Specified Camera ID for the MVP matrices.*/
-        uint32_t camera_ID{ 0 };
-        /** Specified object IDs.*/
-        std::deque<uint32_t> objects;
-    };
-
-    /** Deque of Chunk instances, which will be rendered one by one.*/
-    std::deque<Chunk> chunks;
     /** Optional title for UI purpose only.*/
     std::string title;
 

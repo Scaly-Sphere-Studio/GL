@@ -19,18 +19,22 @@ class Plane final : public Model<Plane> {
     friend class Texture;
 
 private:
-    Plane(std::weak_ptr<Window> window, uint32_t id);
+    Plane(std::weak_ptr<Window> window);
 
 public:
     /** Destructor, default.*/
-    virtual ~Plane() = default;
+    virtual ~Plane();
 
     /** Unique ptr stored in Window objects.*/
-    using Ptr = std::unique_ptr<Plane>;
+    using Shared = std::shared_ptr<Plane>;
     /** Internal Renderer implementation for the Plane class.*/
     using Renderer = _internal::PlaneRenderer;
 
-    static Ptr const& create();
+private:
+    using Weak = std::weak_ptr<Plane>;
+    static std::vector<Weak> _instances;
+public:
+    static Shared create(std::shared_ptr<Window> win = nullptr);
 
     virtual glm::mat4 getModelMat4();
     virtual void getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles,
@@ -59,6 +63,8 @@ public:
     /** Returns the Hitbox type of this instance.*/
     inline Hitbox getHitbox() const noexcept { return _hitbox; };
 
+    static Shared getHovered() noexcept;
+    inline bool isHovered() const noexcept { return _is_hovered; };
     inline void getRelativeCoords(int& x, int& y) const noexcept { x = _relative_x; y = _relative_y; };
 
 private:
@@ -72,6 +78,8 @@ private:
     // Type of hitbox
     Hitbox _hitbox{ Hitbox::None };
 
+    // Whether the Plane instance is hovered, handled by Renderer
+    bool _is_hovered{ false };
     // Mouse hovering relative position, updated via Window::render every x ms.
     int _relative_x{ 0 };
     int _relative_y{ 0 };

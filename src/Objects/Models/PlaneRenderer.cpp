@@ -5,8 +5,6 @@
 SSS_GL_BEGIN;
 INTERNAL_BEGIN;
 
-uint32_t PlaneRenderer::glsl_max_array_size{ 128 };
-
 PlaneRenderer::PlaneRenderer(std::weak_ptr<Window> window, uint32_t id) try
     : Renderer(window, id)
 {
@@ -96,39 +94,29 @@ void PlaneRenderer::render() try
     _vao->bind();
 
     uint32_t count = 0;
-    _VPs.resize(glsl_max_array_size);
-    _Models.resize(glsl_max_array_size);
+    _VPs.resize(window->maxGLSLTextureUnits());
+    _Models.resize(window->maxGLSLTextureUnits());
     // Loop over each Renderer::Chunk
-    for (Renderer::Chunk const& chunk : chunks) {
+    for (Chunk const& chunk : chunks) {
         // Check if we can't cache more instances and need to make a draw call.
         // Also check if we need to reset the depth buffer before the next loop,
         // in which case the cached instances need to be drawn.
-        if (count == glsl_max_array_size || chunk.reset_depth_before) {
+        if (count == window->maxGLSLTextureUnits() || chunk.reset_depth_before) {
             _renderPart(shader, count, chunk.reset_depth_before);
         }
 
         // Set VP for next loop
         glm::mat4 VP(1);
-        if (chunk.use_camera) {
-            // Retrieve Camera
-            if (objects.cameras.count(chunk.camera_ID) == 0)
-                continue;
-            Camera::Ptr const& camera = objects.cameras.at(chunk.camera_ID);
-            if (!camera)
-                continue;
-            VP = camera->getVP();
+        if (chunk.camera) {
+            VP = chunk.camera->getVP();
         }
 
         // Loop over each plane in chunk
-        for (uint32_t const& object_id : chunk.objects) {
+        for (Plane::Shared const& plane : chunk.planes) {
             // Check if we can't cache more instances and need to make a draw call.
-            if (count == glsl_max_array_size) {
+            if (count == window->maxGLSLTextureUnits()) {
                 _renderPart(shader, count, false);
             }
-            // Retrieve Plane and Texture
-            if (objects.planes.count(object_id) == 0)
-                continue;
-            Plane::Ptr const& plane = objects.planes.at(object_id);
             if (!plane)
                 continue;
             if (!plane->_use_texture || objects.textures.count(plane->_texture_id) == 0)
@@ -154,7 +142,9 @@ CATCH_AND_RETHROW_METHOD_EXC;
 
 bool PlaneRenderer::_findNearestModel(float x, float y)
 {
-    _hovered_id = 0;
+    if (!_hovered.expired())
+        _hovered.lock()->_is_hovered = false;
+    _hovered.reset();
     _hovered_z = DBL_MAX;
     if (!isActive()) {
         return false;
@@ -167,25 +157,14 @@ bool PlaneRenderer::_findNearestModel(float x, float y)
     Window::Objects const& objects = window->getObjects();
     // Loop over each Renderer::Chunk in reverse order
     bool result = false;
-    for (auto it = chunks.crbegin(); it != chunks.crend(); ++it) {
-        Renderer::Chunk const& chunk = *it;
+    for (Chunk const& chunk : chunks) {
         // Retrieve VP for next loop
         glm::mat4 VP(1);
-        if (chunk.use_camera) {
-            // Retrieve Camera
-            if (objects.cameras.count(chunk.camera_ID) == 0)
-                continue;
-            Camera::Ptr const& camera = objects.cameras.at(chunk.camera_ID);
-            if (!camera)
-                continue;
-            VP = camera->getProjection() * camera->getView();
+        if (chunk.camera) {
+            VP = chunk.camera->getVP();
         }
         // Loop over each plane in chunk
-        for (uint32_t const& object_id : chunk.objects) {
-            // Retrieve Plane
-            if (objects.planes.count(object_id) == 0)
-                continue;
-            Plane::Ptr const& plane = objects.planes.at(object_id);
+        for (Plane::Shared const& plane : chunk.planes) {
             if (!plane)
                 continue;
             // Check if plane is hovered and retrieve its relative depth
@@ -195,14 +174,16 @@ bool PlaneRenderer::_findNearestModel(float x, float y)
                 // Update hovered stats if plane is nearer
                 if (z < _hovered_z) {
                     _hovered_z = z;
-                    _hovered_id = object_id;
+                    _hovered = plane;
                 }
             }
         }
         if (result && chunk.reset_depth_before) {
-            return result;
+            break;
         }
     }
+    if (!_hovered.expired())
+        _hovered.lock()->_is_hovered = true;
     return result;
 }
 

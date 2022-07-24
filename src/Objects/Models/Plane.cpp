@@ -4,11 +4,18 @@
 
 SSS_GL_BEGIN;
 
-Plane::Plane(std::weak_ptr<Window> window, uint32_t id) try
-    : Model(window, id)
+std::vector<Plane::Weak> Plane::_instances{};
+
+Plane::Plane(std::weak_ptr<Window> window) try
+    : Model(window)
 {
 }
 CATCH_AND_RETHROW_METHOD_EXC;
+
+Plane::~Plane()
+{
+    cleanWeakPtrVector(_instances);
+}
 
 void Plane::setTextureID(uint32_t texture_id)
 {
@@ -17,9 +24,14 @@ void Plane::setTextureID(uint32_t texture_id)
     _updateTexScaling();
 }
 
-Plane::Ptr const& Plane::create()
+Plane::Shared Plane::create(std::shared_ptr<Window> win)
 {
-    return Window::getFirst()->createPlane();
+    if (!win) {
+        win = Window::getFirst();
+    }
+    Shared plane(new Plane(win));
+    _instances.emplace_back(plane);
+    return plane;
 }
 
 glm::mat4 Plane::getModelMat4()
@@ -36,6 +48,17 @@ void Plane::getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles, glm
 {
     Model::getAllTransformations(scaling, rot_angles, translation);
     scaling /= _tex_scaling;
+}
+
+Plane::Shared Plane::getHovered() noexcept
+{
+    for (Weak weak : _instances) {
+        Shared plane(weak);
+        if (plane && plane->isHovered()) {
+            return plane;
+        }
+    }
+    return Shared();
 }
 
 void Plane::_updateTexScaling()

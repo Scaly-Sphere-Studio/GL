@@ -59,7 +59,6 @@ void Window::_updateHoveredModel()
             // If a model was found, update hover status
             if (renderer->_hovered_z < z) {
                 z = renderer->_hovered_z;
-                _hovered_id = renderer->_hovered_id;
                 _hovered_type = HoveredType::Plane;
             }
             // If the depth buffer was reset at least once by the renderer, previous

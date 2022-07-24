@@ -1,21 +1,33 @@
 #include "SSS/GL.hpp"
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+using namespace SSS;
+
+void key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods)
 {
     if (key == GLFW_KEY_KP_0 || key == GLFW_KEY_ESCAPE) {
-        glfwSetWindowShouldClose(window, true);
+        glfwSetWindowShouldClose(ptr, true);
     }
-
 }
 
 void resize_callback(GLFWwindow* win, int w, int h)
 {
 }
 
+void passive_plane_func1(GL::Window::Shared win, GL::Plane::Shared plane)
+{
+    //if (plane->isHovered())
+    //    plane->rotate(glm::vec3(0, 0, 1));
+}
+
+void on_click_plane_func1(GL::Window::Shared win, GL::Plane::Shared plane,
+    int button, int action, int mod)
+{
+    if (button == GLFW_MOUSE_BUTTON_1 &&  action == GLFW_PRESS)
+        plane->rotate(glm::vec3(0, 0, 45));
+}
+
 int main() try
 {
-    using namespace SSS;
-    
     // Create Window
     GL::Window::CreateArgs args;
     args.title = "SSS/GL - Demo Window";
@@ -38,12 +50,12 @@ int main() try
     // SSS/GL objects
 
     // Create objects
-    auto const& texture = GL::Texture::create();
-    auto const& camera = GL::Camera::create();
-    auto const& line_shader = window->createShaders();
-    auto const& line_renderer = window->createRenderer<GL::LineRenderer>();
-    auto const& plane = GL::Plane::create();
-    auto const& plane_renderer = GL::Plane::Renderer::create();
+    auto const& texture         = GL::Texture::create();
+    auto const camera           = GL::Camera::create();
+    auto const& line_shader     = GL::Shaders::create();
+    auto const& line_renderer   = GL::Renderer::create<GL::LineRenderer>();
+    auto const plane            = GL::Plane::create();
+    auto const& plane_renderer  = GL::Plane::Renderer::create();
 
     // Text
     auto const& area = TR::Area::create(300, 300);
@@ -62,25 +74,62 @@ int main() try
     // Lines
     line_shader->loadFromFiles("glsl/line.vert", "glsl/line.frag");
     line_renderer->setShadersID(line_shader->getID());
-    line_renderer->castAs<GL::LineRenderer>().cam_id = camera->getID();
+    line_renderer->castAs<GL::LineRenderer>().camera = camera;
     using Line = GL::Polyline;
     Line::Shared line[4];
-    line[0] = Line::Segment(glm::vec3(-200, 200, 0), glm::vec3(200, 200, 0), 10.f, glm::vec4(0, 0, 1, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);
-    line[1] = Line::Segment(glm::vec3(200, 200, 0), glm::vec3(200, -200, 0), 10.f, glm::vec4(0, 1, 0, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);
-    line[2] = Line::Segment(glm::vec3(200, -200, 0), glm::vec3(-200, -200, 0), 10.f, glm::vec4(1, 0, 0, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);
-    line[3] = Line::Segment(glm::vec3(-200, -200, 0), glm::vec3(-200, 200, 0), 10.f, glm::vec4(1, 1, 1, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);
+    line[0] = Line::Segment(glm::vec3(-200,  200, 0), glm::vec3( 200,  200, 0), 10.f, glm::vec4(0, 0, 1, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);
+    line[1] = Line::Segment(glm::vec3( 200,  200, 0), glm::vec3( 200, -200, 0), 10.f, glm::vec4(0, 1, 0, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);
+    line[2] = Line::Segment(glm::vec3( 200, -200, 0), glm::vec3(-200, -200, 0), 10.f, glm::vec4(1, 0, 0, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);
+    line[3] = Line::Segment(glm::vec3(-200, -200, 0), glm::vec3(-200,  200, 0), 10.f, glm::vec4(1, 1, 1, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);
 
     // Plane
     plane->setTextureID(texture->getID());
     plane->scale(glm::vec3(300));
-    plane_renderer->chunks.emplace_back();
-    plane_renderer->chunks[0].reset_depth_before = true;
-    plane_renderer->chunks[0].objects.push_back(0);
+    GL::Plane::passive_funcs    = { { 1, passive_plane_func1 } };
+    GL::Plane::on_click_funcs   = { { 1, on_click_plane_func1 } };
+    plane->setPassiveFuncID(1);
+    plane->setOnClickFuncID(1);
+    plane->setHitbox(GL::Plane::Hitbox::Full);
+    {
+        auto& chunks = plane_renderer->castAs<GL::Plane::Renderer>().chunks;
+        // Display 256 textures
+        chunks.emplace_back(camera);
+        constexpr int size = 10;
+        RGBA32::Vector pixels(size * size);
+        for (int i = 0; i < 256; ++i) {
+            // Create Plane & Texture
+            auto const plane    = GL::Plane::create();
+            auto const& texture = GL::Texture::create();
+            // Fill texture
+            std::fill(pixels.begin(), pixels.end(), (0xFF << 24) + (i << 16) + (i << 8) + i);
+            texture->editRawPixels(&pixels[0], size, size);
+            // Edit plane
+            plane->setTextureID(texture->getID());
+            plane->scale(glm::vec3(20));
+            plane->translate(glm::vec3(-150 + 20 * (i / 16), -150 + (i % 16) * 20, 0));
+            // Display plane
+            chunks.back().planes.emplace_back(plane);
+        }
+        // Display previous text last
+        chunks.emplace_back(camera, true);
+        chunks.back().planes.emplace_back(plane);
+    }
 
     // Main loop
     while (!window->shouldClose()) {
         // Poll events, threads, etc
         GL::pollEverything();
+        // Handle key inputs
+        auto const& keys = window->getKeyInputs();
+        float constexpr speed = 1.5f;
+        if (keys[GLFW_KEY_W] || keys[GLFW_KEY_UP])
+            camera->move(glm::vec3(0,  speed, 0));
+        if (keys[GLFW_KEY_S] || keys[GLFW_KEY_DOWN])
+            camera->move(glm::vec3(0, -speed, 0));
+        if (keys[GLFW_KEY_A] || keys[GLFW_KEY_LEFT])
+            camera->move(glm::vec3(-speed, 0, 0));
+        if (keys[GLFW_KEY_D] || keys[GLFW_KEY_RIGHT])
+            camera->move(glm::vec3( speed, 0, 0));
         // Draw renderers
         window->drawObjects();
         // Swap buffers

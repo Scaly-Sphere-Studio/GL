@@ -3,8 +3,10 @@
 
 SSS_GL_BEGIN;
 
-Camera::Camera(std::weak_ptr<Window> weak_window, uint32_t id)
-    : _internal::WindowObjectWithID(weak_window, id)
+std::vector<Camera::Weak> Camera::_instances{};
+
+Camera::Camera(std::weak_ptr<Window> weak_window)
+    : _internal::WindowObject(weak_window)
 {
     Window::Shared const window = _window.lock();
     if (!window) {
@@ -15,9 +17,19 @@ Camera::Camera(std::weak_ptr<Window> weak_window, uint32_t id)
     _computeProjection();
 }
 
-Camera::Ptr const& Camera::create()
+Camera::~Camera()
 {
-    return Window::getFirst()->createCamera();
+    cleanWeakPtrVector(_instances);
+}
+
+Camera::Shared Camera::create(std::shared_ptr<Window> win)
+{
+    if (!win) {
+        win = Window::getFirst();
+    }
+    Shared camera(new Camera(win));
+    _instances.emplace_back(camera);
+    return camera;
 }
 
 void Camera::setPosition(glm::vec3 position)

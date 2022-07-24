@@ -10,9 +10,7 @@ void Window::cleanObjects() noexcept
         _objects.shaders.find(static_cast<uint32_t>(Shaders::Preset::First))
     );
     _objects.renderers.clear();
-    _objects.planes.clear();
     _objects.textures.clear();
-    _objects.cameras.clear();
 }
 
 Shaders::Ptr const& Window::createShaders(uint32_t id) try
@@ -60,46 +58,6 @@ Texture::Ptr const& Window::createTexture()
     }
 }
 
-Camera::Ptr const& Window::createCamera(uint32_t id) try
-{
-    Camera::Ptr& ptr = _objects.cameras[id];
-    ptr.reset(new Camera(weak_from_this(), id));
-    return ptr;
-}
-CATCH_AND_RETHROW_FUNC_EXC;
-
-Camera::Ptr const& Window::createCamera()
-{
-    try {
-        return createCamera(getAvailableID(_objects.cameras));
-    }
-    catch (std::exception const& e) {
-        static Camera::Ptr n(nullptr);
-        LOG_FUNC_ERR(e.what());
-        return n;
-    }
-}
-
-Plane::Ptr const& Window::createPlane(uint32_t id) try
-{
-    Plane::Ptr& ptr = _objects.planes[id];
-    ptr.reset(new Plane(weak_from_this(), id));
-    return ptr;
-}
-CATCH_AND_RETHROW_METHOD_EXC;
-
-Plane::Ptr const& Window::createPlane()
-{
-    try {
-        return createPlane(getAvailableID(_objects.planes));
-    }
-    catch (std::exception const& e) {
-        static Plane::Ptr n(nullptr);
-        LOG_FUNC_ERR(e.what());
-        return n;
-    }
-}
-
 void Window::removeShaders(uint32_t id)
 {
     if (id >= static_cast<uint32_t>(Shaders::Preset::First)) {
@@ -122,20 +80,6 @@ void Window::removeTexture(uint32_t id)
 {
     if (_objects.textures.count(id) != 0) {
         _objects.textures.erase(_objects.textures.find(id));
-    }
-}
-
-void Window::removeCamera(uint32_t id)
-{
-    if (_objects.cameras.count(id) != 0) {
-        _objects.cameras.erase(_objects.cameras.find(id));
-    }
-}
-
-void Window::removePlane(uint32_t id)
-{
-    if (_objects.planes.count(id) != 0) {
-        _objects.planes.erase(_objects.planes.find(id));
     }
 }
 
