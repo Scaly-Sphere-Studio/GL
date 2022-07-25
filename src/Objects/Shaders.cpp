@@ -106,15 +106,18 @@ static GLuint loadShaders(std::string const& vertex_data, std::string const& fra
 	return program_id;
 }
 
-Shaders::Ptr const& Shaders::create()
+Shaders::Ptr const& Shaders::create(std::shared_ptr<Window> win)
 {
-	return Window::getFirst()->createShaders();
+	if (!win) {
+		win = Window::getFirst();
+	}
+	return win->createShaders();
 }
 
 Shaders::Ptr const& Shaders::create(std::string const& vertex_fp,
-	std::string const& fragment_fp)
+	std::string const& fragment_fp, std::shared_ptr<Window> win)
 {
-	Ptr const& shader = create();
+	Ptr const& shader = create(win);
 	if (shader) {
 		shader->loadFromFiles(vertex_fp, fragment_fp);
 	}

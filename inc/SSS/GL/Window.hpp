@@ -474,9 +474,12 @@ inline char const* windowTitle(std::weak_ptr<Window> win) noexcept
 INTERNAL_END;
 
 template<class T>
-Renderer::Ptr const& Renderer::create()
+Renderer::Ptr const& Renderer::create(std::shared_ptr<Window> win)
 {
-    return Window::getFirst()->createRenderer<T>();
+    if (!win) {
+        win = Window::getFirst();
+    }
+    return win->createRenderer<T>();
 }
 
 /** Abstractization of glfw contexts, inspired by std::lock.

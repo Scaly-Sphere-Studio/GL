@@ -40,9 +40,12 @@ Texture::~Texture()
     }
 }
 
-Texture::Ptr const& Texture::create()
+Texture::Ptr const& Texture::create(std::shared_ptr<Window> win)
 {
-	return Window::getFirst()->createTexture();
+    if (!win) {
+        win = Window::getFirst();
+    }
+	return win->createTexture();
 }
 
 void Texture::setType(Type type) noexcept

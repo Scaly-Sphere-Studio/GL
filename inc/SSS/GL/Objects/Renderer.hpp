@@ -30,7 +30,7 @@ public:
     /** Unique ptr stored in Window objects.*/
     using Ptr = std::unique_ptr<Renderer>;
     template <class T>
-    static Ptr const& create();
+    static Ptr const& create(std::shared_ptr<Window> win = nullptr);
 
     template< class Derived,
         typename = std::enable_if_t< std::is_base_of_v<Renderer, Derived> > >

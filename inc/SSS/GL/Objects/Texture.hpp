@@ -37,7 +37,7 @@ public:
     /** Unique ptr stored in Window objects.*/
     using Ptr = std::unique_ptr<Texture>;
     
-    static Ptr const& create();
+    static Ptr const& create(std::shared_ptr<Window> win = nullptr);
 
     /** The Texture type, mainly to know which pixels to use (internal or TR).
      *  @sa setType(), getType()
