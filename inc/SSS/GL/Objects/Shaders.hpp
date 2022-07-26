@@ -43,6 +43,10 @@ public:
         Plane
     };
 
+    /** Creates a Ptr in Window objects at given ID (see Preset).
+     *  If no window is specified, the first one (Window::getFirst()) is used.\n
+     *  @sa Window::removeShaders()
+     */
     static Ptr const& create(std::shared_ptr<Window> win = nullptr);
     static Ptr const& create(std::string const& vert_file, std::string const& frag_file,
         std::shared_ptr<Window> win = nullptr);

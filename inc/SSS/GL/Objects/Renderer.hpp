@@ -29,9 +29,16 @@ public:
     
     /** Unique ptr stored in Window objects.*/
     using Ptr = std::unique_ptr<Renderer>;
+    /** Creates a Ptr in Window objects at given ID.
+     *  @sa Window::removeRenderer()
+     */
     template <class T>
     static Ptr const& create(std::shared_ptr<Window> win = nullptr);
-
+    
+    /** Casts instance back to its derived allocated class.
+     *  If no window is specified, the first one (Window::getFirst()) is used.\n
+     *  Throws if specified type differs from actual original type.
+     */
     template< class Derived,
         typename = std::enable_if_t< std::is_base_of_v<Renderer, Derived> > >
     Derived& castAs();

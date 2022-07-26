@@ -13,7 +13,7 @@ void window_resize_callback(GLFWwindow*, int, int); // Pre-definition
 INTERNAL_END;
 
 /** Abstractization of View and Projection matrices, used in Renderer::Chunk.
- *  @sa Window::createCamera()
+ *  @sa create()
  */
 class Camera final : public _internal::WindowObject {
     friend void _internal::window_resize_callback(GLFWwindow*, int, int);
@@ -35,7 +35,7 @@ public:
     Camera& operator=(Camera&&)         = delete;   // Move assignment
     /** \endcond*/
 
-    /** Unique ptr stored in Window objects.*/
+    /** Shared ptr to Camera instance.*/
     using Shared = std::shared_ptr<Camera>;
 
 private:
@@ -43,6 +43,9 @@ private:
     static std::vector<Weak> _instances;
 
 public:
+    /** Creates a Shared camera instance.
+     *  If no window is specified, the first one (Window::getFirst()) is used.
+     */
     static Shared create(std::shared_ptr<Window> win = nullptr);
 
     /** Sets the position coordinates of the camera.

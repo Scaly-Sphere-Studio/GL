@@ -3,7 +3,6 @@
 #include "SSS/GL/Window.hpp"
 
 SSS_GL_BEGIN;
-INTERNAL_BEGIN;
 
 PlaneRenderer::PlaneRenderer(std::weak_ptr<Window> window, uint32_t id) try
     : Renderer(window, id)
@@ -187,5 +186,4 @@ bool PlaneRenderer::_findNearestModel(float x, float y)
     return result;
 }
 
-INTERNAL_END;
 SSS_GL_END;

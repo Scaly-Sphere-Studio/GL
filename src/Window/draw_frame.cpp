@@ -54,7 +54,7 @@ void Window::_updateHoveredModel()
         if (ptr == nullptr)
             continue;
         // Try to cast to Plane::Renderer, and find its nearest model
-        Plane::Renderer* renderer = dynamic_cast<Plane::Renderer*>(ptr);
+        PlaneRenderer* renderer = dynamic_cast<PlaneRenderer*>(ptr);
         if (renderer != nullptr && renderer->_findNearestModel(x, y)) {
             // If a model was found, update hover status
             if (renderer->_hovered_z < z) {

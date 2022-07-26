@@ -36,7 +36,10 @@ public:
 
     /** Unique ptr stored in Window objects.*/
     using Ptr = std::unique_ptr<Texture>;
-    
+    /** Creates a Ptr in Window objects at given ID.
+     *  If no window is specified, the first one (Window::getFirst()) is used.\n
+     *  @sa Window::removeTexture()
+     */
     static Ptr const& create(std::shared_ptr<Window> win = nullptr);
 
     /** The Texture type, mainly to know which pixels to use (internal or TR).

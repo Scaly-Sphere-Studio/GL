@@ -9,8 +9,8 @@
  */
 
 SSS_GL_BEGIN;
-INTERNAL_BEGIN;
 
+/** Dedicated Renderer for Plane instances.*/
 class PlaneRenderer final : public Renderer {
     friend class Window;
 
@@ -23,7 +23,6 @@ private:
 
 public:
     virtual void render();
-    static inline Ptr const& create() { return Renderer::create<PlaneRenderer>(); };
 
     /** Specify a chunk of objects to be rendered.
      *  This is useful to enforce specific orders of chunks without
@@ -62,5 +61,4 @@ private:
     bool _findNearestModel(float x, float y);
 };
 
-INTERNAL_END;
 SSS_GL_END;

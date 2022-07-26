@@ -8,13 +8,9 @@
 
 SSS_GL_BEGIN;
 
-INTERNAL_BEGIN;
-class PlaneRenderer;
-INTERNAL_END;
-
 /** 2D plane derived from Model.*/
 class Plane final : public Model<Plane> {
-    friend class _internal::PlaneRenderer;
+    friend class PlaneRenderer;
     friend class Window;
     friend class Texture;
 
@@ -25,15 +21,16 @@ public:
     /** Destructor, default.*/
     virtual ~Plane();
 
-    /** Unique ptr stored in Window objects.*/
+    /** Shared ptr to Plane instance.*/
     using Shared = std::shared_ptr<Plane>;
-    /** Internal Renderer implementation for the Plane class.*/
-    using Renderer = _internal::PlaneRenderer;
 
 private:
     using Weak = std::weak_ptr<Plane>;
     static std::vector<Weak> _instances;
 public:
+    /** Creates a Shared plane instance.
+     *  If no window is specified, the first one (Window::getFirst()) is used.
+     */
     static Shared create(std::shared_ptr<Window> win = nullptr);
 
     virtual glm::mat4 getModelMat4();
@@ -63,8 +60,15 @@ public:
     /** Returns the Hitbox type of this instance.*/
     inline Hitbox getHitbox() const noexcept { return _hitbox; };
 
+    /** Returns the curerntly hovered Plane instance, or an empty ptr.
+     *  @sa isHovered()
+     */
     static Shared getHovered() noexcept;
+    /** Returns whether this Plane instance is currently hovered.
+     *  @sa getHovered(), getRelativeCoords()
+     */
     inline bool isHovered() const noexcept { return _is_hovered; };
+    /** Returns relative hovering coordinates (only valid if isHovered() returns true).*/
     inline void getRelativeCoords(int& x, int& y) const noexcept { x = _relative_x; y = _relative_y; };
 
 private:

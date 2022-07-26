@@ -230,10 +230,14 @@ public:
 
     /** Swaps internal buffers (prints frame) if the instance is visible.
      *  Sleeps (if needed) to follow FPS limit, and updates mouse hovering status.
-     *  @sa drawObjects()
+     *  @sa drawObjects(), saveScreenshot()
      */
     void printFrame();
 
+    /** Save a screenshot after drawing the next frame.
+     *  Screenshot name is time-based.
+     *  @sa printFrame()
+     */
     inline void saveScreenshot() noexcept { take_screenshot = true; };
 
 private:
@@ -362,6 +366,9 @@ public:
     /** Returns the corresponding \c GLFWwindow pointer, be careful with it.*/
     inline GLFWwindow* getGLFWwindow() const { return _window.get(); };
 
+    /** Returns the maximum number of texture units a GLSL fragment shader can hold.
+     *  Basically just calls glGet() with GL_MAX_TEXTURE_IMAGE_UNITS.
+     */
     inline uint32_t maxGLSLTextureUnits() const noexcept { return _max_glsl_tex_units; };
 
 private:

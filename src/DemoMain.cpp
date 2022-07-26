@@ -55,7 +55,7 @@ int main() try
     auto const& line_shader     = GL::Shaders::create();
     auto const& line_renderer   = GL::Renderer::create<GL::LineRenderer>();
     auto const plane            = GL::Plane::create();
-    auto const& plane_renderer  = GL::Plane::Renderer::create();
+    auto const& plane_renderer  = GL::Renderer::create<GL::PlaneRenderer>();
 
     // Text
     auto const& area = TR::Area::create(300, 300);
@@ -91,7 +91,7 @@ int main() try
     plane->setOnClickFuncID(1);
     plane->setHitbox(GL::Plane::Hitbox::Full);
     {
-        auto& chunks = plane_renderer->castAs<GL::Plane::Renderer>().chunks;
+        auto& chunks = plane_renderer->castAs<GL::PlaneRenderer>().chunks;
         // Display 256 textures
         chunks.emplace_back(camera);
         constexpr int size = 10;
