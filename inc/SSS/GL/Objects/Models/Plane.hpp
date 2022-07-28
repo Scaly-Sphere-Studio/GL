@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SSS/GL/Objects/Model.hpp"
+#include "SSS/GL/internal/callbacks.hpp"
 
 /** @file
  *  Defines class SSS::GL::Plane.
@@ -13,6 +14,7 @@ class Plane final : public Model<Plane> {
     friend class PlaneRenderer;
     friend class Window;
     friend class Texture;
+    friend void _internal::mouse_button_callback(GLFWwindow*, int, int, int);
 
 private:
     Plane(std::weak_ptr<Window> window);

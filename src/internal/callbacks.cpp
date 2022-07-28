@@ -135,6 +135,24 @@ void mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) tr
     if (window->_cursor_is_moving) {
         window->_updateHoveredModel();
     }
+
+    // Set focus of Text Area
+    if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS) {
+        TR::Area::resetFocus();
+        Plane::Shared plane = Plane::getHovered();
+        if (plane && plane->_use_texture) {
+            Texture::Ptr const& texture = window->getObjects().textures.at(plane->getTextureID());
+            if (texture->getType() == Texture::Type::Text) {
+                TR::Area::Ptr const& area = texture->getTextArea();
+                if (area) {
+                    int x, y;
+                    plane->getRelativeCoords(x, y);
+                    area->cursorPlace(x, y);
+                }
+            }
+        }
+    }
+
     // Call button function, if needed
     window->_callOnClickFunction(button, action, mods);
 
@@ -157,17 +175,76 @@ void key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods) 
         LOG_GL_MSG(buff);
     }
     
-    // Store key input if in range
-    if (key >= 0 && key <= GLFW_KEY_LAST) {
-        window->_key_inputs[key] = action != GLFW_RELEASE;
+    bool const pressed_or_repeat = action == GLFW_PRESS || action == GLFW_REPEAT;
+    bool const has_focused_area = TR::Area::getFocused() != nullptr;
+
+    // Fill inputs if no focused text Area
+    if (!(has_focused_area && pressed_or_repeat)) {
+        // Store key input if in range
+        if (key >= 0 && key <= GLFW_KEY_LAST) {
+            window->_key_inputs[key] = pressed_or_repeat;
+        }
     }
-    
+
+    // Text-Rendering inputs
+    if (has_focused_area && pressed_or_repeat) {
+        using namespace SSS::TR;
+        bool const ctrl = mods & GLFW_MOD_CONTROL;
+        switch (key) {
+        case GLFW_KEY_ESCAPE:
+        case GLFW_KEY_TAB:
+            Area::resetFocus();
+            break;
+        case GLFW_KEY_ENTER:
+            Area::cursorAddText("\n");
+            break;
+        case GLFW_KEY_LEFT:
+            Area::cursorMove(ctrl ? Move::CtrlLeft : Move::Left);
+            break;
+        case GLFW_KEY_RIGHT:
+            Area::cursorMove(ctrl ? Move::CtrlRight : Move::Right);
+            break;
+        case GLFW_KEY_DOWN:
+            Area::cursorMove(Move::Down);
+            break;
+        case GLFW_KEY_UP:
+            Area::cursorMove(Move::Up);
+            break;
+        case GLFW_KEY_HOME:
+            Area::cursorMove(Move::Start);
+            break;
+        case GLFW_KEY_END:
+            Area::cursorMove(Move::End);
+            break;
+        case GLFW_KEY_BACKSPACE:
+            Area::cursorDeleteText(ctrl ? Delete::CtrlLeft : Delete::Left);
+            break;
+        case GLFW_KEY_DELETE:
+            Area::cursorDeleteText(ctrl ? Delete::CtrlRight : Delete::Right);
+            break;
+        }
+    }
+
     // Call user defined callback, if needed
-    if (window->_key_callback != nullptr) {
+    if (!has_focused_area && window->_key_callback != nullptr) {
         window->_key_callback(ptr, key, scancode, action, mods);
     }
 }
 CATCH_AND_RETHROW_FUNC_EXC;
+
+// Character input callback
+void char_callback(GLFWwindow* ptr, unsigned int codepoint)
+{
+    Window::Shared const window = Window::get(ptr);
+
+    std::u32string str(1, static_cast<char32_t>(codepoint));
+    TR::Area::cursorAddText(str);
+
+    // Call user defined callback, if needed
+    if (window->_char_callback != nullptr) {
+        window->_char_callback(ptr, codepoint);
+    }
+}
 
 // Updates connected monitors
 void monitor_callback(GLFWmonitor* ptr, int event) try

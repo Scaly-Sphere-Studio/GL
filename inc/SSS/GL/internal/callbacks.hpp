@@ -33,6 +33,8 @@ void mouse_position_callback(GLFWwindow* ptr, double x, double y);
 void mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods);
 // Stores key inputs
 void key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods);
+// Character input callback
+void char_callback(GLFWwindow* ptr, unsigned int codepoint);
 
 // Updates connected monitors
 void monitor_callback(GLFWmonitor* ptr, int event);

@@ -61,6 +61,7 @@ class Window final : public std::enable_shared_from_this<Window> {
     friend void _internal::mouse_position_callback(GLFWwindow* ptr, double x, double y);
     friend void _internal::mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods);
     friend void _internal::key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods);
+    friend void _internal::char_callback(GLFWwindow* ptr, unsigned int codepoint);
     friend void _internal::monitor_callback(GLFWmonitor* ptr, int event);
 
 public:
@@ -405,6 +406,7 @@ private:
     GLFWwindowsizefun    _resize_callback{ nullptr };           // Window resize
     GLFWwindowposfun     _pos_callback{ nullptr };              // Window position
     GLFWkeyfun           _key_callback{ nullptr };              // Window keyboard key
+    GLFWcharfun          _char_callback{ nullptr };             // Window character input
     GLFWcursorposfun     _mouse_position_callback{ nullptr };   // Window mouse position
     GLFWmousebuttonfun   _mouse_button_callback{ nullptr };     // Window mouse button
 
@@ -451,6 +453,9 @@ inline void Window::setCallback(Callback(*set)(GLFWwindow*, Callback), Callback 
     }
     else if (ptr == (void*)(&glfwSetKeyCallback)) {
         _key_callback = GLFWkeyfun(callback);
+    }
+    else if (ptr == (void*)(&glfwSetCharCallback)) {
+        _char_callback = GLFWcharfun(callback);
     }
     else if (ptr == (void*)(&glfwSetCursorPosCallback)) {
         _mouse_position_callback = GLFWcursorposfun(callback);

@@ -4,7 +4,7 @@ using namespace SSS;
 
 void key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods)
 {
-    if (key == GLFW_KEY_KP_0 || key == GLFW_KEY_ESCAPE) {
+    if (action == GLFW_PRESS && (key == GLFW_KEY_KP_0 || key == GLFW_KEY_ESCAPE)) {
         glfwSetWindowShouldClose(ptr, true);
     }
 }
@@ -22,8 +22,8 @@ void passive_plane_func1(GL::Window::Shared win, GL::Plane::Shared plane)
 void on_click_plane_func1(GL::Window::Shared win, GL::Plane::Shared plane,
     int button, int action, int mod)
 {
-    if (button == GLFW_MOUSE_BUTTON_1 &&  action == GLFW_PRESS)
-        plane->rotate(glm::vec3(0, 0, 45));
+    //if (button == GLFW_MOUSE_BUTTON_1 &&  action == GLFW_PRESS)
+    //    plane->rotate(glm::vec3(0, 0, 45));
 }
 
 int main() try

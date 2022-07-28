@@ -105,6 +105,7 @@ Window::Window(CreateArgs const& args) try
     glfwSetCursorPosCallback(_window.get(), _internal::mouse_position_callback);
     glfwSetMouseButtonCallback(_window.get(), _internal::mouse_button_callback);
     glfwSetKeyCallback(_window.get(), _internal::key_callback);
+    glfwSetCharCallback(_window.get(), _internal::char_callback);
     
     // Retrieve max number of GLSL texture units
     int max_units;
