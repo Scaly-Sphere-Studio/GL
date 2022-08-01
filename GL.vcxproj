@@ -45,14 +45,12 @@
     <ClInclude Include="inc\SSS\GL\Objects\Models\Plane.hpp" />
     <ClInclude Include="inc\SSS\GL\Objects\Texture.hpp" />
     <ClInclude Include="inc\SSS\GL\Window.hpp" />
-    <ClInclude Include="inc\SSS\GL\internal\callbacks.hpp" />
     <ClInclude Include="inc\SSS\GL\Objects\Models\PlaneRenderer.hpp" />
     <ClInclude Include="inc\SSS\GL\internal\includes.hpp" />
     <ClInclude Include="inc\SSS\GL\Objects\Basic.hpp" />
     <ClInclude Include="inc\SSS\GL\Objects\Models\LineRenderer.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\internal\callbacks.cpp" />
     <ClCompile Include="src\Objects\Basic.cpp" />
     <ClCompile Include="src\Objects\Shaders.cpp" />
     <ClCompile Include="src\Objects\Texture.cpp" />
@@ -70,6 +68,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\Window\Window.cpp" />
+    <ClCompile Include="src\Window\callbacks.cpp" />
     <ClCompile Include="src\Window\preset_shaders.cpp" />
     <ClCompile Include="src\Window\handle_objects.cpp" />
     <ClCompile Include="src\Window\draw_frame.cpp" />

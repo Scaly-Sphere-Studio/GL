@@ -1,11 +1,9 @@
-#include "SSS/GL/internal/callbacks.hpp"
 #include "SSS/GL/Window.hpp"
 
 SSS_GL_BEGIN;
-INTERNAL_BEGIN;
 
 // Resizes the internal width and height of correspondig Window instance
-void window_resize_callback(GLFWwindow* ptr, int w, int h) try
+void Window::window_resize_callback(GLFWwindow* ptr, int w, int h) try
 {
     Window::Shared const window = Window::get(ptr);
 
@@ -43,7 +41,7 @@ void window_resize_callback(GLFWwindow* ptr, int w, int h) try
 CATCH_AND_RETHROW_FUNC_EXC;
 
 // Determines current monitor of the window
-void window_pos_callback(GLFWwindow* ptr, int x, int y) try
+void Window::window_pos_callback(GLFWwindow* ptr, int x, int y) try
 {
     Window::Shared const window = Window::get(ptr);
 
@@ -84,7 +82,7 @@ void window_pos_callback(GLFWwindow* ptr, int x, int y) try
 }
 CATCH_AND_RETHROW_FUNC_EXC;
 
-void mouse_position_callback(GLFWwindow* ptr, double x, double y)
+void Window::mouse_position_callback(GLFWwindow* ptr, double x, double y)
 {
     Window::Shared const window = Window::get(ptr);
 
@@ -101,7 +99,7 @@ void mouse_position_callback(GLFWwindow* ptr, double x, double y)
     }
 }
 
-void window_iconify_callback(GLFWwindow* ptr, int state)
+void Window::window_iconify_callback(GLFWwindow* ptr, int state)
 {
     Window::Shared const window = Window::get(ptr);
     window->_is_iconified = static_cast<bool>(state);
@@ -120,7 +118,7 @@ void window_iconify_callback(GLFWwindow* ptr, int state)
 }
 
 // Used for clickable planes and such
-void mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) try
+void Window::mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) try
 {
     Window::Shared const window = Window::get(ptr);
 
@@ -164,7 +162,7 @@ void mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) tr
 CATCH_AND_RETHROW_FUNC_EXC;
 
 // Stores key inputs
-void key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods) try
+void Window::key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods) try
 {
     Window::Shared const window = Window::get(ptr);
 
@@ -233,7 +231,7 @@ void key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods) 
 CATCH_AND_RETHROW_FUNC_EXC;
 
 // Character input callback
-void char_callback(GLFWwindow* ptr, unsigned int codepoint)
+void Window::char_callback(GLFWwindow* ptr, unsigned int codepoint)
 {
     Window::Shared const window = Window::get(ptr);
 
@@ -247,7 +245,7 @@ void char_callback(GLFWwindow* ptr, unsigned int codepoint)
 }
 
 // Updates connected monitors
-void monitor_callback(GLFWmonitor* ptr, int event) try
+void Window::monitor_callback(GLFWmonitor* ptr, int event) try
 {
     if (Log::GL::Callbacks::query(Log::GL::Callbacks::get().monitor)) {
         char buff[256];
@@ -270,5 +268,4 @@ void monitor_callback(GLFWmonitor* ptr, int event) try
 }
 CATCH_AND_RETHROW_FUNC_EXC;
 
-INTERNAL_END;
 SSS_GL_END;
