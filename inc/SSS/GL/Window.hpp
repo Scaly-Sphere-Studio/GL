@@ -1,6 +1,5 @@
 #pragma once
 
-#include "SSS/GL/internal/callbacks.hpp"
 #include "SSS/GL/Objects/Shaders.hpp"
 #include "SSS/GL/Objects/Texture.hpp"
 #include "SSS/GL/Objects/Camera.hpp"
@@ -26,6 +25,17 @@ namespace SSS::Log::GL {
         bool life_state = false;
         bool fps = false;
         bool hovered_model = false;
+    };
+    /** Logging properties for internal SSS::GL::Window callbacks.*/
+    struct Callbacks : public LogBase<Callbacks> {
+        using LOG_STRUCT_BASICS(Log, Callbacks);
+        bool window_resize = false;
+        bool window_pos = false;
+        bool window_iconify = false;
+        bool mouse_position = false;
+        bool mouse_button = false;
+        bool key = false;
+        bool monitor = false;
     };
 }
 
@@ -55,14 +65,16 @@ uint32_t getAvailableID(std::map<uint32_t, T> const& map)
 class Window final : public std::enable_shared_from_this<Window> {
     
     friend bool pollEverything();
-    friend void _internal::window_iconify_callback(GLFWwindow* ptr, int state);
-    friend void _internal::window_resize_callback(GLFWwindow* ptr, int w, int h);
-    friend void _internal::window_pos_callback(GLFWwindow* ptr, int x, int y);
-    friend void _internal::mouse_position_callback(GLFWwindow* ptr, double x, double y);
-    friend void _internal::mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods);
-    friend void _internal::key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods);
-    friend void _internal::char_callback(GLFWwindow* ptr, unsigned int codepoint);
-    friend void _internal::monitor_callback(GLFWmonitor* ptr, int event);
+
+private:
+    static void window_iconify_callback(GLFWwindow* ptr, int state);
+    static void window_resize_callback(GLFWwindow* ptr, int w, int h);
+    static void window_pos_callback(GLFWwindow* ptr, int x, int y);
+    static void mouse_position_callback(GLFWwindow* ptr, double x, double y);
+    static void mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods);
+    static void key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods);
+    static void char_callback(GLFWwindow* ptr, unsigned int codepoint);
+    static void monitor_callback(GLFWmonitor* ptr, int event);
 
 public:
     /** Window::create() parameters.*/

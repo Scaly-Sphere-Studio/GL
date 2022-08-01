@@ -8,15 +8,10 @@
 
 SSS_GL_BEGIN;
 
-INTERNAL_BEGIN;
-void window_resize_callback(GLFWwindow*, int, int); // Pre-definition
-INTERNAL_END;
-
 /** Abstractization of View and Projection matrices, used in Renderer::Chunk.
  *  @sa create()
  */
 class Camera final : public _internal::WindowObject {
-    friend void _internal::window_resize_callback(GLFWwindow*, int, int);
     friend class Window;
 
 private:

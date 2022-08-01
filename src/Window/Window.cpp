@@ -19,8 +19,8 @@ Window::Window(CreateArgs const& args) try
             LOG_GL_MSG("GLFW initialized");
         }
         // Retrive monitors
-        _internal::monitor_callback(nullptr, 0);
-        glfwSetMonitorCallback(_internal::monitor_callback);
+        monitor_callback(nullptr, 0);
+        glfwSetMonitorCallback(monitor_callback);
     }
 
     // Set main monitor
@@ -99,13 +99,13 @@ Window::Window(CreateArgs const& args) try
     setVSYNC(false);
 
     // Set window callbacks, after everything else is set
-    glfwSetWindowIconifyCallback(_window.get(), _internal::window_iconify_callback);
-    glfwSetWindowSizeCallback(_window.get(), _internal::window_resize_callback);
-    glfwSetWindowPosCallback(_window.get(), _internal::window_pos_callback);
-    glfwSetCursorPosCallback(_window.get(), _internal::mouse_position_callback);
-    glfwSetMouseButtonCallback(_window.get(), _internal::mouse_button_callback);
-    glfwSetKeyCallback(_window.get(), _internal::key_callback);
-    glfwSetCharCallback(_window.get(), _internal::char_callback);
+    glfwSetWindowIconifyCallback(_window.get(), window_iconify_callback);
+    glfwSetWindowSizeCallback(_window.get(), window_resize_callback);
+    glfwSetWindowPosCallback(_window.get(), window_pos_callback);
+    glfwSetCursorPosCallback(_window.get(), mouse_position_callback);
+    glfwSetMouseButtonCallback(_window.get(), mouse_button_callback);
+    glfwSetKeyCallback(_window.get(), key_callback);
+    glfwSetCharCallback(_window.get(), char_callback);
     
     // Retrieve max number of GLSL texture units
     int max_units;

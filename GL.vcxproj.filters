@@ -21,9 +21,6 @@
     <Filter Include="src\Objects\Models">
       <UniqueIdentifier>{8bf49805-4cfd-40ff-b542-a00f6b524d11}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\internal">
-      <UniqueIdentifier>{c05fe4e6-f0e6-425c-993e-97ffdd617387}</UniqueIdentifier>
-    </Filter>
     <Filter Include="inc\internal">
       <UniqueIdentifier>{f9ea9e25-94dc-4281-97ef-fe2c14826d64}</UniqueIdentifier>
     </Filter>
@@ -55,9 +52,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\internal\callbacks.cpp">
-      <Filter>src\internal</Filter>
-    </ClCompile>
     <ClCompile Include="src\Window\Window.cpp">
       <Filter>src\Window</Filter>
     </ClCompile>
@@ -103,6 +97,9 @@
     <ClCompile Include="src\DemoMain.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Window\callbacks.cpp">
+      <Filter>src\Window</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\SSS\GL\Window.hpp">
@@ -110,9 +107,6 @@
     </ClInclude>
     <ClInclude Include="inc\SSS\GL.hpp">
       <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\SSS\GL\internal\callbacks.hpp">
-      <Filter>inc\internal</Filter>
     </ClInclude>
     <ClInclude Include="inc\SSS\GL\internal\includes.hpp">
       <Filter>inc\internal</Filter>
