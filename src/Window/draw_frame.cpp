@@ -4,6 +4,8 @@
 #include <stb_image_write.h>
 #include <filesystem>
 
+#include "SSS/GL/Objects/Models/PlaneRenderer.hpp"
+
 SSS_GL_BEGIN;
 
 // Draws objects inside renderers on the back buffer.

@@ -1,12 +1,8 @@
 #pragma once
 
-#include "SSS/GL/Objects/Shaders.hpp"
-#include "SSS/GL/Objects/Texture.hpp"
-#include "SSS/GL/Objects/Camera.hpp"
-#include "SSS/GL/Objects/Models/Plane.hpp"
-#include "SSS/GL/Objects/Models/PlaneRenderer.hpp"
-#include "SSS/GL/Objects/Models/Line.hpp"
-#include "SSS/GL/Objects/Models/LineRenderer.hpp"
+#include "SSS/GL/Objects/Basic.hpp"
+#include <map>
+#include <array>
 
 /** @file
  *  Defines class SSS::GL::Window and its bound class SSS::GL::Context.
@@ -41,6 +37,10 @@ namespace SSS::Log::GL {
 
 SSS_GL_BEGIN;
     
+class Shaders;
+class Renderer;
+class Texture;
+
 /** Global function which polls everything in the library.
  *  Process is as follow:
  * - Calls glfwPollEvents().
@@ -187,9 +187,9 @@ public :
         Objects& operator=(const Objects&)  = delete;   // Copy assignment
         Objects& operator=(Objects&&)       = delete;   // Move assignment
         /** \endcond*/
-        std::map<uint32_t, Shaders::Ptr> shaders;       // Shaders
-        std::map<uint32_t, Renderer::Ptr> renderers;    // Renderers
-        std::map<uint32_t, Texture::Ptr> textures;      // Textures
+        std::map<uint32_t, std::unique_ptr<Shaders>> shaders;       // Shaders
+        std::map<uint32_t, std::unique_ptr<Renderer>> renderers;    // Renderers
+        std::map<uint32_t, std::unique_ptr<Texture>> textures;      // Textures
     };
 
 private:
@@ -205,23 +205,23 @@ public:
      */
     void cleanObjects() noexcept;
 
-    /** Creates a Shaders::Ptr in Objects::shaders at given ID (see Shaders::Preset).
+    /** Creates a std::unique_ptr<Shaders> in Objects::shaders at given ID (see Shaders::Preset).
      *  @sa removeShaders()
      */
-    Shaders::Ptr const& createShaders(uint32_t id);
-    Shaders::Ptr const& createShaders();
-    /** Creates a derived Renderer::Ptr in Objects::renderers at given ID.
+    std::unique_ptr<Shaders> const& createShaders(uint32_t id);
+    std::unique_ptr<Shaders> const& createShaders();
+    /** Creates a derived std::unique_ptr<Renderer> in Objects::renderers at given ID.
      *  @sa removeRenderer()
      */
     template<class Derived = Renderer>
-    Renderer::Ptr const& createRenderer(uint32_t id);
+    std::unique_ptr<Renderer> const& createRenderer(uint32_t id);
     template<class Derived = Renderer>
-    Renderer::Ptr const& createRenderer();
-    /** Creates a Texture::Ptr in Objects::textures at given ID.
+    std::unique_ptr<Renderer> const& createRenderer();
+    /** Creates a std::unique_ptr<Texture> in Objects::textures at given ID.
      *  @sa removeTexture()
      */
-    Texture::Ptr const& createTexture(uint32_t id);
-    Texture::Ptr const& createTexture();
+    std::unique_ptr<Texture> const& createTexture(uint32_t id);
+    std::unique_ptr<Texture> const& createTexture();
 
     /** Removes the Shaders::Ptr in Objects::shaders at given ID (see Shaders::Preset).
      *  @sa createShaders()
@@ -429,27 +429,6 @@ private:
     void _setMainMonitor(int id);
 };
 
-template<class Derived>
-inline Renderer::Ptr const& Window::createRenderer(uint32_t id)
-{
-    Renderer::Ptr& ptr = _objects.renderers[id];
-    ptr.reset(new Derived(weak_from_this(), id));
-    return ptr;
-}
-
-template<class Derived>
-inline Renderer::Ptr const& Window::createRenderer()
-{
-    try {
-        return createRenderer<Derived>(getAvailableID(_objects.renderers));
-    }
-    catch (std::exception const& e) {
-        static Renderer::Ptr n(nullptr);
-        LOG_FUNC_ERR(e.what());
-        return n;
-    }
-}
-
 template<typename Callback>
 inline void Window::setCallback(Callback(*set)(GLFWwindow*, Callback), Callback callback)
 {
@@ -496,15 +475,6 @@ inline char const* windowTitle(std::weak_ptr<Window> win) noexcept
 #define WINDOW_TITLE(X) _internal::windowTitle(X)
 
 INTERNAL_END;
-
-template<class T>
-Renderer::Ptr const& Renderer::create(std::shared_ptr<Window> win)
-{
-    if (!win) {
-        win = Window::getFirst();
-    }
-    return win->createRenderer<T>();
-}
 
 /** Abstractization of glfw contexts, inspired by std::lock.
  *  Make given context current in scope.
