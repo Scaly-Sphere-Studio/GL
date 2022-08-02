@@ -1,6 +1,8 @@
 #pragma once
 
 #include "SSS/GL/Objects/Basic.hpp"
+#include <glm/glm.hpp>
+#include <glm/ext.hpp>
 
 /** @file
  *  Defines class SSS::GL::Camera.

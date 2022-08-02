@@ -1,10 +1,38 @@
 #pragma once
 
-#include "SSS/GL/internal/includes.hpp"
+#include <SSS/Commons.hpp>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 /** @file
  *  Defines namespace SSS::GL::Basic and subsequent classes.
  */
+
+ /** Declares the SSS::GL namespace.
+  *  Further code will be nested in the SSS::GL namespace.\n
+  *  Should be used in pair with with #SSS_GL_END.
+  */
+#define SSS_GL_BEGIN SSS_BEGIN; namespace GL {
+  /** Closes the SSS::GL namespace declaration.
+   *  Further code will no longer be nested in the SSS::GL namespace.\n
+   *  Should be used in pair with with #SSS_GL_BEGIN.
+   */
+#define SSS_GL_END SSS_END; }
+
+   /** \cond INTERNAL*/
+
+   /** Logs the given message with "SSS/GL: " prepended to it.*/
+#define LOG_GL_MSG(X) LOG_CTX_MSG("SSS/GL", X)
+
+/** Logs the given message with "SSS/GL: %window_name%: " prepended to it.*/
+#define LOG_WNDW_MSG(win, X) LOG_GL_MSG(win->getTitle(), X)
+
+/** \endcond*/
+
+/** Holds all SSS::GL related log flags.*/
+namespace SSS::Log::GL {
+    LOG_NAMESPACE_BASICS(Log);
+}
 
 SSS_GL_BEGIN;
 

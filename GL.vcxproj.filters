@@ -21,9 +21,6 @@
     <Filter Include="src\Objects\Models">
       <UniqueIdentifier>{8bf49805-4cfd-40ff-b542-a00f6b524d11}</UniqueIdentifier>
     </Filter>
-    <Filter Include="inc\internal">
-      <UniqueIdentifier>{f9ea9e25-94dc-4281-97ef-fe2c14826d64}</UniqueIdentifier>
-    </Filter>
     <Filter Include="inc\Objects">
       <UniqueIdentifier>{7fe84c3e-7ee5-4e8f-a770-f624ee3a9dfb}</UniqueIdentifier>
     </Filter>
@@ -107,9 +104,6 @@
     </ClInclude>
     <ClInclude Include="inc\SSS\GL.hpp">
       <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\SSS\GL\internal\includes.hpp">
-      <Filter>inc\internal</Filter>
     </ClInclude>
     <ClInclude Include="inc\SSS\GL\Objects\Camera.hpp">
       <Filter>inc\Objects</Filter>

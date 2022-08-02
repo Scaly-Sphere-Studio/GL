@@ -45,8 +45,8 @@ public:
         std::vector<Plane::Shared> planes;
     };
 
-    /** Deque of Chunk instances, which will be rendered one by one.*/
-    std::deque<Chunk> chunks;
+    /** Vector of Chunk instances, which will be rendered one by one.*/
+    std::vector<Chunk> chunks;
 
 private:
     Basic::VAO::Ptr _vao;
