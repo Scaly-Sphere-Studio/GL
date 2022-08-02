@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Line.hpp"
-#include "../Renderer.hpp"
-#include "../Camera.hpp"
+#include "SSS/GL/Objects/Models/Line.hpp"
+#include "SSS/GL/Objects/Renderer.hpp"
+#include "SSS/GL/Objects/Camera.hpp"
 
 SSS_GL_BEGIN;
 

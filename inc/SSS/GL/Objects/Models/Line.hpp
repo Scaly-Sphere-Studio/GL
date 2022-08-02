@@ -1,6 +1,7 @@
 #pragma once
 
-#include "SSS/GL/internal/includes.hpp"
+#include <SSS/Math.hpp>
+#include "SSS/GL/Objects/Basic.hpp"
 #include <unordered_map>
 
 SSS_GL_BEGIN;

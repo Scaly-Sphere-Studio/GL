@@ -46,7 +46,6 @@
     <ClInclude Include="inc\SSS\GL\Objects\Texture.hpp" />
     <ClInclude Include="inc\SSS\GL\Window.hpp" />
     <ClInclude Include="inc\SSS\GL\Objects\Models\PlaneRenderer.hpp" />
-    <ClInclude Include="inc\SSS\GL\internal\includes.hpp" />
     <ClInclude Include="inc\SSS\GL\Objects\Basic.hpp" />
     <ClInclude Include="inc\SSS\GL\Objects\Models\LineRenderer.hpp" />
   </ItemGroup>
