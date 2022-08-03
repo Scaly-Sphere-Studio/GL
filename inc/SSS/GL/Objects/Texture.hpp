@@ -1,7 +1,7 @@
 #pragma once
 
 #include <SSS/Text-Rendering.hpp>
-#include "SSS/GL/Objects/Basic.hpp"
+#include "SSS/GL/Window.hpp"
 
 /** @file
  *  Defines class SSS::GL::Texture.
