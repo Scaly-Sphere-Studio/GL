@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SSS/GL/Objects/Basic.hpp"
+#include "SSS/GL/Window.hpp"
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 
