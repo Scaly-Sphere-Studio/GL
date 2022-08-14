@@ -24,7 +24,8 @@ Shaders::Ptr const& Window::createShaders(uint32_t id) try
         return n;
     }
     Shaders::Ptr& ptr = _objects.shaders[id];
-    ptr.reset(new Shaders(weak_from_this(), id));
+    if (!ptr)
+        ptr.reset(new Shaders(weak_from_this(), id));
     return ptr;
 }
 CATCH_AND_RETHROW_METHOD_EXC;
@@ -44,7 +45,8 @@ Shaders::Ptr const& Window::createShaders()
 Texture::Ptr const& Window::createTexture(uint32_t id) try
 {
     Texture::Ptr& ptr = _objects.textures[id];
-    ptr.reset(new Texture(weak_from_this(), id));
+    if (!ptr)
+        ptr.reset(new Texture(weak_from_this(), id));
     return ptr;
 }
 CATCH_AND_RETHROW_METHOD_EXC;

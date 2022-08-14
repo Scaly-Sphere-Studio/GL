@@ -37,7 +37,18 @@ template<class Derived>
 inline Renderer::Ptr const& Window::createRenderer(uint32_t id)
 {
     Renderer::Ptr& ptr = _objects.renderers[id];
-    ptr.reset(new Derived(weak_from_this(), id));
+    // Ensure that if a renderer already exists, it is the corresponding type
+    if (ptr) {
+        try {
+            ptr->castAs<Derived>();
+        }
+        catch (...) {
+            ptr.reset();
+        }
+    }
+    if (!ptr) {
+        ptr.reset(new Derived(weak_from_this(), id));
+    }
     return ptr;
 }
  
