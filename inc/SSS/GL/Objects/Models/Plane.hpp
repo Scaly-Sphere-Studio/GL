@@ -23,7 +23,7 @@ public:
 
     /** Shared ptr to Plane instance.*/
     using Shared = std::shared_ptr<Plane>;
-
+    using Vector = std::vector<Shared>;
 private:
     using Weak = std::weak_ptr<Plane>;
     static std::vector<Weak> _instances;
@@ -32,6 +32,8 @@ public:
      *  If no window is specified, the first one (Window::getFirst()) is used.
      */
     static Shared create(std::shared_ptr<Window> win = nullptr);
+
+    static Vector getInstances(Window::Shared window = nullptr) noexcept;
 
     virtual glm::mat4 getModelMat4();
     virtual void getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles,

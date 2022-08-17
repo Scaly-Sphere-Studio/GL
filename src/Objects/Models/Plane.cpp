@@ -33,6 +33,17 @@ Plane::Shared Plane::create(std::shared_ptr<Window> win)
     return plane;
 }
 
+Plane::Vector Plane::getInstances(Window::Shared window) noexcept
+{
+    Vector vec;
+    for (Weak const& weak : _instances) {
+        Shared plane = weak.lock();
+        if (plane && (!window || window == plane->_window.lock()))
+            vec.emplace_back(plane);
+    }
+    return vec;
+}
+
 glm::mat4 Plane::getModelMat4()
 {
     if (_should_compute_mat4) {

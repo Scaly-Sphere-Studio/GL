@@ -31,6 +31,17 @@ Camera::Shared Camera::create(std::shared_ptr<Window> win)
     return camera;
 }
 
+Camera::Vector Camera::getInstances(Window::Shared window) noexcept
+{
+    Vector vec;
+    for (Weak const& weak : _instances) {
+        Shared camera = weak.lock();
+        if (camera && (!window || window == camera->_window.lock()))
+            vec.emplace_back(camera);
+    }
+    return vec;
+}
+
 void Camera::setPosition(glm::vec3 position)
 {
     _position = position;

@@ -34,7 +34,7 @@ public:
 
     /** Shared ptr to Camera instance.*/
     using Shared = std::shared_ptr<Camera>;
-
+    using Vector = std::vector<Shared>;
 private:
     using Weak = std::weak_ptr<Camera>;
     static std::vector<Weak> _instances;
@@ -44,6 +44,8 @@ public:
      *  If no window is specified, the first one (Window::getFirst()) is used.
      */
     static Shared create(std::shared_ptr<Window> win = nullptr);
+
+    static Vector getInstances(Window::Shared window) noexcept;
 
     /** Sets the position coordinates of the camera.
      *  The default coordinates are (0, 0, 0).
