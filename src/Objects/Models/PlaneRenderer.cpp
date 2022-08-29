@@ -1,6 +1,7 @@
 #include "SSS/GL/Objects/Models/PlaneRenderer.hpp"
 #include "SSS/GL/Objects/Models/Plane.hpp"
 #include "SSS/GL/Objects/Texture.hpp"
+#include <ranges>
 
 SSS_GL_BEGIN;
 
@@ -156,7 +157,7 @@ bool PlaneRenderer::_findNearestModel(float x, float y)
     Window::Objects const& objects = window->getObjects();
     // Loop over each Renderer::Chunk in reverse order
     bool result = false;
-    for (Chunk const& chunk : chunks) {
+    for (Chunk const& chunk : chunks | std::views::reverse) {
         // Retrieve VP for next loop
         glm::mat4 VP(1);
         if (chunk.camera) {
