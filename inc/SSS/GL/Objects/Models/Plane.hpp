@@ -17,6 +17,12 @@ class Plane final : public Model<Plane> {
 private:
     Plane(std::weak_ptr<Window> window);
 
+    // Make copy & move operations private
+    Plane(const Plane&)             = default;   // Copy constructor
+    Plane(Plane&&)                  = default;   // Move constructor
+    Plane& operator=(const Plane&)  = default;   // Copy assignment
+    Plane& operator=(Plane&&)       = default;   // Move assignment
+
 public:
     /** Destructor, default.*/
     virtual ~Plane();
@@ -32,6 +38,7 @@ public:
      *  If no window is specified, the first one (Window::getFirst()) is used.
      */
     static Shared create(std::shared_ptr<Window> win = nullptr);
+    Shared duplicate() const;
 
     static Vector getInstances(Window::Shared window = nullptr) noexcept;
 

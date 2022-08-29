@@ -33,6 +33,13 @@ Plane::Shared Plane::create(std::shared_ptr<Window> win)
     return plane;
 }
 
+Plane::Shared Plane::duplicate() const
+{
+    Shared plane = create(_window.lock());
+    *plane = *this;
+    return plane;
+}
+
 Plane::Vector Plane::getInstances(Window::Shared window) noexcept
 {
     Vector vec;
