@@ -67,11 +67,15 @@ void Plane::getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles, glm
     scaling /= _tex_scaling;
 }
 
-Plane::Shared Plane::getHovered() noexcept
+Plane::Shared Plane::getHovered(Window::Shared window) noexcept
 {
+    if (!window) {
+        window = Window::getFirst();
+    }
+
     for (Weak weak : _instances) {
         Shared plane(weak);
-        if (plane && plane->isHovered()) {
+        if (plane && plane->isHovered() && plane->_window.lock() == window) {
             return plane;
         }
     }

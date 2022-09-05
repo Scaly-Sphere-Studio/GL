@@ -30,7 +30,7 @@ void Window::window_resize_callback(GLFWwindow* ptr, int w, int h) try
         // Update screen_ratio of cameras
         for (Camera::Weak weak : Camera::_instances) {
             Camera::Shared camera = weak.lock();
-            if (camera) {
+            if (camera && camera->_window.lock() == window) {
                 camera->_window_ratio = window->getRatio();
                 camera->_computeProjection();
             }
@@ -141,7 +141,7 @@ void Window::mouse_button_callback(GLFWwindow* ptr, int button, int action, int 
     // Set focus of Text Area
     if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS) {
         TR::Area::resetFocus();
-        Plane::Shared plane = Plane::getHovered();
+        Plane::Shared plane = Plane::getHovered(window);
         if (plane && plane->_use_texture) {
             Texture::Ptr const& texture = window->getObjects().textures.at(plane->getTextureID());
             if (texture->getType() == Texture::Type::Text) {
@@ -150,6 +150,10 @@ void Window::mouse_button_callback(GLFWwindow* ptr, int button, int action, int 
                     int x, y;
                     plane->getRelativeCoords(x, y);
                     area->cursorPlace(x, y);
+                    // Reset key_inputs
+                    for (bool& key : window->_key_inputs) {
+                        key = false;
+                    }
                 }
             }
         }
