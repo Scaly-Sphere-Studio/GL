@@ -184,6 +184,15 @@ bool Window::shouldClose() const noexcept
     return glfwWindowShouldClose(_window.get());
 }
 
+void Window::blockInputs(int unblocking_key) noexcept
+{
+    _block_inputs = true;
+    _unblocking_key = unblocking_key;
+    for (bool& key : _key_inputs) {
+        key = false;
+    }
+}
+
 void Window::setFPSLimit(int fps_limit)
 {
     _fps_limit = fps_limit;

@@ -165,6 +165,19 @@ public :
     template<typename Callback>
     void setCallback(Callback(*set)(GLFWwindow*, Callback), Callback callback);
 
+    /** Blocks all mouse & key inputs, with optional unblocking key.
+     *  @sa unblockInputs(), areInputsBlocked()
+     */
+    void blockInputs(int unblocking_key = 0) noexcept;
+    /** Reverts previous call to blockInputs().
+     *  @sa areInputsBlocked()
+     */
+    inline void unblockInputs() noexcept { _block_inputs = false; };
+    /** Whether mouse & key inputs are blocked.
+     *  @sa blockInputs(), unblockInputs()
+     */
+    inline bool areInputsBlocked() const noexcept { return _block_inputs; };
+
     /** Array storing currently-pressed keys (see glfw key macros).
      *  @sa getKeyInputs()
      */
@@ -421,6 +434,10 @@ private:
     GLFWcharfun          _char_callback{ nullptr };             // Window character input
     GLFWcursorposfun     _mouse_position_callback{ nullptr };   // Window mouse position
     GLFWmousebuttonfun   _mouse_button_callback{ nullptr };     // Window mouse button
+    // Whether to block inputs or not
+    bool _block_inputs{ false };
+    // Key to unblock inputs
+    int _unblocking_key{ 0 };
 
     // Array of keyboard keys being currently pressed
     KeyInputs _key_inputs;

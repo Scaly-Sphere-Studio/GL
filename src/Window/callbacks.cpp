@@ -97,6 +97,10 @@ void Window::mouse_position_callback(GLFWwindow* ptr, double x, double y)
         LOG_GL_MSG(buff);
     }
 
+    // Block inputs
+    if (window->_block_inputs)
+        return;
+
     // Call user defined callback, if needed
     if (window->_mouse_position_callback != nullptr) {
         window->_mouse_position_callback(ptr, x, y);
@@ -132,6 +136,10 @@ void Window::mouse_button_callback(GLFWwindow* ptr, int button, int action, int 
             WINDOW_TITLE(window), button, action, mods);
         LOG_GL_MSG(buff);
     }
+
+    // Block inputs
+    if (window->_block_inputs)
+        return;
 
     // If the cursor is currently moving, update hovering
     if (window->_cursor_is_moving) {
@@ -181,6 +189,14 @@ void Window::key_callback(GLFWwindow* ptr, int key, int scancode, int action, in
         LOG_GL_MSG(buff);
     }
     
+    if (action == GLFW_PRESS && key == window->_unblocking_key) {
+        window->unblockInputs();
+    }
+
+    // Block inputs
+    if (window->_block_inputs)
+        return;
+
     bool const pressed_or_repeat = action == GLFW_PRESS || action == GLFW_REPEAT;
     bool const has_focused_area = TR::Area::getFocused() != nullptr;
 
@@ -242,6 +258,10 @@ CATCH_AND_RETHROW_FUNC_EXC;
 void Window::char_callback(GLFWwindow* ptr, unsigned int codepoint)
 {
     Window::Shared const window = Window::get(ptr);
+
+    // Block inputs
+    if (window->_block_inputs)
+        return;
 
     std::u32string str(1, static_cast<char32_t>(codepoint));
     TR::Area::cursorAddText(str);

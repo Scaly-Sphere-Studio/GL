@@ -4,8 +4,15 @@ using namespace SSS;
 
 void key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods)
 {
-    if (action == GLFW_PRESS && (key == GLFW_KEY_KP_0 || key == GLFW_KEY_ESCAPE)) {
-        glfwSetWindowShouldClose(ptr, true);
+    GL::Window::Shared const window = GL::Window::get(ptr);
+
+    if (action == GLFW_PRESS) {
+        switch (key) {
+        case GLFW_KEY_KP_0:
+        case GLFW_KEY_ESCAPE:
+            glfwSetWindowShouldClose(ptr, true);
+            break;
+        }
     }
 }
 
