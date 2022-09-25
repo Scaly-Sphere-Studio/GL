@@ -187,7 +187,7 @@ bool Plane::_hoverTriangle(glm::mat4 const& mvp, glm::vec3 const& A,
     switch (texture->getType()) {
     case Texture::Type::Raw: {
         if (pixel < texture->getRawPixels().size()) {
-            is_hovered = texture->getRawPixels().at(pixel).bytes.a != 0;
+            is_hovered = texture->getRawPixels().at(pixel).a != 0;
         }
         break;
     }
@@ -199,7 +199,7 @@ bool Plane::_hoverTriangle(glm::mat4 const& mvp, glm::vec3 const& A,
             size_t const size = static_cast<size_t>(w) * static_cast<size_t>(h);
             if (pixel < size) {
                 void const* pixels = text_area->pixelsGet();
-                is_hovered = static_cast<RGBA32 const*>(pixels)[pixel].bytes.a != 0;
+                is_hovered = static_cast<RGBA32 const*>(pixels)[pixel].a != 0;
             }
         }
         break;

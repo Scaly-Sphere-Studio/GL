@@ -6,7 +6,7 @@ void key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods)
 {
     GL::Window::Shared const window = GL::Window::get(ptr);
 
-    if (action == GLFW_PRESS) {
+    if (action == GLFW_PRESS || action == GLFW_REPEAT) {
         switch (key) {
         case GLFW_KEY_KP_0:
         case GLFW_KEY_ESCAPE:
