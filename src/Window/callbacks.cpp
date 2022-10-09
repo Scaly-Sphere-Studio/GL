@@ -56,6 +56,9 @@ void Window::window_pos_callback(GLFWwindow* ptr, int x, int y) try
         LOG_GL_MSG(buff);
     }
 
+    window->_x = x;
+    window->_y = y;
+
     if (Window::_monitors.size() == 1) {
         window->_setMainMonitor(0);
     }

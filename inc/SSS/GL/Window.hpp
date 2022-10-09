@@ -330,10 +330,14 @@ public:
      *  @sa getDimensions(), getRatio()
      */
     inline void setDimensions(int w, int h) { glfwSetWindowSize(_window.get(), w, h); };
+    inline void setWidth(int w) { setDimensions(w, _h); };
+    inline void setHeight(int h) { setDimensions(_w, h); };
     /** Returns the current window dimensions in given parameters.
      *  @sa setDimensions(), getRatio()
      */
     inline void getDimensions(int& w, int& h) const noexcept { w = _w; h = _h; };
+    inline int getWidth() const noexcept { return _w; };
+    inline int getHeight() const noexcept { return _h; };
     /** Returns the current window ratio (width / height).
      *  @sa setDimensions(), getDimensions()
      */
@@ -344,11 +348,14 @@ public:
      *  @sa getPosition()
      */
     inline void setPosition(int x0, int y0) { glfwSetWindowPos(_window.get(), x0, y0); };
+    inline void setPosX(int x) { setPosition(x, _y); };
+    inline void setPosY(int y) { setPosition(_x, y); };
     /** Returns the window's screen coordinates in given parameters.
      *  @sa getPosition()
      */
-    inline void getPosition(int& x0, int& y0) const noexcept
-        { glfwGetWindowPos(_window.get(), &x0, &y0); };
+    inline void getPosition(int& x0, int& y0) const noexcept { x0 = _x; y0 = _y; };
+    inline int getPosX() const noexcept { return _x; };
+    inline int getPosY() const noexcept { return _y; };
 
     /** Enables or disables fullscreen mode on given monitor.
      *  If \c monitor_id is negative, the window's main monitor is used.
@@ -405,6 +412,9 @@ private:
     // Window size
     int _w; // Width
     int _h; // Height
+    // Window pos
+    int _x{ 0 }; // x (left) pos
+    int _y{ 0 }; // y (up) pos
     // Windowed to Fullscreen variables
     int _windowed_x{ 0 };   // Old x (left) pos
     int _windowed_y{ 0 };   // Old y (up) pos

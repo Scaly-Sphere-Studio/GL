@@ -28,6 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="CONTROL" />
+    <None Include="Demo.lua" />
     <None Include="DownloadVcpkgScripts.ps1" />
     <None Include="Doxyfile" />
     <None Include="glsl\line.frag" />
@@ -37,6 +38,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\SSS\GL.hpp" />
+    <ClInclude Include="inc\SSS\GL\Lua.hpp" />
     <ClInclude Include="inc\SSS\GL\Objects\Models\Line.hpp" />
     <ClInclude Include="inc\SSS\GL\Objects\Renderer.hpp" />
     <ClInclude Include="inc\SSS\GL\Objects\Camera.hpp" />

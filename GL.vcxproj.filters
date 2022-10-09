@@ -47,6 +47,7 @@
     <None Include="glsl\line.vert">
       <Filter>glsl</Filter>
     </None>
+    <None Include="Demo.lua" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Window\Window.cpp">
@@ -134,6 +135,9 @@
     </ClInclude>
     <ClInclude Include="inc\SSS\GL\Objects\Models\Line.hpp">
       <Filter>inc\Objects\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\SSS\GL\Lua.hpp">
+      <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

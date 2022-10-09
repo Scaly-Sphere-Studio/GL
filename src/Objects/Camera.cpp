@@ -131,6 +131,18 @@ void Camera::setRange(float z_near, float z_far)
     _computeProjection();
 }
 
+void Camera::setZNear(float z_near)
+{
+    _z_near = z_near;
+    _computeProjection();
+}
+
+void Camera::setZFar(float z_far)
+{
+    _z_far = z_far;
+    _computeProjection();
+}
+
 void Camera::_computeView()
 {
     static constexpr glm::vec3 up_vec(0, 1, 0);

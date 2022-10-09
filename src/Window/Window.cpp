@@ -71,8 +71,10 @@ Window::Window(CreateArgs const& args) try
             setMaximization(args.maximized);
         }
     }
-    // Retrieve actual width & height
+    // Retrieve actual size & pos
     glfwGetWindowSize(_window.get(), &_w, &_h);
+    glfwGetWindowPos(_window.get(), &_x, &_y);
+    // Compute windowed pos
     _windowed_x = x + (mode->width - _w) / 2;
     _windowed_y = y + (mode->height - _h) / 2;
     // Iconify if needed

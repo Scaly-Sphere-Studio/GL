@@ -1,5 +1,6 @@
 #pragma once
 
+#include "GL/Lua.hpp"
 #include "GL/Objects/Texture.hpp"
 #include "GL/Objects/Models/PlaneRenderer.hpp"
 #include "GL/Objects/Models/LineRenderer.hpp"

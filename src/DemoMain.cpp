@@ -1,3 +1,4 @@
+#define SSS_LUA
 #include "SSS/GL.hpp"
 
 using namespace SSS;
@@ -35,14 +36,16 @@ void on_click_plane_func1(GL::Window::Shared win, GL::Plane::Shared plane,
 
 int main() try
 {
-    // Create Window
-    GL::Window::CreateArgs args;
-    args.title = "SSS/GL - Demo Window";
-    args.w = static_cast<int>(600);
-    args.h = static_cast<int>(600);
-    GL::Window::Shared window = GL::Window::create(args);
+    // Setup Lua
+    sol::state lua;
+    lua.open_libraries(sol::lib::base, sol::lib::string);
+    lua_setup(lua);
+    TR::lua_setup_TR(lua);
+    GL::lua_setup_GL(lua);
 
-    // Set context
+    // Create Window & set context
+    lua.unsafe_script_file("Demo.lua");
+    GL::Window::Shared window = lua["window"];
     GL::Context const context(window);
 
     // Finish setting up window
@@ -50,7 +53,6 @@ int main() try
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    window->setVSYNC(true);
     window->setCallback(glfwSetKeyCallback, key_callback);
     window->setCallback(glfwSetWindowSizeCallback, resize_callback);
 
@@ -67,8 +69,8 @@ int main() try
     // Text
     auto const& area = TR::Area::create(300, 300);
     auto fmt = area->getFormat();
-    fmt.style.charsize = 50;
-    fmt.color.text.func = TR::Format::Color::Func::rainbow;
+    fmt.charsize = 50;
+    fmt.text_color.func = TR::ColorFunc::Rainbow;
     area->setFormat(fmt);
     area->parseString("Lorem ipsum dolor sit amet.");
     texture->setTextAreaID(area->getID());

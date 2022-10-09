@@ -43,7 +43,10 @@ public:
     /** Returns the scaling, rotation angles, and translation in given parameters.*/
     virtual void getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles,
         glm::vec3& translation);
-   
+    glm::vec3 getScaling();
+    glm::vec3 getRotation();
+    glm::vec3 getTranslation();
+
     /** Function format which is called every frame (from pollEverything()).
      *  Parameters are Window::Shared, and the derived %Model's shared_ptr
      */
@@ -174,6 +177,30 @@ void Model<T>::getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles, 
     glm::decompose(getModelMat4(), scaling, rotation, translation, skew, perspective);
     // Get euler angles (in degrees) from quaternion
     rot_angles = glm::degrees(glm::eulerAngles(rotation));
+}
+
+template<class T>
+glm::vec3 Model<T>::getScaling()
+{
+    glm::vec3 scaling, rot_angles, translation;
+    getAllTransformations(scaling, rot_angles, translation);
+    return scaling;
+}
+
+template<class T>
+glm::vec3 Model<T>::getRotation()
+{
+    glm::vec3 scaling, rot_angles, translation;
+    getAllTransformations(scaling, rot_angles, translation);
+    return rot_angles;
+}
+
+template<class T>
+glm::vec3 Model<T>::getTranslation()
+{
+    glm::vec3 scaling, rot_angles, translation;
+    getAllTransformations(scaling, rot_angles, translation);
+    return translation;
 }
 
 SSS_GL_END;

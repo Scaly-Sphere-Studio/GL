@@ -118,14 +118,30 @@ public:
     inline float getFOV() const noexcept { return _fov; };
 
     /** Sets the visibility range of the camera.
-     *  @sa getRange()
+     *  @sa getRange(), setZNear(), setZFar()
      */
     void setRange(float z_near, float z_far);
+    /** Sets the z_near range of the camera.
+     *  @sa getRange(), setRange(), setZFar()
+     */
+    void setZNear(float z_near);
+    /** Sets the z_far range of the camera.
+     *  @sa getRange(), setRange(), setZNear()
+     */
+    void setZFar(float z_far);
     /** Returns the visibility range of the camera in given parameters.
-     *  @sa setRange()
+     *  @sa setRange(), getZNear(), getZFar()
      */
     inline void getRange(float& z_near, float& z_far) const noexcept
         { z_near = _z_near; z_far = _z_far; };
+    /** Returns the z_near range of the camera.
+     *  @sa setRange(), getRange(), getZFar()
+     */
+    inline float getZNear() const noexcept { return _z_near; };
+    /** Returns the z_far range of the camera.
+     *  @sa setRange(), getRange(), getZNear()
+     */
+    inline float getZFar() const noexcept { return _z_far; };
 
     /** Returns the View and %Projection matrices previously computed together.
      *  @sa getView(), getProjection()
