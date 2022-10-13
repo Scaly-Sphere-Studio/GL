@@ -43,7 +43,8 @@ public:
     /** Creates a Shared camera instance.
      *  If no window is specified, the first one (Window::getFirst()) is used.
      */
-    static Shared create(std::shared_ptr<Window> win = nullptr);
+    static Shared create(std::shared_ptr<Window> win);
+    static Shared create();
 
     static Vector getInstances(Window::Shared window) noexcept;
 

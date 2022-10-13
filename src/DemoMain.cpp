@@ -44,7 +44,7 @@ int main() try
     GL::lua_setup_GL(lua);
 
     // Create Window & set context
-    lua.unsafe_script_file("Demo.lua");
+    lua.unsafe_script_file("Init.lua");
     GL::Window::Shared window = lua["window"];
     GL::Context const context(window);
 
@@ -52,38 +52,15 @@ int main() try
     glClearColor(0.3f, 0.3f, 0.3f, 0.f);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
     window->setCallback(glfwSetKeyCallback, key_callback);
     window->setCallback(glfwSetWindowSizeCallback, resize_callback);
 
-    // SSS/GL objects
-
-    // Create objects
-    auto const& texture         = GL::Texture::create();
-    auto const camera           = GL::Camera::create();
-    auto const& line_shader     = GL::Shaders::create();
-    auto const& line_renderer   = GL::Renderer::create<GL::LineRenderer>();
-    auto const plane            = GL::Plane::create();
-    auto const& plane_renderer  = GL::Renderer::create<GL::PlaneRenderer>();
-
-    // Text
-    auto const& area = TR::Area::create(300, 300);
-    auto fmt = area->getFormat();
-    fmt.charsize = 50;
-    fmt.text_color.func = TR::ColorFunc::Rainbow;
-    area->setFormat(fmt);
-    area->parseString("Lorem ipsum dolor sit amet.");
-    texture->setTextAreaID(area->getID());
-    texture->setType(GL::Texture::Type::Text);
-
-    // Camera
-    camera->setPosition({ 0, 0, 3 });
-    camera->setProjectionType(GL::Camera::Projection::OrthoFixed);
-
     // Lines
+    auto const& line_shader     = GL::Shaders::create();
     line_shader->loadFromFiles("glsl/line.vert", "glsl/line.frag");
+    auto const& line_renderer   = GL::Renderer::create<GL::LineRenderer>();
     line_renderer->setShadersID(line_shader->getID());
-    line_renderer->castAs<GL::LineRenderer>().camera = camera;
+    line_renderer->castAs<GL::LineRenderer>().camera = lua["camera"];
     using Line = GL::Polyline;
     Line::Shared line[4];
     line[0] = Line::Segment(glm::vec3(-200,  200, 0), glm::vec3( 200,  200, 0), 10.f, glm::vec4(0, 0, 1, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);
@@ -92,53 +69,15 @@ int main() try
     line[3] = Line::Segment(glm::vec3(-200, -200, 0), glm::vec3(-200,  200, 0), 10.f, glm::vec4(1, 1, 1, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);
 
     // Plane
-    plane->setTextureID(texture->getID());
-    plane->scale(glm::vec3(300));
     GL::Plane::passive_funcs    = { { 1, passive_plane_func1 } };
     GL::Plane::on_click_funcs   = { { 1, on_click_plane_func1 } };
-    plane->setPassiveFuncID(1);
-    plane->setOnClickFuncID(1);
-    plane->setHitbox(GL::Plane::Hitbox::Full);
-    {
-        auto& chunks = plane_renderer->castAs<GL::PlaneRenderer>().chunks;
-        // Display 256 textures
-        chunks.emplace_back(camera);
-        constexpr int size = 10;
-        RGBA32::Vector pixels(size * size);
-        for (int i = 0; i < 256; ++i) {
-            // Create Plane & Texture
-            auto const plane    = GL::Plane::create();
-            auto const& texture = GL::Texture::create();
-            // Fill texture
-            std::fill(pixels.begin(), pixels.end(), (0xFF << 24) + (i << 16) + (i << 8) + i);
-            texture->editRawPixels(&pixels[0], size, size);
-            // Edit plane
-            plane->setTextureID(texture->getID());
-            plane->scale(glm::vec3(20));
-            plane->translate(glm::vec3(-150 + 20 * (i / 16), -150 + (i % 16) * 20, 0));
-            // Display plane
-            chunks.back().planes.emplace_back(plane);
-        }
-        // Display previous text last
-        chunks.emplace_back(camera, true);
-        chunks.back().planes.emplace_back(plane);
-    }
 
     // Main loop
     while (!window->shouldClose()) {
         // Poll events, threads, etc
         GL::pollEverything();
-        // Handle key inputs
-        auto const& keys = window->getKeyInputs();
-        float constexpr speed = 1.5f;
-        if (keys[GLFW_KEY_W] || keys[GLFW_KEY_UP])
-            camera->move(glm::vec3(0,  speed, 0));
-        if (keys[GLFW_KEY_S] || keys[GLFW_KEY_DOWN])
-            camera->move(glm::vec3(0, -speed, 0));
-        if (keys[GLFW_KEY_A] || keys[GLFW_KEY_LEFT])
-            camera->move(glm::vec3(-speed, 0, 0));
-        if (keys[GLFW_KEY_D] || keys[GLFW_KEY_RIGHT])
-            camera->move(glm::vec3( speed, 0, 0));
+        // Script
+        lua.unsafe_script_file("Loop.lua");
         // Draw renderers
         window->drawObjects();
         // Swap buffers

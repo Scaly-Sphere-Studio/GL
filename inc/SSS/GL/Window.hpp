@@ -186,6 +186,7 @@ public :
      *  @sa setCallback()
      */
     inline KeyInputs const& getKeyInputs() const noexcept { return _key_inputs; }
+    inline bool keyIsPressed(int key) const noexcept { return _key_inputs[key]; };
 
     /** Stores all Window-bound objects in ID maps.
      *  @sa Window::getObjects()

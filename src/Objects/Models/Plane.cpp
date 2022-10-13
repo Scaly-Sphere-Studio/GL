@@ -33,6 +33,11 @@ Plane::Shared Plane::create(std::shared_ptr<Window> win)
     return plane;
 }
 
+Plane::Shared Plane::create()
+{
+    return create(nullptr);
+}
+
 Plane::Shared Plane::duplicate() const
 {
     Shared plane = create(_window.lock());

@@ -47,7 +47,8 @@
     <None Include="glsl\line.vert">
       <Filter>glsl</Filter>
     </None>
-    <None Include="Demo.lua" />
+    <None Include="Init.lua" />
+    <None Include="Loop.lua" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Window\Window.cpp">

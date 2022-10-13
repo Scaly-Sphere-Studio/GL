@@ -31,6 +31,11 @@ Camera::Shared Camera::create(std::shared_ptr<Window> win)
     return camera;
 }
 
+Camera::Shared Camera::create()
+{
+    return create(nullptr);
+}
+
 Camera::Vector Camera::getInstances(Window::Shared window) noexcept
 {
     Vector vec;
