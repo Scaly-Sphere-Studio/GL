@@ -22,7 +22,7 @@ plane = GL.Plane.create()
 texture = GL.Texture.create(window)
 plane_renderer = GL.PlaneRenderer.create(window)
 
-area = TR.Area.get(0)
+area = TR.Area.create()
 area.w = 300
 area.h = 300
 local fmt = area:getFmt()

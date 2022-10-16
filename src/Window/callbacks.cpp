@@ -156,7 +156,7 @@ void Window::mouse_button_callback(GLFWwindow* ptr, int button, int action, int 
         if (plane && plane->_use_texture) {
             Texture::Ptr const& texture = window->getObjects().textures.at(plane->getTextureID());
             if (texture->getType() == Texture::Type::Text) {
-                TR::Area::Ptr const& area = texture->getTextArea();
+                TR::Area* area = texture->getTextArea();
                 if (area) {
                     int x, y;
                     plane->getRelativeCoords(x, y);

@@ -197,7 +197,7 @@ bool Plane::_hoverTriangle(glm::mat4 const& mvp, glm::vec3 const& A,
         break;
     }
     case Texture::Type::Text: {
-        TR::Area::Ptr const& text_area = texture->getTextArea();
+        TR::Area* text_area = texture->getTextArea();
         if (text_area) {
             int w, h;
             text_area->pixelsGetDimensions(w, h);

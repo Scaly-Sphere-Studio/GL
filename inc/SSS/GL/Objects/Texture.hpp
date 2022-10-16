@@ -101,11 +101,11 @@ public:
      *  @sa getTextArea()
      */
     inline uint32_t getTextAreaID() const noexcept { return _text_area_id; };
-    /** Returns the TR::Area::Ptr corresponding to the ID set via
-     *  setTextAreaID(), or an empty ptr.
+    /** Returns the TR::Area corresponding to the ID set via
+     *  setTextAreaID(), or nullptr.
      *  @sa getTextAreaID()
      */
-    TR::Area::Ptr const& getTextArea() const noexcept;
+    TR::Area* getTextArea() const noexcept;
     
     /** Binds the internal Basic::Texture to the content in which it was created.
      *  Effectively calls Basic::Texture::bind().

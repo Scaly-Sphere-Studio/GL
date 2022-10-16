@@ -62,7 +62,7 @@ void Texture::setType(Type type) noexcept
         _raw_texture.edit(&_pixels.at(0), _raw_w, _raw_h);
     }
     else if (type == Type::Text) {
-        TR::Area::Ptr const& text_area = getTextArea();
+        TR::Area* text_area = getTextArea();
         if (text_area) {
             text_area->pixelsGetDimensions(_text_w, _text_h);
             _updatePlanesScaling();
@@ -114,7 +114,7 @@ void Texture::setTextAreaID(uint32_t id)
         return;
     }
     _text_area_id = id;
-    TR::Area::Ptr const& text_area = getTextArea();
+    TR::Area* text_area = getTextArea();
     if (_type == Type::Text && text_area) {
         int w, h;
         text_area->pixelsGetDimensions(w, h);
@@ -122,14 +122,9 @@ void Texture::setTextAreaID(uint32_t id)
     }
 }
 
-TR::Area::Ptr const& Texture::getTextArea() const noexcept
+TR::Area* Texture::getTextArea() const noexcept
 {
-    TR::Area::Map const& text_areas = TR::Area::getMap();
-    if (text_areas.count(_text_area_id) == 0) {
-        static const TR::Area::Ptr empty_ptr(nullptr);
-        return empty_ptr;
-    }
-    return text_areas.at(_text_area_id);
+    return TR::Area::get(_text_area_id);
 }
 
 void Texture::getCurrentDimensions(int& w, int& h) const noexcept

@@ -10,13 +10,9 @@ bool pollEverything() try
     
     // Poll events
     glfwPollEvents();
-
-    // Retrieve all Text Areas
-    TR::Area::Map const& text_areas = TR::Area::getMap();
     // Update every Text Area (this won't do anything if nothing is needed)
-    for (auto it = text_areas.cbegin(); it != text_areas.cend(); ++it) {
-        it->second->update();
-    }
+    TR::Area::updateAll();
+
     // Loop over each Window instance
     for (Window::Weak const& weak : Window::_instances) {
         Window::Shared window = weak.lock();
@@ -48,7 +44,7 @@ bool pollEverything() try
                 thread.setAsHandled();
             }
             else if (tex->_type == Texture::Type::Text) {
-                TR::Area::Ptr const& text_area = tex->getTextArea();
+                TR::Area* text_area = tex->getTextArea();
                 // Skip if no Area is set
                 if (!text_area) {
                     continue;
@@ -65,12 +61,9 @@ bool pollEverything() try
             }
         }
     }
+    
     // Set all Area threds as handled, now that all textures are updated
-    for (auto it = text_areas.cbegin(); it != text_areas.cend(); ++it) {
-        if (it->second->pixelsWereChanged()) {
-            it->second->pixelsAreRetrieved();
-        }
-    }
+    TR::Area::notifyAll();
 
     return ret;
 }
