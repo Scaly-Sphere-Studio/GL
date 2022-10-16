@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SSS_GL_MODEL_HPP
+#define SSS_GL_MODEL_HPP
 
 #include "SSS/GL/Window.hpp"
 #include <glm/gtx/matrix_decompose.hpp>
@@ -204,3 +205,5 @@ glm::vec3 Model<T>::getTranslation()
 }
 
 SSS_GL_END;
+
+#endif // SSS_GL_MODEL_HPP

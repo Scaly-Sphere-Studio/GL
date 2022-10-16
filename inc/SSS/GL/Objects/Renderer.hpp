@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SSS_GL_RENDERER_HPP
+#define SSS_GL_RENDERER_HPP
 
 #include "SSS/GL/Objects/Shaders.hpp"
 
@@ -77,3 +78,5 @@ inline Derived& Renderer::castAs()
 };
 
 SSS_GL_END;
+
+#endif // SSS_GL_RENDERER_HPP

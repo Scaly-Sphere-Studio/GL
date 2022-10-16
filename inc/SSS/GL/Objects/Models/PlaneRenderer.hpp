@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SSS_GL_PLANERENDERER_HPP
+#define SSS_GL_PLANERENDERER_HPP
 
 #include "SSS/GL/Objects/Models/Plane.hpp"
 #include "SSS/GL/Objects/Renderer.hpp"
@@ -62,3 +63,5 @@ private:
 };
 
 SSS_GL_END;
+
+#endif // SSS_GL_PLANERENDERER_HPP

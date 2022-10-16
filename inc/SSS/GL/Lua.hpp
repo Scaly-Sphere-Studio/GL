@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SSS_GL_LUA_HPP
+#define SSS_GL_LUA_HPP
 
 #ifdef SSS_LUA
 
@@ -271,3 +272,5 @@ inline void lua_setup_GL(sol::state& lua)
 SSS_GL_END;
 
 #endif
+
+#endif // SSS_GL_LUA_HPP

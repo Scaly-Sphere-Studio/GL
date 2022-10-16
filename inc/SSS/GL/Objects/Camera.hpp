@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SSS_GL_CAMERA_HPP
+#define SSS_GL_CAMERA_HPP
 
 #include "SSS/GL/Window.hpp"
 #include <glm/glm.hpp>
@@ -175,3 +176,5 @@ private:
 };
 
 SSS_GL_END;
+
+#endif // SSS_GL_CAMERA_HPP

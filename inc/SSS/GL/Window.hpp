@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SSS_GL_WINDOW_HPP
+#define SSS_GL_WINDOW_HPP
 
 #include "SSS/GL/Objects/Basic.hpp"
 #include <map>
@@ -545,3 +546,5 @@ private:
 };
 
 SSS_GL_END;
+
+#endif // SSS_GL_WINDOW_HPP

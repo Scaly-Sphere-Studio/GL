@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SSS_GL_SHADERS_HPP
+#define SSS_GL_SHADERS_HPP
 
 #include "SSS/GL/Window.hpp"
 
@@ -89,3 +90,5 @@ private:
 };
 
 SSS_GL_END;
+
+#endif // SSS_GL_SHADERS_HPP

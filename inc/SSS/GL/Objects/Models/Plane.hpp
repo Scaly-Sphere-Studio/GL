@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SSS_GL_PLANE_HPP
+#define SSS_GL_PLANE_HPP
 
 #include "SSS/GL/Objects/Model.hpp"
 
@@ -108,3 +109,5 @@ private:
 };
 
 SSS_GL_END;
+
+#endif // SSS_GL_PLANE_HPP

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SSS_GL_TEXTURE_HPP
+#define SSS_GL_TEXTURE_HPP
 
 #include <SSS/Text-Rendering.hpp>
 #include "SSS/GL/Window.hpp"
@@ -138,3 +139,5 @@ private:
 };
 
 SSS_GL_END;
+
+#endif // SSS_GL_TEXTURE_HPP

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SSS_GL_HPP
+#define SSS_GL_HPP
 
 #include "GL/Lua.hpp"
 #include "GL/Objects/Texture.hpp"
@@ -76,3 +77,5 @@ Renderer::Ptr const& Renderer::create(std::shared_ptr<Window> win)
 }
 
 SSS_GL_END;
+
+#endif // SSS_GL_HPP

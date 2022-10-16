@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SSS_GL_LINE_HPP
+#define SSS_GL_LINE_HPP
 
 #include <SSS/Math.hpp>
 #include "SSS/GL/Window.hpp"
@@ -159,3 +160,5 @@ private:
 };
 
 SSS_GL_END;
+
+#endif // SSS_GL_LINE_HPP

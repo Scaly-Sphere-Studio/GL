@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SSS_GL_BASIC_HPP
+#define SSS_GL_BASIC_HPP
 
 #include <SSS/Commons.hpp>
 #include <glad/glad.h>
@@ -211,3 +212,5 @@ namespace Basic {
 }
 
 SSS_GL_END;
+
+#endif // SSS_GL_BASIC_HPP
