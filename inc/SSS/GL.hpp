@@ -33,49 +33,4 @@
  *  \b OpenGL abstraction using glfw, glm, and glad.
  */
 
-SSS_GL_BEGIN;
-
-template<class Derived>
-inline Renderer::Ptr const& Window::createRenderer(uint32_t id)
-{
-    Renderer::Ptr& ptr = _objects.renderers[id];
-    // Ensure that if a renderer already exists, it is the corresponding type
-    if (ptr) {
-        try {
-            ptr->castAs<Derived>();
-        }
-        catch (...) {
-            ptr.reset();
-        }
-    }
-    if (!ptr) {
-        ptr.reset(new Derived(weak_from_this(), id));
-    }
-    return ptr;
-}
- 
-template<class Derived>
-inline Renderer::Ptr const& Window::createRenderer()
-{
-    try {
-        return createRenderer<Derived>(getAvailableID(_objects.renderers));
-    }
-    catch (std::exception const& e) {
-        static Renderer::Ptr n(nullptr);
-        LOG_FUNC_ERR(e.what());
-        return n;
-    }
-}
- 
-template<class T>
-Renderer::Ptr const& Renderer::create(std::shared_ptr<Window> win)
-{
-    if (!win) {
-        win = Window::getFirst();
-    }
-    return win->createRenderer<T>();
-}
-
-SSS_GL_END;
-
 #endif // SSS_GL_HPP

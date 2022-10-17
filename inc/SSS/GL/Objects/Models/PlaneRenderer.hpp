@@ -19,11 +19,16 @@ private:
     PlaneRenderer(std::weak_ptr<Window> window, uint32_t id);
 
     using Mat4_array = std::vector<glm::mat4>;
-    void _renderPart(Shaders::Ptr const& shader,
-        uint32_t& count, bool reset_depth) const;
+    void _renderPart(Shaders& shader, uint32_t& count, bool reset_depth) const;
 
 public:
     virtual void render();
+    static inline PlaneRenderer& create() {
+        return Renderer::create<PlaneRenderer>();
+    };
+    static inline PlaneRenderer& create(Window::Shared win) {
+        return Renderer::create<PlaneRenderer>(win);
+    };
 
     /** Specify a chunk of objects to be rendered.
      *  This is useful to enforce specific orders of chunks without
@@ -50,9 +55,9 @@ public:
     std::vector<Chunk> chunks;
 
 private:
-    Basic::VAO::Ptr _vao;
-    Basic::VBO::Ptr _vbo;
-    Basic::IBO::Ptr _ibo;
+    Basic::VAO _vao;
+    Basic::VBO _vbo;
+    Basic::IBO _ibo;
     
     Mat4_array _VPs;
     Mat4_array _Models;

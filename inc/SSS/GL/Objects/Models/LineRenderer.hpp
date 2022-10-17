@@ -15,12 +15,18 @@ private:
 
 public:
     Camera::Shared camera;
-    void render();
+    virtual void render();
+    static inline LineRenderer& create() {
+        return Renderer::create<LineRenderer>();
+    };
+    static inline LineRenderer& create(Window::Shared win) {
+        return Renderer::create<LineRenderer>(win);
+    };
 
 private:
-    Basic::VAO::Ptr _vao;
-    Basic::VBO::Ptr _vbo;
-    Basic::IBO::Ptr _ibo;
+    Basic::VAO _vao;
+    Basic::VBO _vbo;
+    Basic::IBO _ibo;
 
     void gen_batch(Polyline::Vertex::Vec& mesh, Polyline::Indices::Vec& indices);
 };

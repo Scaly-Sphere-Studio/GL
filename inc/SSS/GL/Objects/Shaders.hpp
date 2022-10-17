@@ -30,12 +30,10 @@ private:
 
 public:
     /** Destructor, unloads internal glProgram if needed.
-     *  @sa Window::removeShaders(), Window::cleanObjects().
+     *  @sa Window::removeShaders()
      */
     ~Shaders();
     
-    /** Unique ptr stored in Window objects.*/
-    using Ptr = std::unique_ptr<Shaders>;
     /** Internal preset shaders IDs*/
     enum class Preset : uint32_t {
         /** Indicates that further ID values are reserved.*/
@@ -44,13 +42,13 @@ public:
         Plane
     };
 
-    /** Creates a Ptr in Window objects at given ID (see Preset).
+    /** Creates an instance stored in Window at given ID (see Preset).
      *  If no window is specified, the first one (Window::getFirst()) is used.\n
      *  @sa Window::removeShaders()
      */
-    static Ptr const& create(std::shared_ptr<Window> win = nullptr);
-    static Ptr const& create(std::string const& vert_file, std::string const& frag_file,
-        std::shared_ptr<Window> win = nullptr);
+    static Shaders& create(std::shared_ptr<Window> win);
+    static Shaders& create();
+    static Shaders& create(std::string const& vert_file, std::string const& frag_file);
 
     /** Loads shaders from raw strings (useful for Preset shaders).
      *  Context will always be accurately set.

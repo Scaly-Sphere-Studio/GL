@@ -3,22 +3,16 @@
 SSS_GL_BEGIN;
 
 LineRenderer::LineRenderer(std::weak_ptr<Window> win, uint32_t id)
-    : Renderer(win, id)
+    : Renderer(win, id), _vao(_window), _vbo(_window), _ibo(_window)
 {
-    _vao.reset(new Basic::VAO(_window));
-    _vbo.reset(new Basic::VBO(_window));
-    _ibo.reset(new Basic::IBO(_window));
+    _vao.bind();
 
-    _vao->bind();
-
-    _vbo->bind();
-
+    _vbo.bind();
     //Coordinates
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2,
         GL_FLOAT, GL_FALSE,
         sizeof(Polyline::Vertex), (void*)0);
-
     //Colors
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 4,
@@ -26,8 +20,9 @@ LineRenderer::LineRenderer(std::weak_ptr<Window> win, uint32_t id)
         sizeof(Polyline::Vertex),
         (void*)(sizeof(glm::vec3)));
 
-    _ibo->bind();
-    _vao->unbind();
+    _ibo.bind();
+    
+    _vao.unbind();
 }
 
 void LineRenderer::gen_batch(Polyline::Vertex::Vec& mesh, Polyline::Indices::Vec& indices)
@@ -86,7 +81,7 @@ void LineRenderer::render()
 
     Context const& context(_window);
 
-    _vao->bind();
+    _vao.bind();
 
     if (Polyline::modified) {
 
@@ -95,13 +90,13 @@ void LineRenderer::render()
 
         gen_batch(tmp_v, tmp_i);
 
-        _vbo->edit(
+        _vbo.edit(
             tmp_v.size() * sizeof(Polyline::Vertex),
             tmp_v.data(),
             GL_STATIC_DRAW
         );
 
-        _ibo->edit(
+        _ibo.edit(
             tmp_i.size() * sizeof(Polyline::Indices),
             tmp_i.data(),
             GL_STATIC_DRAW);
@@ -114,16 +109,15 @@ void LineRenderer::render()
         Polyline::modified = false;
     }
 
-    auto const& objects = _window.lock()->getObjects();
 
-    auto const& shader = objects.shaders.at(getShadersID());
+    auto const& shader = _window.lock()->getShaders(getShadersID());
     glm::mat4 const mvp = camera ? camera->getVP() : glm::mat4(1);
     shader->use();
     shader->setUniformMat4fv("u_MVP", 1, GL_FALSE, &mvp[0][0]);
 
     glDrawElements(GL_TRIANGLES, 3 * static_cast<GLsizei>(size), GL_UNSIGNED_INT, (void*)0);
 
-    _vao->unbind();
+    _vao.unbind();
 }
 
 SSS_GL_END;

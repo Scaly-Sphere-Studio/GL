@@ -49,7 +49,7 @@ void Window::_loadPresetShaders() try
     {
         uint32_t const id = static_cast<uint32_t>(Shaders::Preset::Plane);
         // Retrieve shader pointer
-        Shaders::Ptr& shader = _objects.shaders[id];
+        auto& shader = _shaders[id];
         // Allocate new shader
         shader.reset(new Shaders(weak_from_this(), id));
         // Retrieve shader data

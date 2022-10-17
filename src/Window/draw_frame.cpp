@@ -11,12 +11,12 @@ SSS_GL_BEGIN;
 // Draws objects inside renderers on the back buffer.
 void Window::drawObjects()
 {
-    if (!_is_iconified && isVisible()) {
+    if (!isIconified() && isVisible()) {
         // Make context current for this scope
         Context const context(_window.get());
         // Render all active renderers
-        for (auto it = _objects.renderers.cbegin(); it != _objects.renderers.cend(); ++it) {
-            Renderer::Ptr const& renderer = it->second;
+        for (auto it = _renderers.cbegin(); it != _renderers.cend(); ++it) {
+            Renderer* renderer = it->second.get();
             if (!renderer || !renderer->isActive())
                 continue;
             renderer->render();
@@ -50,7 +50,7 @@ void Window::_updateHoveredModel()
 
     // Loop over each renderer (in reverse order) and find their nearest
     // models at mouse coordinates
-    for (auto it = _objects.renderers.crbegin(); it != _objects.renderers.crend(); ++it) {
+    for (auto it = _renderers.crbegin(); it != _renderers.crend(); ++it) {
         // Retrieve Renderer's raw ptr needed for dynamic_cast
         Renderer* ptr = it->second.get();
         if (ptr == nullptr)

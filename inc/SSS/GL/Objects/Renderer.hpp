@@ -28,13 +28,13 @@ public:
     Renderer& operator=(Renderer&&)         = delete;   // Move assignment
     /** \endcond*/
     
-    /** Unique ptr stored in Window objects.*/
-    using Ptr = std::unique_ptr<Renderer>;
-    /** Creates a Ptr in Window objects at given ID.
+    /** Creates an instance stored in Window at given ID.
      *  @sa Window::removeRenderer()
      */
-    template <class T>
-    static Ptr const& create(std::shared_ptr<Window> win = nullptr);
+    template<typename Derived = Renderer>
+    static Derived& create(std::shared_ptr<Window> win);
+    template<typename Derived = Renderer>
+    static Derived& create();
     
     /** Casts instance back to its derived allocated class.
      *  If no window is specified, the first one (Window::getFirst()) is used.\n
@@ -66,6 +66,52 @@ public:
     /** Whether the renderer is enabled or disabled.*/
     inline bool isActive() const noexcept { return _is_active; };
 };
+
+template<class Derived>
+inline Derived& Window::createRenderer(uint32_t id) try
+{
+    auto& ptr = _renderers[id];
+    ptr.reset(new Derived(weak_from_this(), id));
+    return ptr->castAs<Derived>();
+}
+CATCH_AND_RETHROW_METHOD_EXC;
+
+template<class Derived>
+inline Derived& Window::createRenderer() try
+{
+    return createRenderer<Derived>(getAvailableID(_renderers));
+}
+CATCH_AND_RETHROW_METHOD_EXC;
+
+template<class Derived>
+Derived* Window::getRenderer(uint32_t id) noexcept
+{
+    if (_renderers.count(id) == 0) {
+        return nullptr;
+    }
+    return _renderers.at(id)->castAs<Derived>();
+}
+
+template<class Derived>
+Derived& Renderer::create(std::shared_ptr<Window> win) try
+{
+    if (!win) {
+        throw_exc("Given Window is nullptr.");
+    }
+    return win->createRenderer<Derived>();
+}
+CATCH_AND_RETHROW_FUNC_EXC;
+
+template<class Derived>
+Derived& Renderer::create() try
+{
+    std::shared_ptr<Window> win = Window::getFirst();
+    if (!win) {
+        throw_exc("No Window instance exists.");
+    }
+    return win->createRenderer<Derived>();
+}
+CATCH_AND_RETHROW_FUNC_EXC;
 
 template< class Derived, typename >
 inline Derived& Renderer::castAs()

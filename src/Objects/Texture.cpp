@@ -9,8 +9,7 @@
 SSS_GL_BEGIN;
 
 Texture::Texture(std::weak_ptr<Window> window, uint32_t id) try
-    : _internal::WindowObjectWithID(window, id),
-    _raw_texture(window, GL_TEXTURE_2D)
+    : _internal::WindowObjectWithID(window, id), _raw_texture(window, GL_TEXTURE_2D)
 {
     Context const context(_window);
     _raw_texture.bind();
@@ -40,13 +39,24 @@ Texture::~Texture()
     }
 }
 
-Texture::Ptr const& Texture::create(std::shared_ptr<Window> win)
+Texture& Texture::create(std::shared_ptr<Window> win) try
 {
     if (!win) {
-        win = Window::getFirst();
+        throw_exc("Given Window is nullptr.");
     }
 	return win->createTexture();
 }
+CATCH_AND_RETHROW_FUNC_EXC;
+
+Texture& Texture::create() try
+{
+    std::shared_ptr<Window> win = Window::getFirst();
+    if (!win) {
+        throw_exc("No Window instance exists.");
+    }
+	return win->createTexture();
+}
+CATCH_AND_RETHROW_FUNC_EXC;
 
 void Texture::setType(Type type) noexcept
 {
@@ -165,11 +175,13 @@ void Texture::_updatePlanesScaling()
     if (!window) {
         return;
     }
-    Window::Objects const& objects = window->getObjects();
     // Update texture scaling of all planes & buttons matching this texture
     for (Plane::Weak const& weak : Plane::_instances) {
         Plane::Shared plane = weak.lock();
-        if (plane->_use_texture && plane->_texture_id == _id) {
+        if (plane->_window.lock() == window
+            && plane->_use_texture
+            && plane->_texture_id == _id)
+        {
             plane->_updateTexScaling();
         }
     }

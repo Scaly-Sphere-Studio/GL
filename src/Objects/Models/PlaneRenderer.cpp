@@ -6,19 +6,15 @@
 SSS_GL_BEGIN;
 
 PlaneRenderer::PlaneRenderer(std::weak_ptr<Window> window, uint32_t id) try
-    : Renderer(window, id)
+    : Renderer(window, id), _vao(_window), _vbo(_window), _ibo(_window)
 {
     Context const context(_window);
 
     setShadersID(static_cast<uint32_t>(Shaders::Preset::Plane));
 
-    _vao.reset(new Basic::VAO(_window));
-    _vbo.reset(new Basic::VBO(_window));
-    _ibo.reset(new Basic::IBO(_window));
-
-    _vao->bind();
-    _vbo->bind();
-    _ibo->bind();
+    _vao.bind();
+    _vbo.bind();
+    _ibo.bind();
 
     // Edit VBO
     constexpr float vertices[] = {
@@ -28,7 +24,7 @@ PlaneRenderer::PlaneRenderer(std::weak_ptr<Window> window, uint32_t id) try
          0.5f, -0.5f, 0.0f,   1.f, 1.f - 0.f,   // bottom right
          0.5f,  0.5f, 0.0f,   1.f, 1.f - 1.f    // top right
     };
-    _vbo->edit(sizeof(vertices), vertices, GL_STATIC_DRAW);
+    _vbo.edit(sizeof(vertices), vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
@@ -39,12 +35,11 @@ PlaneRenderer::PlaneRenderer(std::weak_ptr<Window> window, uint32_t id) try
         0, 1, 2,  // first triangle
         2, 3, 0   // second triangle
     };
-    _ibo->edit(sizeof(indices), indices, GL_STATIC_DRAW);
+    _ibo.edit(sizeof(indices), indices, GL_STATIC_DRAW);
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
-void PlaneRenderer::_renderPart(Shaders::Ptr const& shader,
-    uint32_t& count, bool reset_depth) const
+void PlaneRenderer::_renderPart(Shaders& shader, uint32_t& count, bool reset_depth) const
 {
     static constexpr std::array<GLint, 128> texture_IDs = {
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
@@ -59,9 +54,9 @@ void PlaneRenderer::_renderPart(Shaders::Ptr const& shader,
 
     if (count != 0) {
         // Set Texture IDs & MVP uniforms
-        shader->setUniform1iv("u_Textures", count, &texture_IDs[0]);
-        shader->setUniformMat4fv("u_VPs", count, GL_FALSE, &_VPs[0][0][0]);
-        shader->setUniformMat4fv("u_Models", count, GL_FALSE, &_Models[0][0][0]);
+        shader.setUniform1iv("u_Textures", count, &texture_IDs[0]);
+        shader.setUniformMat4fv("u_VPs", count, GL_FALSE, &_VPs[0][0][0]);
+        shader.setUniformMat4fv("u_Models", count, GL_FALSE, &_Models[0][0][0]);
         // Draw all required instances
         glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr, count);
         count = 0;
@@ -82,16 +77,12 @@ void PlaneRenderer::render() try
         return;
     }
     Context const context(_window);
-    Window::Objects const& objects = window->getObjects();
 
-    // Retrieve shaders
-    if (objects.shaders.count(getShadersID()) == 0)
-        return;
-    Shaders::Ptr const& shader = objects.shaders.at(getShadersID());
+    Shaders* shader = window->getShaders(getShadersID());
     if (!shader)
         return;
     shader->use();
-    _vao->bind();
+    _vao.bind();
 
     uint32_t count = 0;
     _VPs.resize(window->maxGLSLTextureUnits());
@@ -102,7 +93,7 @@ void PlaneRenderer::render() try
         // Also check if we need to reset the depth buffer before the next loop,
         // in which case the cached instances need to be drawn.
         if (count == window->maxGLSLTextureUnits() || chunk.reset_depth_before) {
-            _renderPart(shader, count, chunk.reset_depth_before);
+            _renderPart(*shader, count, chunk.reset_depth_before);
         }
 
         // Set VP for next loop
@@ -115,13 +106,11 @@ void PlaneRenderer::render() try
         for (Plane::Shared const& plane : chunk.planes) {
             // Check if we can't cache more instances and need to make a draw call.
             if (count == window->maxGLSLTextureUnits()) {
-                _renderPart(shader, count, false);
+                _renderPart(*shader, count, false);
             }
-            if (!plane)
+            if (!plane || !plane->_use_texture)
                 continue;
-            if (!plane->_use_texture || objects.textures.count(plane->_texture_id) == 0)
-                continue;
-            Texture::Ptr const& texture = objects.textures.at(plane->_texture_id);
+            Texture* texture = window->getTexture(plane->_texture_id);
             if (!texture)
                 continue;
 
@@ -135,8 +124,8 @@ void PlaneRenderer::render() try
             ++count;
         }
     }
-    _renderPart(shader, count, false);
-    _vao->unbind();
+    _renderPart(*shader, count, false);
+    _vao.unbind();
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
@@ -154,7 +143,6 @@ bool PlaneRenderer::_findNearestModel(float x, float y)
     if (!window) {
         return false;
     }
-    Window::Objects const& objects = window->getObjects();
     // Loop over each Renderer::Chunk in reverse order
     bool result = false;
     for (Chunk const& chunk : chunks | std::views::reverse) {

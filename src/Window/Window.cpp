@@ -130,8 +130,9 @@ CATCH_AND_RETHROW_METHOD_EXC;
 Window::~Window()
 {
     // Free all bound objects
-    cleanObjects();
-    _objects.shaders.clear();
+    _shaders.clear();
+    _renderers.clear();
+    _textures.clear();
     // Remove weak ptr from instance vector
     cleanWeakPtrVector(_instances);
     // Terminate GLFW

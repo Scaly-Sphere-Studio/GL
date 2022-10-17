@@ -154,8 +154,8 @@ void Window::mouse_button_callback(GLFWwindow* ptr, int button, int action, int 
         TR::Area::resetFocus();
         Plane::Shared plane = Plane::getHovered(window);
         if (plane && plane->_use_texture) {
-            Texture::Ptr const& texture = window->getObjects().textures.at(plane->getTextureID());
-            if (texture->getType() == Texture::Type::Text) {
+            Texture* texture = window->getTexture(plane->getTextureID());
+            if (texture && texture->getType() == Texture::Type::Text) {
                 TR::Area* area = texture->getTextArea();
                 if (area) {
                     int x, y;

@@ -73,8 +73,6 @@ namespace Basic {
      *  creation, deletion, settings and editing.
      */
     struct Texture final : public _internal::WindowObject {
-        /** Unique instance pointer.*/
-        using Ptr = std::unique_ptr<Texture>;
         /** Constructor, creates an \b OpenGL and sets #id accordingly.
          *  Forces to be bound to a Window instance.
          *  @sa ~Texture()
@@ -116,8 +114,6 @@ namespace Basic {
      *  their creation, deletion, and binding.
      */
     struct VAO final : public _internal::WindowObject {
-        /** Unique instance pointer.*/
-        using Ptr = std::unique_ptr<VAO>;
         /** Constructor, creates an \b OpenGL vertex array and
          *  sets #id accordingly.
          *  Forces to be bound to a Window instance.
@@ -145,8 +141,6 @@ namespace Basic {
      *  their creation, deletion, and editing.
      */
     struct VBO final : public _internal::WindowObject {
-        /** Unique instance pointer.*/
-        using Ptr = std::unique_ptr<VBO>;
         /** Constructor, creates an \b OpenGL buffer object and
          *  sets #id accordingly.
          *  Forces to be bound to a Window instance.
@@ -179,8 +173,6 @@ namespace Basic {
      *  their creation, deletion, and editing.
      */
     struct IBO final : public _internal::WindowObject {
-        /** Unique instance pointer.*/
-        using Ptr = std::unique_ptr<IBO>;
         /** Constructor, creates an \b OpenGL buffer object and
          *  sets #id accordingly.
          *  Forces to be bound to a Window instance.

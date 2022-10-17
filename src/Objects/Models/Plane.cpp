@@ -95,11 +95,7 @@ void Plane::_updateTexScaling()
         _should_compute_mat4 = true;
         return;
     }
-    // Retrieve texture
-    if (window->getObjects().textures.count(_texture_id) == 0) {
-        return;
-    }
-    Texture::Ptr const& texture = window->getObjects().textures.at(_texture_id);
+    Texture* texture = window->getTexture(_texture_id);
     if (!texture) {
         return;
     }
@@ -178,11 +174,7 @@ bool Plane::_hoverTriangle(glm::mat4 const& mvp, glm::vec3 const& A,
     if (!window) {
         return true;
     }
-    Window::Objects const& objects = window->getObjects();
-    if (objects.textures.count(_texture_id) == 0) {
-        return true;
-    }
-    Texture::Ptr const& texture = objects.textures.at(_texture_id);
+    Texture* texture = window->getTexture(_texture_id);
     if (!texture) {
         return true;
     }

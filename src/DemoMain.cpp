@@ -56,11 +56,11 @@ int main() try
     window->setCallback(glfwSetWindowSizeCallback, resize_callback);
 
     // Lines
-    auto const& line_shader     = GL::Shaders::create();
-    line_shader->loadFromFiles("glsl/line.vert", "glsl/line.frag");
-    auto const& line_renderer   = GL::Renderer::create<GL::LineRenderer>();
-    line_renderer->setShadersID(line_shader->getID());
-    line_renderer->castAs<GL::LineRenderer>().camera = lua["camera"];
+    GL::Shaders& line_shader = GL::Shaders::create();
+    line_shader.loadFromFiles("glsl/line.vert", "glsl/line.frag");
+    GL::LineRenderer& line_renderer = GL::LineRenderer::create();
+    line_renderer.setShadersID(line_shader.getID());
+    line_renderer.camera = lua["camera"];
     using Line = GL::Polyline;
     Line::Shared line[4];
     line[0] = Line::Segment(glm::vec3(-200,  200, 0), glm::vec3( 200,  200, 0), 10.f, glm::vec4(0, 0, 1, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);

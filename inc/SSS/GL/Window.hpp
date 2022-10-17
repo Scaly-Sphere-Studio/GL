@@ -114,7 +114,7 @@ private:
     void _loadPresetShaders();
 
 public :
-    /** Destructor, calls cleanObjects(), removes instance from internal
+    /** Destructor, clears stored objects, removes instance from internal
      *  vector, and terminates glfw if no Window exists anymore.
      *  @sa create(), shouldClose()
      */
@@ -189,69 +189,49 @@ public :
     inline KeyInputs const& getKeyInputs() const noexcept { return _key_inputs; }
     inline bool keyIsPressed(int key) const noexcept { return _key_inputs[key]; };
 
-    /** Stores all Window-bound objects in ID maps.
-     *  @sa Window::getObjects()
-     */
-    struct Objects final {
-        /** \cond INTERNAL*/
-        // Rule of 5
-        Objects()                           = default;  // Constructor
-        ~Objects()                          = default;  // Destructor
-        Objects(const Objects&)             = delete;   // Copy constructor
-        Objects(Objects&&)                  = delete;   // Move constructor
-        Objects& operator=(const Objects&)  = delete;   // Copy assignment
-        Objects& operator=(Objects&&)       = delete;   // Move assignment
-        /** \endcond*/
-        std::map<uint32_t, std::unique_ptr<Shaders>> shaders;       // Shaders
-        std::map<uint32_t, std::unique_ptr<Renderer>> renderers;    // Renderers
-        std::map<uint32_t, std::unique_ptr<Texture>> textures;      // Textures
-    };
-
 private:
-    Objects _objects;   // All Window-bound objects
+    std::map<uint32_t, std::unique_ptr<Shaders>> _shaders;    // Shaders
+    std::map<uint32_t, std::unique_ptr<Renderer>> _renderers; // Renderers
+    std::map<uint32_t, std::unique_ptr<Texture>> _textures;   // Textures
 
 public:
-    /** Returns all Window-bound Objects.
-     *  @sa cleanObjects()
-     */
-    inline Objects const& getObjects() const noexcept { return _objects; };
-    /** Removes all objects from internal Window::Objects (except preset shaders).
-     *  @sa getObjects()
-     */
-    void cleanObjects() noexcept;
-
-    /** Creates a std::unique_ptr<Shaders> in Objects::shaders at given ID (see Shaders::Preset).
+    /** Creates a Shaders at given ID (see Shaders::Preset).
      *  @sa removeShaders()
      */
-    std::unique_ptr<Shaders> const& createShaders(uint32_t id);
-    std::unique_ptr<Shaders> const& createShaders();
-    /** Creates a derived std::unique_ptr<Renderer> in Objects::renderers at given ID.
+    Shaders& createShaders(uint32_t id);
+    Shaders& createShaders();
+    Shaders* getShaders(uint32_t id) noexcept;
+    /** Creates a derived Renderer at given ID.
      *  @sa removeRenderer()
      */
     template<class Derived = Renderer>
-    std::unique_ptr<Renderer> const& createRenderer(uint32_t id);
+    Derived& createRenderer(uint32_t id);
     template<class Derived = Renderer>
-    std::unique_ptr<Renderer> const& createRenderer();
-    /** Creates a std::unique_ptr<Texture> in Objects::textures at given ID.
+    Derived& createRenderer();
+    Renderer* getRenderer(uint32_t id) noexcept;
+    template<class Derived = Renderer>
+    Derived* getRenderer(uint32_t id) noexcept;
+    /** Creates a Texture at given ID.
      *  @sa removeTexture()
      */
-    std::unique_ptr<Texture> const& createTexture(uint32_t id);
-    std::unique_ptr<Texture> const& createTexture();
+    Texture& createTexture(uint32_t id);
+    Texture& createTexture();
+    Texture* getTexture(uint32_t id) noexcept;
 
-    /** Removes the Shaders::Ptr in Objects::shaders at given ID (see Shaders::Preset).
+    /** Removes the Shaders at given ID (see Shaders::Preset).
      *  @sa createShaders()
      */
     void removeShaders(uint32_t id);
-    /** Removes the Renderer::Ptr in Objects::renderers at given ID.
+    /** Removes the Renderer at given ID.
      *  @sa createRenderer()
      */
     void removeRenderer(uint32_t id);
-    /** Removes the Texture::Ptr in Objects::textures at given ID.
+    /** Removes the Texture at given ID.
      *  @sa createTexture()
      */
     void removeTexture(uint32_t id);
 
-    /** Draws everything as defined in Objects::renderers.
+    /** Draws everything in order of Renderer IDs.
      *  @sa printFrame()
      */
     void drawObjects();

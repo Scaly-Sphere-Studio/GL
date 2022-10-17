@@ -35,13 +35,12 @@ public:
     /** Destructor, can log but otherwise default.*/
     ~Texture();
 
-    /** Unique ptr stored in Window objects.*/
-    using Ptr = std::unique_ptr<Texture>;
-    /** Creates a Ptr in Window objects at given ID.
+    /** Creates an instance stored in Window at given ID.
      *  If no window is specified, the first one (Window::getFirst()) is used.\n
      *  @sa Window::removeTexture()
      */
-    static Ptr const& create(std::shared_ptr<Window> win = nullptr);
+    static Texture& create(std::shared_ptr<Window> win);
+    static Texture& create();
 
     /** The Texture type, mainly to know which pixels to use (internal or TR).
      *  @sa setType(), getType()
@@ -59,7 +58,7 @@ private:
     RGBA32::Vector _pixels;         // Raw pixels
     int _raw_w{ 0 }, _raw_h{ 0 };   // Raw dimensions
     int _text_w{ 0 }, _text_h{ 0 }; // Last TR dimensions (stored for scaling update)
-    uint32_t _text_area_id{ 0 };    // TR::Area::Ptr ID inside TR::Area::Map
+    uint32_t _text_area_id{ 0 };    // TR::Area id
 
 public:
     /** Explicitly sets the Texture::Type.

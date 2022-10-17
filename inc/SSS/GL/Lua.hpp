@@ -23,6 +23,11 @@ inline void lua_setup_GL(sol::state& lua)
     auto shaders = gl.new_usertype<Shaders>("Shaders", sol::no_constructor);
     shaders["loadFromFiles"] = &Shaders::loadFromFiles;
     shaders["loadFromStrings"] = &Shaders::loadFromStrings;
+    shaders["create"] = sol::overload(
+        sol::resolve<Shaders&(Window::Shared)>(Shaders::create),
+        sol::resolve<Shaders&()>(Shaders::create),
+        sol::resolve<Shaders&(std::string const&, std::string const&)>(Shaders::create)
+    );
 
     auto renderer = gl.new_usertype<Renderer>("Renderer", sol::no_constructor);
     renderer["shader_id"] = sol::property(&Renderer::getShadersID, &Renderer::setShadersID);
@@ -32,8 +37,10 @@ inline void lua_setup_GL(sol::state& lua)
     auto plane_renderer = gl.new_usertype<PlaneRenderer>("PlaneRenderer",
         sol::no_constructor, sol::base_classes, sol::bases<Renderer>());
     plane_renderer["chunks"] = &PlaneRenderer::chunks;
-    plane_renderer["create"] = []() {
-        return std::ref(Renderer::create<PlaneRenderer>()->castAs<PlaneRenderer>()); };
+    plane_renderer["create"] = sol::overload(
+        sol::resolve<PlaneRenderer&(Window::Shared)>(PlaneRenderer::create),
+        sol::resolve<PlaneRenderer&()>(PlaneRenderer::create)
+    );
     auto chunk = gl.new_usertype<PlaneRenderer::Chunk>("Chunk", sol::constructors<
         PlaneRenderer::Chunk(),
         PlaneRenderer::Chunk(Camera::Shared),
@@ -49,7 +56,10 @@ inline void lua_setup_GL(sol::state& lua)
     texture["loadImage"] = &Texture::loadImage;
     texture["edit"] = &Texture::editRawPixels;
     texture["text_area_id"] = sol::property(&Texture::getTextAreaID, &Texture::setTextAreaID);
-    texture["create"] = [](Window::Shared win) { return Texture::create(win).get(); };
+    texture["create"] = sol::overload(
+        sol::resolve<Texture& (Window::Shared)>(Texture::create),
+        sol::resolve<Texture& ()>(Texture::create)
+    );
     texture["id"] = sol::property(&Texture::getID);
     gl.new_enum<Texture::Type>("TextureType", {
         { "Raw", Texture::Type::Raw },
@@ -100,7 +110,6 @@ inline void lua_setup_GL(sol::state& lua)
     window["blockInputs"] = &Window::blockInputs;
     window["unblockInputs"] = &Window::unblockInputs;
     window["keyIsPressed"] = &Window::keyIsPressed;
-    //window["objects"] = sol::property(&Window::getObjects);
 
     window["fps_limit"] = sol::property(&Window::getFPSLimit, &Window::setFPSLimit);
     window["vsync"] = sol::property(&Window::getVSYNC, &Window::setVSYNC);
