@@ -18,7 +18,6 @@ class PlaneRenderer final : public Renderer {
 private:
     PlaneRenderer(std::weak_ptr<Window> window, uint32_t id);
 
-    using Mat4_array = std::vector<glm::mat4>;
     void _renderPart(Shaders& shader, uint32_t& count, bool reset_depth) const;
 
 public:
@@ -59,8 +58,9 @@ private:
     Basic::VBO _vbo;
     Basic::IBO _ibo;
     
-    Mat4_array _VPs;
-    Mat4_array _Models;
+    std::vector<glm::mat4> _VPs;
+    std::vector<glm::mat4> _Models;
+    std::vector<float> _Alphas;
 
     Plane::Weak _hovered;
     double _hovered_z{ DBL_MAX };

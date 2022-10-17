@@ -75,6 +75,10 @@ public:
      *  Context will always be accurately set.
      */
     void setUniform1iv(std::string const& name, GLsizei count, const GLint* value);
+    /** Simple handle to \c glUniform1fv().
+     *  Context will always be accurately set.
+     */
+    void setUniform1fv(std::string const& name, GLsizei count, const GLfloat* value);
     /** Simple handle to \c glUniformMatrix4fv().
      *  Context will always be accurately set.
      */

@@ -53,6 +53,9 @@ public:
     /** Returns the Texture ID used for this instance.*/
     inline uint32_t getTextureID() const noexcept { return _texture_id; };
 
+    inline void setAlpha(float alpha) noexcept { _alpha = std::clamp(alpha, 0.f, 1.f); };
+    inline float getAlpha() const noexcept { return _alpha; };
+
     /** Types of hitboxes for on-click events to proc (or not)
      *  when in %Plane coordinates.
      */
@@ -85,6 +88,7 @@ public:
 
 private:
     uint32_t _texture_id{ 0 };
+    float _alpha{ 1.f };
     bool _use_texture{ false };
     GLsizei _tex_w{ 0 }, _tex_h{ 0 };
     glm::vec3 _tex_scaling{ 1 };

@@ -57,6 +57,7 @@ void PlaneRenderer::_renderPart(Shaders& shader, uint32_t& count, bool reset_dep
         shader.setUniform1iv("u_Textures", count, &texture_IDs[0]);
         shader.setUniformMat4fv("u_VPs", count, GL_FALSE, &_VPs[0][0][0]);
         shader.setUniformMat4fv("u_Models", count, GL_FALSE, &_Models[0][0][0]);
+        shader.setUniform1fv("u_Alphas", count, &_Alphas[0]);
         // Draw all required instances
         glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr, count);
         count = 0;
@@ -87,6 +88,7 @@ void PlaneRenderer::render() try
     uint32_t count = 0;
     _VPs.resize(window->maxGLSLTextureUnits());
     _Models.resize(window->maxGLSLTextureUnits());
+    _Alphas.resize(window->maxGLSLTextureUnits());
     // Loop over each Renderer::Chunk
     for (Chunk const& chunk : chunks) {
         // Check if we can't cache more instances and need to make a draw call.
@@ -117,6 +119,7 @@ void PlaneRenderer::render() try
             // Store MVP components (set uniforms later)
             _VPs[count] = VP;
             _Models[count] = plane->getModelMat4();
+            _Alphas[count] = plane->getAlpha();
             // Bind another active texture (set uniform IDs later)
             glActiveTexture(GL_TEXTURE0 + count);
             texture->bind();

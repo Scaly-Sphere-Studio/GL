@@ -93,6 +93,7 @@ inline void lua_setup_GL(sol::state& lua)
     plane["rotate"] = &Plane::rotate;
     plane["translate"] = &Plane::translate;
     plane["texture_id"] = sol::property(&Plane::getTextureID, &Plane::setTextureID);
+    plane["alpha"] = sol::property(&Plane::getAlpha, &Plane::setAlpha);
     plane["passive_func_id"] = sol::property(&Plane::getPassiveFuncID, &Plane::setPassiveFuncID);
     plane["on_click_func_id"] = sol::property(&Plane::getOnClickFuncID, &Plane::setOnClickFuncID);
     plane["hitbox"] = sol::property(&Plane::getHitbox, &Plane::setHitbox);

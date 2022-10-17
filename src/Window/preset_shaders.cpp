@@ -5,38 +5,44 @@ SSS_GL_BEGIN;
 
 static void _planeShadersData(std::string& vertex, std::string& fragment)
 {
-    vertex = 
-"#version 330 core\n"
-"layout(location = 0) in vec3 a_Pos;\n"
-"layout(location = 1) in vec2 a_UV;\n"
+    vertex = R"(
+#version 330 core
+layout(location = 0) in vec3 a_Pos;
+layout(location = 1) in vec2 a_UV;
 
-"uniform mat4 u_Models[gl_MaxTextureImageUnits];\n"
-"uniform mat4 u_VPs[gl_MaxTextureImageUnits];\n"
+uniform mat4 u_Models[gl_MaxTextureImageUnits];
+uniform mat4 u_VPs[gl_MaxTextureImageUnits];
+uniform float u_Alphas[gl_MaxTextureImageUnits];
 
-"out vec2 UV;\n"
-"flat out int instanceID;\n"
+out vec2 UV;
+out float Alpha;
+flat out int instanceID;
 
-"void main()\n"
-"{\n"
-"    gl_Position = u_VPs[gl_InstanceID] * u_Models[gl_InstanceID] * vec4(a_Pos, 1);\n"
-"    UV = a_UV;\n"
-"    instanceID = gl_InstanceID;\n"
-"}";
+void main()
+{
+    gl_Position = u_VPs[gl_InstanceID] * u_Models[gl_InstanceID] * vec4(a_Pos, 1);
+    UV = a_UV;
+    Alpha = u_Alphas[gl_InstanceID];
+    instanceID = gl_InstanceID;
+}
+)";
 
-    fragment = 
-"#version 330 core\n"
-"out vec4 FragColor;\n"
+    fragment = R"(
+#version 330 core
+out vec4 FragColor;
 
-"in vec2 UV;\n"
-"flat in int instanceID;\n"
+in vec2 UV;
+in float Alpha;
+flat in int instanceID;
 
-"uniform sampler2D u_Textures[gl_MaxTextureImageUnits];\n"
+uniform sampler2D u_Textures[gl_MaxTextureImageUnits];
 
-"void main()\n"
-"{\n"
-"    FragColor = texture(u_Textures[instanceID], UV);\n"
-"}";
-
+void main()
+{
+    FragColor = texture(u_Textures[instanceID], UV);
+    FragColor.w *= Alpha;
+}
+)";
 }
 
 void Window::_loadPresetShaders() try

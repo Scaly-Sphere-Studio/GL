@@ -177,6 +177,11 @@ void Shaders::setUniform1iv(std::string const& name, GLsizei count, const GLint*
 	glUniform1iv(getUniformLocation(name), count, value);
 }
 
+void Shaders::setUniform1fv(std::string const& name, GLsizei count, const GLfloat* value)
+{
+	glUniform1fv(getUniformLocation(name), count, value);
+}
+
 void Shaders::setUniformMat4fv(std::string const& name, GLsizei count,
 	GLboolean transpose, GLfloat const* value)
 {
