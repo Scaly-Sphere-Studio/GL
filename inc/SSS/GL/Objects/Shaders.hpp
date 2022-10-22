@@ -61,6 +61,9 @@ public:
      */
     void loadFromFiles(std::string const& vertex_fp, std::string const& fragment_fp);
 
+    inline std::string getVertexData() const noexcept { return _vertex_data; };
+    inline std::string getFragmentData() const noexcept { return _fragment_data; };
+
     /** Simple handle to \c glUseProgram().
      *  Context will always be accurately set.
      */
@@ -89,6 +92,8 @@ private:
     bool _loaded{ false };
     // Program id
     GLuint _program_id{ 0 };
+    // Shaders data
+    std::string _vertex_data, _fragment_data;
 };
 
 SSS_GL_END;

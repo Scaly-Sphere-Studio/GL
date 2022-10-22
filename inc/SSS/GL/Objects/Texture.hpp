@@ -41,6 +41,8 @@ public:
      */
     static Texture& create(std::shared_ptr<Window> win);
     static Texture& create();
+    static Texture& create(std::string const& filepath);
+    static Texture& create(TR::Area const& area);
 
     /** The Texture type, mainly to know which pixels to use (internal or TR).
      *  @sa setType(), getType()
@@ -97,6 +99,7 @@ public:
      *  @sa getTextAreaID(), getTextArea()
      */
     void setTextAreaID(uint32_t id);
+    inline void setTextArea(TR::Area const& area) { setTextAreaID(area.getID()); };
     /** Returns the TR::Area ID previously set via setTextAreaID(), or default (0).
      *  @sa getTextArea()
      */
@@ -105,7 +108,7 @@ public:
      *  setTextAreaID(), or nullptr.
      *  @sa getTextAreaID()
      */
-    TR::Area* getTextArea() const noexcept;
+    inline TR::Area* getTextArea() const noexcept { return TR::Area::get(_text_area_id); };
     
     /** Binds the internal Basic::Texture to the content in which it was created.
      *  Effectively calls Basic::Texture::bind().
@@ -117,6 +120,7 @@ public:
     GLuint getBasicTextureID() const noexcept { return _raw_texture.id; };
     /** Copies the internal Basic::Texture's current dimensions in given parameters.*/
     void getCurrentDimensions(int& w, int& h) const noexcept;
+    std::tuple<int, int> getCurrentDimensions() const noexcept;
 
 private:
 

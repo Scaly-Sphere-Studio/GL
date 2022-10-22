@@ -318,6 +318,7 @@ public:
      *  @sa setDimensions(), getRatio()
      */
     inline void getDimensions(int& w, int& h) const noexcept { w = _w; h = _h; };
+    inline std::tuple<int, int> getDimensions() const noexcept { return std::make_tuple(_w, _h); };
     inline int getWidth() const noexcept { return _w; };
     inline int getHeight() const noexcept { return _h; };
     /** Returns the current window ratio (width / height).
@@ -336,6 +337,7 @@ public:
      *  @sa getPosition()
      */
     inline void getPosition(int& x0, int& y0) const noexcept { x0 = _x; y0 = _y; };
+    inline std::tuple<int, int> getPosition() const noexcept { return std::make_tuple(_x, _y); };
     inline int getPosX() const noexcept { return _x; };
     inline int getPosY() const noexcept { return _y; };
 

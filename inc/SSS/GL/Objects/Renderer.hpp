@@ -55,8 +55,10 @@ private:
 public:
     /** Sets the Shaders ID to be used in render().*/
     inline void setShadersID(uint32_t id) noexcept { _shaders_id = id; };
+    inline void setShaders(Shaders const& shaders) noexcept { setShadersID(shaders.getID()); };
     /** Retrieves the set Shaders ID to be used in render().*/
     inline uint32_t getShadersID() const noexcept { return _shaders_id; };
+    inline Shaders* getShaders() const noexcept { return _window.lock()->getShaders(_shaders_id); };
 
 private:
     bool _is_active{ true };

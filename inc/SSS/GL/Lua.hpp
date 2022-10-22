@@ -30,7 +30,7 @@ inline void lua_setup_GL(sol::state& lua)
     );
 
     auto renderer = gl.new_usertype<Renderer>("Renderer", sol::no_constructor);
-    renderer["shader_id"] = sol::property(&Renderer::getShadersID, &Renderer::setShadersID);
+    renderer["shader"] = sol::property(&Renderer::getShaders, &Renderer::setShaders);
     renderer["active"] = sol::property(&Renderer::isActive, &Renderer::setActivity);
     renderer["title"] = &Renderer::title;
 
@@ -55,10 +55,13 @@ inline void lua_setup_GL(sol::state& lua)
     texture["type"] = sol::property(&Texture::getType, &Texture::setType);
     texture["loadImage"] = &Texture::loadImage;
     texture["edit"] = &Texture::editRawPixels;
-    texture["text_area_id"] = sol::property(&Texture::getTextAreaID, &Texture::setTextAreaID);
+    texture["text_area"] = sol::property(&Texture::getTextArea, &Texture::setTextArea);
+    texture["getDimensions"] = sol::resolve<std::tuple<int, int>() const>(&Texture::getCurrentDimensions);
     texture["create"] = sol::overload(
-        sol::resolve<Texture& (Window::Shared)>(Texture::create),
-        sol::resolve<Texture& ()>(Texture::create)
+        sol::resolve<Texture&(Window::Shared)>(Texture::create),
+        sol::resolve<Texture&()>(Texture::create),
+        sol::resolve<Texture&(std::string const&)>(Texture::create),
+        sol::resolve<Texture&(TR::Area const&)>(Texture::create)
     );
     texture["id"] = sol::property(&Texture::getID);
     gl.new_enum<Texture::Type>("TextureType", {
@@ -89,17 +92,19 @@ inline void lua_setup_GL(sol::state& lua)
     plane["scaling"] = sol::property(&Plane::getScaling, &Plane::setScaling);
     plane["rotation"] = sol::property(&Plane::getRotation, &Plane::setRotation);
     plane["translation"] = sol::property(&Plane::getTranslation, &Plane::setTranslation);
-    plane["scale"] = &Plane::scale;
+    plane["scale"] = sol::resolve<void(float)>(&Plane::scale);
     plane["rotate"] = &Plane::rotate;
     plane["translate"] = &Plane::translate;
-    plane["texture_id"] = sol::property(&Plane::getTextureID, &Plane::setTextureID);
+    plane["texture"] = sol::property(&Plane::getTexture, &Plane::setTexture);
     plane["alpha"] = sol::property(&Plane::getAlpha, &Plane::setAlpha);
     plane["passive_func_id"] = sol::property(&Plane::getPassiveFuncID, &Plane::setPassiveFuncID);
     plane["on_click_func_id"] = sol::property(&Plane::getOnClickFuncID, &Plane::setOnClickFuncID);
     plane["hitbox"] = sol::property(&Plane::getHitbox, &Plane::setHitbox);
     plane["create"] = sol::overload(
         sol::resolve<Plane::Shared(Window::Shared)>(Plane::create),
-        sol::resolve<Plane::Shared()>(Plane::create)),
+        sol::resolve<Plane::Shared()>(Plane::create),
+        sol::resolve<Plane::Shared(Texture const&)>(Plane::create)
+    ),
     plane["duplicate"] = &Plane::duplicate;
     gl.new_enum<Plane::Hitbox>("PlaneHitbox", {
         { "None", Plane::Hitbox::None },
@@ -115,16 +120,14 @@ inline void lua_setup_GL(sol::state& lua)
     window["fps_limit"] = sol::property(&Window::getFPSLimit, &Window::setFPSLimit);
     window["vsync"] = sol::property(&Window::getVSYNC, &Window::setVSYNC);
     window["title"] = sol::property(&Window::getTitle, &Window::setTitle);
-    window["getDimensions"] = [](Window& win) {
-        int w, h; win.getDimensions(w, h); return std::make_tuple(w, h); };
     window["setDimensions"] = &Window::setDimensions;
+    window["getDimensions"] = sol::resolve<std::tuple<int, int>() const>(&Window::getDimensions);
     window["w"] = sol::property(&Window::getWidth, &Window::setWidth);
     window["h"] = sol::property(&Window::getHeight, &Window::setHeight);
-    window["getPosition"] = [](Window& win) {
-        int x, y; win.getPosition(x, y); return std::make_tuple(x, y); };
+    window["setPosition"] = &Window::setPosition;
+    window["getPosition"] = sol::resolve<std::tuple<int, int>() const>(&Window::getPosition);
     window["x"] = sol::property(&Window::getPosX, &Window::setPosX);
     window["y"] = sol::property(&Window::getPosY, &Window::setPosY);
-    window["setPosition"] = &Window::setPosition;
     window["fullscreen"] = sol::property(&Window::isFullscreen, &Window::setFullscreen);
     window["iconified"] = sol::property(&Window::isIconified, &Window::setIconification);
     window["maximized"] = sol::property(&Window::isMaximized, &Window::setMaximization);

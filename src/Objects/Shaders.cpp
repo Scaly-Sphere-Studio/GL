@@ -135,6 +135,8 @@ void Shaders::loadFromStrings(std::string const& vertex_data, std::string const&
 {
 	Context const context(_window);
 	_program_id = loadShaders(vertex_data, fragment_data);
+	_vertex_data = vertex_data;
+	_fragment_data = fragment_data;
 	_loaded = true;
 
 	// Log

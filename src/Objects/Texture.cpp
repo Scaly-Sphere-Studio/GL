@@ -58,6 +58,20 @@ Texture& Texture::create() try
 }
 CATCH_AND_RETHROW_FUNC_EXC;
 
+Texture& Texture::create(std::string const& filepath)
+{
+    Texture& ret = create();
+    ret.loadImage(filepath);
+    return ret;
+}
+
+Texture& Texture::create(TR::Area const& area)
+{
+    Texture& ret = create();
+    ret.setTextArea(area);
+    return ret;
+}
+
 void Texture::setType(Type type) noexcept
 {
     if (type == _type) {
@@ -132,11 +146,6 @@ void Texture::setTextAreaID(uint32_t id)
     }
 }
 
-TR::Area* Texture::getTextArea() const noexcept
-{
-    return TR::Area::get(_text_area_id);
-}
-
 void Texture::getCurrentDimensions(int& w, int& h) const noexcept
 {
     if (_type == Type::Raw) {
@@ -147,6 +156,13 @@ void Texture::getCurrentDimensions(int& w, int& h) const noexcept
         w = _text_w;
         h = _text_h;
     }
+}
+
+std::tuple<int, int> Texture::getCurrentDimensions() const noexcept
+{
+    int w, h;
+    getCurrentDimensions(w, h);
+    return std::make_tuple(w, h);
 }
 
 void Texture::_AsyncLoading::_asyncFunction(std::string filepath)

@@ -1,5 +1,4 @@
 #include "SSS/GL/Objects/Models/Plane.hpp"
-#include "SSS/GL/Objects/Texture.hpp"
 
 SSS_GL_BEGIN;
 
@@ -36,6 +35,13 @@ Plane::Shared Plane::create(std::shared_ptr<Window> win)
 Plane::Shared Plane::create()
 {
     return create(nullptr);
+}
+
+Plane::Shared Plane::create(Texture const& texture)
+{
+    Shared ret = create();
+    ret->setTexture(texture);
+    return ret;
 }
 
 Plane::Shared Plane::duplicate() const

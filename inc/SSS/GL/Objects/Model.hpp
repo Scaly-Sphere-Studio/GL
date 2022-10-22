@@ -34,6 +34,7 @@ public:
 
     /** Modifies scaling.*/
     void scale(glm::vec3 scaling);
+    inline void scale(float scaling) { scale(glm::vec3(scaling)); };
     /** Modifies rotation angles.*/
     void rotate(glm::vec3 angles);
     /** Modifies translation.*/

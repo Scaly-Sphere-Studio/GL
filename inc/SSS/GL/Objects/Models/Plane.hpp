@@ -2,6 +2,7 @@
 #define SSS_GL_PLANE_HPP
 
 #include "SSS/GL/Objects/Model.hpp"
+#include "SSS/GL/Objects/Texture.hpp"
 
 /** @file
  *  Defines class SSS::GL::Plane.
@@ -40,6 +41,7 @@ public:
      */
     static Shared create(std::shared_ptr<Window> win);
     static Shared create();
+    static Shared create(Texture const& texture);
     Shared duplicate() const;
 
     static Vector getInstances(Window::Shared window = nullptr) noexcept;
@@ -50,8 +52,10 @@ public:
     
     /** Sets the Texture ID to be used for this instance.*/
     void setTextureID(uint32_t texture_id);
+    inline void setTexture(Texture const& texture) { setTextureID(texture.getID()); };
     /** Returns the Texture ID used for this instance.*/
     inline uint32_t getTextureID() const noexcept { return _texture_id; };
+    inline Texture* getTexture() const noexcept { return _window.lock()->getTexture(_texture_id); };
 
     inline void setAlpha(float alpha) noexcept { _alpha = std::clamp(alpha, 0.f, 1.f); };
     inline float getAlpha() const noexcept { return _alpha; };
