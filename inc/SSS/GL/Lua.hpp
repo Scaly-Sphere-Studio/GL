@@ -30,7 +30,7 @@ inline void lua_setup_GL(sol::state& lua)
     );
 
     auto renderer = gl.new_usertype<Renderer>("Renderer", sol::no_constructor);
-    renderer["shader"] = sol::property(&Renderer::getShaders, &Renderer::setShaders);
+    renderer["shaders"] = sol::property(&Renderer::getShaders, &Renderer::setShaders);
     renderer["active"] = sol::property(&Renderer::isActive, &Renderer::setActivity);
     renderer["title"] = &Renderer::title;
 
@@ -50,6 +50,14 @@ inline void lua_setup_GL(sol::state& lua)
     chunk["reset_depth_before"] = &PlaneRenderer::Chunk::reset_depth_before;
     chunk["camera"] = &PlaneRenderer::Chunk::camera;
     chunk["planes"] = &PlaneRenderer::Chunk::planes;
+
+    auto line_renderer = gl.new_usertype<LineRenderer>("LineRenderer",
+        sol::no_constructor, sol::base_classes, sol::bases<Renderer>());
+    line_renderer["camera"] = &LineRenderer::camera;
+    line_renderer["create"] = sol::overload(
+        sol::resolve<LineRenderer& (Window::Shared)>(LineRenderer::create),
+        sol::resolve<LineRenderer& ()>(LineRenderer::create)
+    );
 
     auto texture = gl.new_usertype<Texture>("Texture", sol::no_constructor);
     texture["type"] = sol::property(&Texture::getType, &Texture::setType);
@@ -104,7 +112,7 @@ inline void lua_setup_GL(sol::state& lua)
         sol::resolve<Plane::Shared(Window::Shared)>(Plane::create),
         sol::resolve<Plane::Shared()>(Plane::create),
         sol::resolve<Plane::Shared(Texture const&)>(Plane::create)
-    ),
+    );
     plane["duplicate"] = &Plane::duplicate;
     gl.new_enum<Plane::Hitbox>("PlaneHitbox", {
         { "None", Plane::Hitbox::None },

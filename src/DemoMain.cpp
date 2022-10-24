@@ -55,22 +55,17 @@ int main() try
     window->setCallback(glfwSetKeyCallback, key_callback);
     window->setCallback(glfwSetWindowSizeCallback, resize_callback);
 
+    // Planes
+    GL::Plane::passive_funcs    = { { 1, passive_plane_func1 } };
+    GL::Plane::on_click_funcs   = { { 1, on_click_plane_func1 } };
+
     // Lines
-    GL::Shaders& line_shader = GL::Shaders::create();
-    line_shader.loadFromFiles("glsl/line.vert", "glsl/line.frag");
-    GL::LineRenderer& line_renderer = GL::LineRenderer::create();
-    line_renderer.setShadersID(line_shader.getID());
-    line_renderer.camera = lua["camera"];
     using Line = GL::Polyline;
     Line::Shared line[4];
     line[0] = Line::Segment(glm::vec3(-200,  200, 0), glm::vec3( 200,  200, 0), 10.f, glm::vec4(0, 0, 1, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);
     line[1] = Line::Segment(glm::vec3( 200,  200, 0), glm::vec3( 200, -200, 0), 10.f, glm::vec4(0, 1, 0, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);
     line[2] = Line::Segment(glm::vec3( 200, -200, 0), glm::vec3(-200, -200, 0), 10.f, glm::vec4(1, 0, 0, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);
     line[3] = Line::Segment(glm::vec3(-200, -200, 0), glm::vec3(-200,  200, 0), 10.f, glm::vec4(1, 1, 1, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);
-
-    // Plane
-    GL::Plane::passive_funcs    = { { 1, passive_plane_func1 } };
-    GL::Plane::on_click_funcs   = { { 1, on_click_plane_func1 } };
 
     // Main loop
     while (!window->shouldClose()) {

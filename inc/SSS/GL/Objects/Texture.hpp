@@ -61,6 +61,7 @@ private:
     int _raw_w{ 0 }, _raw_h{ 0 };   // Raw dimensions
     int _text_w{ 0 }, _text_h{ 0 }; // Last TR dimensions (stored for scaling update)
     uint32_t _text_area_id{ 0 };    // TR::Area id
+    std::string _filepath;          // Image filepath
 
 public:
     /** Explicitly sets the Texture::Type.
@@ -78,6 +79,7 @@ public:
      *  @sa getRawPixels, getRawDimensions()
      */
     void loadImage(std::string const& filepath);
+    inline std::string getFilepath() const noexcept { return _filepath; };
     /** Edits the raw pixels of this instance.
      *  @sa getRawPixels, getRawDimensions()
      */

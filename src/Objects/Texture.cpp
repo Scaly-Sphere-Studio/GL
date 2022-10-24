@@ -104,6 +104,7 @@ void Texture::setType(Type type) noexcept
 void Texture::loadImage(std::string const& filepath)
 {
     _loading_thread.run(filepath);
+    _filepath = filepath;
 }
 
 void Texture::editRawPixels(void const* pixels, int width, int height) try
@@ -117,10 +118,9 @@ void Texture::editRawPixels(void const* pixels, int width, int height) try
     uint32_t const* ptr = reinterpret_cast<uint32_t const*>(pixels);
     _pixels = RGBA32::Vector(ptr, ptr + (_raw_w * _raw_h));
 
-    // Update plane scaling only if immediately needed
-    if (_type == Type::Raw) {
-        _updatePlanesScaling();
-    }
+    // Update plane type and scaling
+    _type = Type::Raw;
+    _updatePlanesScaling();
 
     // Log
     if (Log::GL::Texture::query(Log::GL::Texture::get().edit)) {
@@ -134,12 +134,10 @@ CATCH_AND_RETHROW_METHOD_EXC;
 
 void Texture::setTextAreaID(uint32_t id)
 {
-    if (_text_area_id == id) {
-        return;
-    }
     _text_area_id = id;
     TR::Area* text_area = getTextArea();
-    if (_type == Type::Text && text_area) {
+    if (text_area) {
+        _type = Type::Text;
         int w, h;
         text_area->pixelsGetDimensions(w, h);
         _internalEdit(text_area->pixelsGet(), w, h);
