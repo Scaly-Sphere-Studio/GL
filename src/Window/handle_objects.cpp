@@ -22,7 +22,7 @@ Shaders& Window::createShaders() try
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
-Shaders* Window::getShaders(uint32_t id) noexcept
+Shaders* Window::getShaders(uint32_t id) const noexcept
 {
     if (_shaders.count(id) == 0) {
         return nullptr;
@@ -31,7 +31,7 @@ Shaders* Window::getShaders(uint32_t id) noexcept
 }
 
 
-Renderer* Window::getRenderer(uint32_t id) noexcept
+Renderer* Window::getRenderer(uint32_t id) const noexcept
 {
     if (_renderers.count(id) == 0) {
         return nullptr;
@@ -53,7 +53,7 @@ Texture& Window::createTexture()
     return createTexture(getAvailableID(_textures));
 }
 
-Texture* Window::getTexture(uint32_t id) noexcept
+Texture* Window::getTexture(uint32_t id) const noexcept
 {
     if (_textures.count(id) == 0) {
         return nullptr;

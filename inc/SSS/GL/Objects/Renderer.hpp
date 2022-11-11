@@ -86,7 +86,7 @@ inline Derived& Window::createRenderer() try
 CATCH_AND_RETHROW_METHOD_EXC;
 
 template<class Derived>
-Derived* Window::getRenderer(uint32_t id) noexcept
+Derived* Window::getRenderer(uint32_t id) const noexcept
 {
     if (_renderers.count(id) == 0) {
         return nullptr;

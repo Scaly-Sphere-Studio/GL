@@ -200,7 +200,8 @@ public:
      */
     Shaders& createShaders(uint32_t id);
     Shaders& createShaders();
-    Shaders* getShaders(uint32_t id) noexcept;
+    Shaders* getShaders(uint32_t id) const noexcept;
+    inline auto const& getShadersMap() const noexcept { return _shaders; };
     /** Creates a derived Renderer at given ID.
      *  @sa removeRenderer()
      */
@@ -208,15 +209,17 @@ public:
     Derived& createRenderer(uint32_t id);
     template<class Derived = Renderer>
     Derived& createRenderer();
-    Renderer* getRenderer(uint32_t id) noexcept;
+    Renderer* getRenderer(uint32_t id) const noexcept;
     template<class Derived = Renderer>
-    Derived* getRenderer(uint32_t id) noexcept;
+    Derived* getRenderer(uint32_t id) const noexcept;
+    inline auto const& getRendererMap() const noexcept { return _renderers; };
     /** Creates a Texture at given ID.
      *  @sa removeTexture()
      */
     Texture& createTexture(uint32_t id);
     Texture& createTexture();
-    Texture* getTexture(uint32_t id) noexcept;
+    Texture* getTexture(uint32_t id) const noexcept;
+    inline auto const& getTextureMap() const noexcept { return _textures; };
 
     /** Removes the Shaders at given ID (see Shaders::Preset).
      *  @sa createShaders()
