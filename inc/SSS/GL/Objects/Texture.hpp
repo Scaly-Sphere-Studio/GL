@@ -19,6 +19,22 @@ namespace SSS::Log::GL {
 
 SSS_GL_BEGIN;
 
+
+INTERNAL_BEGIN;
+
+struct APNGFrame {
+    //~APNGFrame() {
+    //    delete[] p;
+    //    delete[] rows;
+    //}
+    unsigned char* p, ** rows;
+    unsigned int w, h, delay_num, delay_den;
+};
+int load_apng(char const* szIn, std::vector<APNGFrame>& frames);
+
+INTERNAL_END;
+
+
 /** Handles raw edits, image loading, and text rendering in an
  *  internal Basic::Texture.
  *  @sa Window::createTexture()
@@ -57,7 +73,10 @@ public:
 private:
     Basic::Texture _raw_texture;    // OpenGL texture
     Type _type{ Type::Raw };        // Texture type
-    RGBA32::Vector _pixels;         // Raw pixels
+    using RGBA32_Vec3D = std::vector<RGBA32::Vector>;
+    RGBA32_Vec3D _pixels3D{ 1 };    // 3D Vector of pixels
+    // Current RAW pixels (TR pixels aren't stored here)
+    RGBA32_Vec3D::iterator _pixels{ _pixels3D.begin() };
     int _raw_w{ 0 }, _raw_h{ 0 };   // Raw dimensions
     int _text_w{ 0 }, _text_h{ 0 }; // Last TR dimensions (stored for scaling update)
     uint32_t _text_area_id{ 0 };    // TR::Area id
@@ -87,7 +106,7 @@ public:
     /** Returns the raw pixels of this instance.
      *  @sa loadImage(), editRawPixels(), getRawDimensions()
      */
-    inline RGBA32::Vector const& getRawPixels() const noexcept { return _pixels; };
+    inline RGBA32::Vector const& getRawPixels() const noexcept { return *_pixels; };
     /** Copies the internal raw pixels' dimensions in given parameters.
      *  @sa loadImage(), editRawPixels(), getRawPixels()
      */
@@ -132,7 +151,7 @@ private:
     protected:
         virtual void _asyncFunction(std::string filepath);
     private:
-        RGBA32::Vector _pixels;
+        RGBA32_Vec3D _pixels;
         int _w{ 0 };
         int _h{ 0 };
     } _loading_thread;

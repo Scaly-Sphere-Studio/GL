@@ -26,10 +26,10 @@ bool pollEverything() try
         // Call all passive functions
         window->_callPassiveFunctions();
         // Loop over each Texture instance
-        for (auto it = window->_textures.cbegin(); it != window->_textures.cend(); ++it) {
-            if (!it->second)
+        for (auto const& pair : window->_textures) {
+            if (!pair.second)
                 continue;
-            Texture& texture = *it->second;
+            Texture& texture = *pair.second;
             // Handle file loading threads, or text area threads
             if (texture._type == Texture::Type::Raw) {
                 // Skip if no thread is pending
@@ -37,11 +37,12 @@ bool pollEverything() try
                 if (!thread.isPending()) {
                     continue;
                 }
-                // Move pixel vector from thread to texture instance, so that future
+                // Move pixels from thread to texture instance, so that future
                 // threads can run without affecting those pixels.
-                texture._pixels = std::move(thread._pixels);
+                texture._pixels3D = std::move(thread._pixels);
+                texture._pixels = texture._pixels3D.begin();
                 // Update dimensions if needed, edit OpenGL texture
-                texture._internalEdit(&texture._pixels[0], thread._w, thread._h);
+                texture._internalEdit(texture._pixels->data(), thread._w, thread._h);
                 thread.setAsHandled();
             }
             else if (texture._type == Texture::Type::Text) {

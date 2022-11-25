@@ -79,11 +79,11 @@ void Texture::setType(Type type) noexcept
     }
     _type = type;
     if (type == Type::Raw) {
-        if (_pixels.empty()) {
+        if (_pixels->empty()) {
             return;
         }
         _updatePlanesScaling();
-        _raw_texture.edit(&_pixels.at(0), _raw_w, _raw_h);
+        _raw_texture.edit(&_pixels->at(0), _raw_w, _raw_h);
     }
     else if (type == Type::Text) {
         TR::Area* text_area = getTextArea();
@@ -114,9 +114,13 @@ void Texture::editRawPixels(void const* pixels, int width, int height) try
     _raw_h = height;
     // Give the image to the OpenGL texture
     _raw_texture.edit(pixels, _raw_w, _raw_h);
+    if (_pixels3D.size() != 1) {
+        _pixels3D.resize(1);
+        _pixels = _pixels3D.begin();
+    }
     // Replace previous pixel storage
     uint32_t const* ptr = reinterpret_cast<uint32_t const*>(pixels);
-    _pixels = RGBA32::Vector(ptr, ptr + (_raw_w * _raw_h));
+    *_pixels = RGBA32::Vector(ptr, ptr + (_raw_w * _raw_h));
 
     // Update plane type and scaling
     _type = Type::Raw;
@@ -165,22 +169,50 @@ std::tuple<int, int> Texture::getCurrentDimensions() const noexcept
 
 void Texture::_AsyncLoading::_asyncFunction(std::string filepath)
 {
-    // Load image
-    SSS::C_Ptr <uint32_t, void(*)(void*), stbi_image_free>
-        raw_pixels(reinterpret_cast<uint32_t*>(stbi_load(
-            pathWhich(filepath).c_str(),    // Filepath to picture
-            &_w,        // Width, to query
-            &_h,        // Height, to query
-            nullptr,    // Byte composition, to query if not requested
-            4           // Byte composition, to request (here RGBA32)
-        )));
-    // Throw if error
-    if (raw_pixels == nullptr) {
-        SSS::throw_exc(CONTEXT_MSG(stbi_failure_reason(), filepath));
+    _pixels.clear();
+    _w = 0;
+    _h = 0;
+    // Check if filepath ends with ".png"
+    // If file is a PNG or APNG, use load_apng (which works for simple PNG files)
+    // Else, use stbi functions
+    static const std::string png(".png");
+    // Ends with ".png"
+    if (filepath.compare(filepath.length() - png.length(), png.length(), png) == 0) {
+        std::vector<_internal::APNGFrame> frames;
+        if (load_apng(filepath.c_str(), frames) < 0) {
+            SSS::throw_exc(CONTEXT_MSG("load_apng error", filepath));
+        }
+        _w = frames[0].w;
+        _h = frames[0].h;
+        if (!frames.empty()) {
+            _pixels.reserve(frames.size());
+            for (auto const& frame : frames) {
+                uint32_t const* p = reinterpret_cast<uint32_t const*>(frame.p);
+                _pixels.emplace_back() = RGBA32::Vector(p, p + (_w * _h));
+                delete[] frame.p;
+                delete[] frame.rows;
+            }
+        }
     }
-    // Fill vector
-    if (_beingCanceled()) return;
-    _pixels = RGBA32::Vector(raw_pixels.get(), raw_pixels.get() + (_w * _h));
+    // Doesn't end with ".png"
+    else {
+        // Load image
+        SSS::C_Ptr <uint32_t, void(*)(void*), stbi_image_free>
+            raw_pixels(reinterpret_cast<uint32_t*>(stbi_load(
+                pathWhich(filepath).c_str(),    // Filepath to picture
+                &_w,        // Width, to query
+                &_h,        // Height, to query
+                nullptr,    // Byte composition, to query if not requested
+                4           // Byte composition, to request (here RGBA32)
+            )));
+        // Throw if error
+        if (raw_pixels == nullptr) {
+            SSS::throw_exc(CONTEXT_MSG(stbi_failure_reason(), filepath));
+        }
+        // Fill vector
+        if (_beingCanceled()) return;
+        _pixels.emplace_back() = RGBA32::Vector(raw_pixels.get(), raw_pixels.get() + (_w * _h));
+    }
 }
 
 void Texture::_updatePlanesScaling()

@@ -56,11 +56,19 @@
     <ClCompile Include="src\Objects\Basic.cpp" />
     <ClCompile Include="src\Objects\Shaders.cpp" />
     <ClCompile Include="src\Objects\Texture.cpp" />
+    <ClCompile Include="src\Objects\Texture_APNG.cpp" />
     <ClCompile Include="src\Objects\Camera.cpp" />
     <ClCompile Include="src\Objects\Models\Line.cpp" />
     <ClCompile Include="src\Objects\Models\LineRenderer.cpp" />
     <ClCompile Include="src\Objects\Models\Plane.cpp" />
     <ClCompile Include="src\Objects\Models\PlaneRenderer.cpp" />
+    <ClCompile Include="src\Window\Window.cpp" />
+    <ClCompile Include="src\Window\callbacks.cpp" />
+    <ClCompile Include="src\Window\preset_shaders.cpp" />
+    <ClCompile Include="src\Window\handle_objects.cpp" />
+    <ClCompile Include="src\Window\draw_frame.cpp" />
+    <ClCompile Include="src\Window\pollEverything.cpp" />
+    <ClCompile Include="src\Window\Context.cpp" />
     <ClCompile Include="src\DemoMain.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Demo|Win32'">false</ExcludedFromBuild>
@@ -69,13 +77,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Demo|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="src\Window\Window.cpp" />
-    <ClCompile Include="src\Window\callbacks.cpp" />
-    <ClCompile Include="src\Window\preset_shaders.cpp" />
-    <ClCompile Include="src\Window\handle_objects.cpp" />
-    <ClCompile Include="src\Window\draw_frame.cpp" />
-    <ClCompile Include="src\Window\pollEverything.cpp" />
-    <ClCompile Include="src\Window\Context.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
