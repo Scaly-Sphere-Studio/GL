@@ -186,11 +186,11 @@ void Texture::_AsyncLoading::_asyncFunction(std::string filepath)
         _h = frames[0].h;
         if (!frames.empty()) {
             _pixels.reserve(frames.size());
-            for (auto const& frame : frames) {
-                uint32_t const* p = reinterpret_cast<uint32_t const*>(frame.p);
+            for (auto& frame : frames) {
+                uint32_t const* p = reinterpret_cast<uint32_t const*>(frame.vec.data());
                 _pixels.emplace_back() = RGBA32::Vector(p, p + (_w * _h));
-                delete[] frame.p;
-                delete[] frame.rows;
+                frame.vec.clear();
+                frame.rows.clear();
             }
         }
     }

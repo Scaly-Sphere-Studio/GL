@@ -23,14 +23,11 @@ SSS_GL_BEGIN;
 INTERNAL_BEGIN;
 
 struct APNGFrame {
-    //~APNGFrame() {
-    //    delete[] p;
-    //    delete[] rows;
-    //}
-    unsigned char* p, ** rows;
-    unsigned int w, h, delay_num, delay_den;
+    std::vector<uint8_t> vec;
+    std::vector<uint8_t*> rows;
+    unsigned int w{ 0 }, h{ 0 }, delay_num{ 0 }, delay_den{ 0 };
 };
-int load_apng(char const* szIn, std::vector<APNGFrame>& frames);
+int load_apng(char const* filepath, std::vector<APNGFrame>& frames);
 
 INTERNAL_END;
 
