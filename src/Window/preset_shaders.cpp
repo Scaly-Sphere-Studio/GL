@@ -22,7 +22,7 @@ flat out int instanceID;
 void main()
 {
     gl_Position = u_VPs[gl_InstanceID] * u_Models[gl_InstanceID] * vec4(a_Pos, 1);
-    UVW = vec3(a_UV, gl_InstanceID);
+    UVW = vec3(a_UV, u_TextureOffsets[gl_InstanceID]);
     Alpha = u_Alphas[gl_InstanceID];
     instanceID = gl_InstanceID;
 }

@@ -83,22 +83,22 @@ void Texture::setType(Type type) noexcept
         if (pixels.empty()) {
             return;
         }
-        _updatePlanesScaling();
-        _raw_texture.editSettings(_raw_w, _raw_h, _frames.size());
+        _updatePlanes();
+        _raw_texture.editSettings(_raw_w, _raw_h, static_cast<uint32_t>(_frames.size()));
         _raw_texture.editPixels(pixels.data());
     }
     else if (type == Type::Text) {
         TR::Area* text_area = getTextArea();
         if (text_area) {
             text_area->pixelsGetDimensions(_text_w, _text_h);
-            _updatePlanesScaling();
+            _updatePlanes();
             _raw_texture.editSettings(_text_w, _text_h);
             _raw_texture.editPixels(text_area->pixelsGet());
         }
         else {
             _text_w = 0;
             _text_h = 0;
-            _updatePlanesScaling();
+            _updatePlanes();
         }
     }
 }
@@ -126,7 +126,7 @@ void Texture::editRawPixels(void const* pixels, int width, int height) try
 
     // Update plane type and scaling
     _type = Type::Raw;
-    _updatePlanesScaling();
+    _updatePlanes();
 
     // Log
     if (Log::GL::Texture::query(Log::GL::Texture::get().edit)) {
@@ -172,6 +172,7 @@ std::tuple<int, int> Texture::getCurrentDimensions() const noexcept
 void Texture::_AsyncLoading::_asyncFunction(std::string filepath)
 {
     _frames.clear();
+    _total_frames_time = std::chrono::nanoseconds(0);
     _w = 0;
     _h = 0;
     // Check if filepath ends with ".png"
@@ -197,11 +198,15 @@ void Texture::_AsyncLoading::_asyncFunction(std::string filepath)
                 auto& frame = _frames.emplace_back();
                 uint32_t const* p = reinterpret_cast<uint32_t const*>(apng_frame.vec.data());
                 frame.pixels = RGBA32::Vector(p, p + (_w * _h));
-                if (apng_frame.delay_den > 0)
-                    frame.delay = std::chrono::milliseconds(
-                        1000 * apng_frame.delay_num / apng_frame.delay_den);
+                if (apng_frame.delay_den > 0) {
+                    frame.delay = std::chrono::nanoseconds(static_cast<int64_t>(1e9
+                        * static_cast<double>(apng_frame.delay_num)
+                        / static_cast<double>(apng_frame.delay_den)
+                        ));
+                }
                 else
-                    frame.delay = std::chrono::milliseconds(1);
+                    frame.delay = std::chrono::milliseconds(16);
+                _total_frames_time += frame.delay;
                 // Free raw pixels early
                 apng_frame.vec.clear();
                 apng_frame.rows.clear();
@@ -230,7 +235,7 @@ void Texture::_AsyncLoading::_asyncFunction(std::string filepath)
     }
 }
 
-void Texture::_updatePlanesScaling()
+void Texture::_updatePlanes()
 {
     Window::Shared const window = _window.lock();
     if (!window) {
@@ -244,6 +249,8 @@ void Texture::_updatePlanesScaling()
             && plane->_texture_id == _id)
         {
             plane->_updateTexScaling();
+            plane->_animation_duration = std::chrono::nanoseconds(0);
+            plane->_texture_offset = 0;
         }
     }
 }
@@ -254,14 +261,14 @@ void Texture::_internalEdit(void const* pixels, int w, int h)
         if (w != _raw_w || h != _raw_h) {
             _raw_w = w;
             _raw_h = h;
-            _updatePlanesScaling();
+            _updatePlanes();
         }
     }
     else if (_type == Type::Text) {
         if (w != _text_w || h != _text_h) {
             _text_w = w;
             _text_h = h;
-            _updatePlanesScaling();
+            _updatePlanes();
         }
     }
     _raw_texture.editSettings(w, h);

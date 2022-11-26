@@ -121,7 +121,7 @@ void PlaneRenderer::render() try
             // Store MVP components (set uniforms later)
             _VPs[count] = VP;
             _Models[count] = plane->getModelMat4();
-            _TextureOffsets[count] = static_cast<float>(plane->getTextureOffset());
+            _TextureOffsets[count] = static_cast<float>(plane->_texture_offset);
             _Alphas[count] = plane->getAlpha();
             // Bind another active texture (set uniform IDs later)
             glActiveTexture(GL_TEXTURE0 + count);

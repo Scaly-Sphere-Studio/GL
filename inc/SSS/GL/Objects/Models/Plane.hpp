@@ -15,6 +15,7 @@ class Plane final : public Model<Plane> {
     friend class PlaneRenderer;
     friend class Window;
     friend class Texture;
+    friend bool pollEverything();
 
 private:
     Plane(std::weak_ptr<Window> window);
@@ -57,9 +58,16 @@ public:
     inline uint32_t getTextureID() const noexcept { return _texture_id; };
     inline Texture* getTexture() const noexcept { return _window.lock()->getTexture(_texture_id); };
 
-    inline void setAnimation(bool animate) noexcept { _animate = animate; };
-    inline bool isAnimated() const noexcept { return _animate; };
-    inline uint32_t getTextureOffset() const noexcept { return _texture_offset; };
+    inline void play() noexcept { _is_playing = true; };
+    inline void pause() noexcept { _is_playing = false; };
+    inline void stop() noexcept { _is_playing = false; _animation_duration = std::chrono::nanoseconds(0); };
+
+    inline bool isPlaying() const noexcept { return _is_playing; };
+    inline bool isPaused() const noexcept { return !_is_playing && _animation_duration != std::chrono::nanoseconds(0); };
+    inline bool isStopped() const noexcept { return !_is_playing && _animation_duration == std::chrono::nanoseconds(0); };
+
+    void setLooping(bool enable) noexcept { _looping = enable; };
+    bool isLooping() const noexcept { return _looping; };
 
     inline void setAlpha(float alpha) noexcept { _alpha = std::clamp(alpha, 0.f, 1.f); };
     inline float getAlpha() const noexcept { return _alpha; };
@@ -95,9 +103,13 @@ public:
     inline void getRelativeCoords(int& x, int& y) const noexcept { x = _relative_x; y = _relative_y; };
 
 private:
+    void _updateTextureOffset();
+
     uint32_t _texture_id{ 0 };
     uint32_t _texture_offset{ 0 };
-    bool _animate{ false };
+    bool _is_playing{ false };
+    bool _looping{ false };
+    std::chrono::nanoseconds _animation_duration;
     float _alpha{ 1.f };
     bool _use_texture{ false };
     GLsizei _tex_w{ 0 }, _tex_h{ 0 };

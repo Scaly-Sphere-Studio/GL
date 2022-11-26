@@ -1,11 +1,17 @@
 #include "SSS/GL/Window.hpp"
 #include "SSS/Text-Rendering.hpp"
 #include "SSS/GL/Objects/Texture.hpp"
+#include "SSS/GL/Objects/Models/Plane.hpp"
 
 SSS_GL_BEGIN;
 
 bool pollEverything() try
 {
+    using namespace std::chrono;
+    static steady_clock::time_point last_poll = steady_clock::now();
+    steady_clock::time_point const now = steady_clock::now();
+    nanoseconds const time_since_last_poll = now - last_poll;
+
     bool ret = false;
     
     // Poll events
@@ -37,14 +43,15 @@ bool pollEverything() try
                 if (thread.isPending() && !thread._frames.empty()) {
                     // Move pixels from thread to texture instance, so that future
                     // threads can run without affecting those pixels.
-                    texture._frame_id = 0;
                     texture._frames = std::move(thread._frames);
+                    texture._total_frames_time = thread._total_frames_time;
                     // Update dimensions if needed, edit OpenGL texture
                     texture._raw_w = thread._w;
                     texture._raw_h = thread._h;
-                    texture._updatePlanesScaling();
-                    texture._raw_texture.editSettings(thread._w, thread._h, texture._frames.size());
-                    for (size_t i = 0; i < texture._frames.size(); ++i) {
+                    texture._updatePlanes();
+                    texture._raw_texture.editSettings(thread._w, thread._h,
+                        static_cast<uint32_t>(texture._frames.size()));
+                    for (uint32_t i = 0; i < texture._frames.size(); ++i) {
                         texture._raw_texture.editPixels(texture._frames[i].pixels.data(), i);
                     }
                     thread.setAsHandled();
@@ -61,12 +68,27 @@ bool pollEverything() try
                     texture._internalEdit(text_area->pixelsGet(), new_w, new_h);
                 }
             }
+            
         }
     }
     
+    // Loop over each Plane instance
+    for (Plane::Weak const& weak : Plane::_instances) {
+        Plane::Shared const plane = weak.lock();
+        if (!plane) {
+            continue;
+        }
+        
+        if (plane->isPlaying()) {
+            plane->_animation_duration += time_since_last_poll;
+            plane->_updateTextureOffset();
+        }
+    }
+
     // Set all Area threds as handled, now that all textures are updated
     TR::Area::notifyAll();
 
+    last_poll = now;
     return ret;
 }
 CATCH_AND_RETHROW_FUNC_EXC;

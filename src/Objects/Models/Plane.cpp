@@ -93,6 +93,37 @@ Plane::Shared Plane::getHovered(Window::Shared window) noexcept
     return Shared();
 }
 
+void Plane::_updateTextureOffset()
+{
+    _texture_offset = 0;
+    Texture* tex = getTexture();
+    if (!tex || tex->getTotalFramesTime() == std::chrono::nanoseconds(0))
+        return;
+    auto const& frames = tex->getFrames();
+
+    // If loop disabled & animation completed, stop playing
+    if (!_looping && _animation_duration >= tex->getTotalFramesTime()) {
+        _is_playing = false;
+        _animation_duration = std::chrono::nanoseconds(0);
+        _texture_offset = static_cast<uint32_t>(frames.size()) - 1;
+    }
+
+    // Remove excess time
+    while (_animation_duration >= tex->getTotalFramesTime()) {
+        _animation_duration -= tex->getTotalFramesTime();
+    }
+
+    // Find current texture offset
+    auto duration = _animation_duration;
+    for (uint32_t i = 0; i < frames.size(); ++i) {
+        duration -= frames[i].delay;
+        if (duration < std::chrono::nanoseconds(0)) {
+            _texture_offset = i;
+            break;
+        }
+    }
+}
+
 void Plane::_updateTexScaling()
 {
     Window::Shared const window = _window.lock();

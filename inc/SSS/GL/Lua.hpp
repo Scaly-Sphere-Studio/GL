@@ -104,6 +104,13 @@ inline void lua_setup_GL(sol::state& lua)
     plane["rotate"] = &Plane::rotate;
     plane["translate"] = &Plane::translate;
     plane["texture"] = sol::property(&Plane::getTexture, &Plane::setTexture);
+    plane["play"] = &Plane::play;
+    plane["pause"] = &Plane::pause;
+    plane["stop"] = &Plane::stop;
+    plane["isPlaying"] = &Plane::isPlaying;
+    plane["isPaused"] = &Plane::isPaused;
+    plane["isStopped"] = &Plane::isStopped;
+    plane["loop"] = sol::property(&Plane::isLooping, &Plane::setLooping);
     plane["alpha"] = sol::property(&Plane::getAlpha, &Plane::setAlpha);
     plane["passive_func_id"] = sol::property(&Plane::getPassiveFuncID, &Plane::setPassiveFuncID);
     plane["on_click_func_id"] = sol::property(&Plane::getOnClickFuncID, &Plane::setOnClickFuncID);

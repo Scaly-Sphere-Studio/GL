@@ -71,15 +71,15 @@ public:
         using Vector = std::vector<Frame>;
         // Pixel array
         RGBA32::Vector pixels;
-        // Delay in ms. 40 would be 25FPS
-        std::chrono::milliseconds delay{ 40 };
+        // Delay, in ns for precision. 40ms would be 25FPS
+        std::chrono::nanoseconds delay;
     };
 
 private:
     Basic::Texture _raw_texture;    // OpenGL texture
     Type _type{ Type::Raw };        // Texture type
     Frame::Vector _frames{ 1 };     // Vector of frames (is used for images AND animations)
-    size_t _frame_id{ 0 };          // Current frame
+    std::chrono::nanoseconds _total_frames_time; // Total time for current animation to loop
     int _raw_w{ 0 }, _raw_h{ 0 };   // Raw dimensions
     int _text_w{ 0 }, _text_h{ 0 }; // Last TR dimensions (stored for scaling update)
     uint32_t _text_area_id{ 0 };    // TR::Area id
@@ -114,6 +114,9 @@ public:
      *  @sa loadImage(), editRawPixels(), getRawPixels()
      */
     inline void getRawDimensions(int& w, int& h) const noexcept { w = _raw_w; h = _raw_h; };
+
+    inline auto const& getFrames() const noexcept { return _frames; };
+    inline auto getTotalFramesTime() const noexcept { return _total_frames_time; };
 
     /** Sets the TR::Area to be used when type is set to Type::Text.
      *  As for loadImage(), TR::Area work asynchronously. Whenever the
@@ -155,12 +158,13 @@ private:
         virtual void _asyncFunction(std::string filepath);
     private:
         Frame::Vector _frames;
+        std::chrono::nanoseconds _total_frames_time;
         int _w{ 0 };
         int _h{ 0 };
     } _loading_thread;
 
-    // Update the texture scaling of all Planes using this texture
-    void _updatePlanesScaling();
+    // Update the texture scaling & offset of all Planes using this texture
+    void _updatePlanes();
     // Simple internal edit based on set type
     void _internalEdit(void const* pixels, int w, int h);
 };
