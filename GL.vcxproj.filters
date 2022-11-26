@@ -100,7 +100,7 @@
       <Filter>src\Window</Filter>
     </ClCompile>
     <ClCompile Include="src\Objects\Texture_APNG.cpp">
-      <Filter>src</Filter>
+      <Filter>src\Objects</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

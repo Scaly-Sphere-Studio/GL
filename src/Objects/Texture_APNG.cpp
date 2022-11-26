@@ -70,10 +70,10 @@ static void row_fn(png_structp png_ptr, png_bytep new_row, png_uint_32 row_num, 
 static void compose_frame(std::vector<uint8_t*>& rows_dst, std::vector<uint8_t*> const& rows_src,
     uint8_t bop, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
 {
-    for (size_t j = 0; j < h; j++)
+    for (size_t i = 0; i < h; i++)
     {
-        uint8_t* dp = rows_dst[j + y] + x * 4;
-        uint8_t const* sp = rows_src[j];
+        uint8_t* dp = rows_dst[i + y] + x * 4;
+        uint8_t const* sp = rows_src[i];
 
         if (bop == 0)
             std::memcpy(dp, sp, w * 4);
@@ -179,7 +179,7 @@ static int processing_finish(png_structp png_ptr, png_infop info_ptr)
 int load_apng(char const* filepath, std::vector<APNGFrame>& frames)
 {
     FILE* f;
-    unsigned int id, i, j, w, h, w0, h0, x0, y0;
+    unsigned int id, w, h, w0, h0, x0, y0;
     unsigned int delay_num, delay_den, dop, bop, rowbytes, imagesize;
     uint8_t sig[8];
     png_structp png_ptr;
@@ -218,15 +218,15 @@ int load_apng(char const* filepath, std::vector<APNGFrame>& frames)
 
             frameRaw.vec.resize(imagesize);
             frameRaw.rows.resize(h * sizeof(png_bytep));
-            for (j = 0; j < h; j++)
-                frameRaw.rows[j] = frameRaw.vec.data() + j * rowbytes;
+            for (size_t i = 0; i < h; i++)
+                frameRaw.rows[i] = frameRaw.vec.data() + i * rowbytes;
 
             frameCur.w = w;
             frameCur.h = h;
             frameCur.vec.resize(imagesize);
             frameCur.rows.resize(h * sizeof(png_bytep));
-            for (j = 0; j < h; j++)
-                frameCur.rows[j] = frameCur.vec.data() + j * rowbytes;
+            for (size_t i = 0; i < h; i++)
+                frameCur.rows[i] = frameCur.vec.data() + i * rowbytes;
 
             processing_start(png_ptr, info_ptr, (void*)&frameRaw, hasInfo, chunkIHDR, chunksInfo);
 
@@ -248,8 +248,8 @@ int load_apng(char const* filepath, std::vector<APNGFrame>& frames)
                             {
                                 frameNext.vec.resize(imagesize);
                                 frameNext.rows.resize(h * sizeof(png_bytep));
-                                for (j = 0; j < h; j++)
-                                    frameNext.rows[j] = frameNext.vec.data() + j * rowbytes;
+                                for (size_t i = 0; i < h; i++)
+                                    frameNext.rows[i] = frameNext.vec.data() + i * rowbytes;
 
                                 if (dop == 2)
                                     frameNext.vec = frameCur.vec;
@@ -264,8 +264,8 @@ int load_apng(char const* filepath, std::vector<APNGFrame>& frames)
                                 {
                                     frameNext.vec = frameCur.vec;
                                     if (dop == 1)
-                                        for (j = 0; j < h0; j++)
-                                            std::memset(frameNext.rows[y0 + j] + x0 * 4, 0, w0 * 4);
+                                        for (size_t i = 0; i < h0; i++)
+                                            std::memset(frameNext.rows[y0 + i] + x0 * 4, 0, w0 * 4);
                                 }
                                 frameCur.vec = std::move(frameNext.vec);
                                 frameCur.rows = std::move(frameNext.rows);
