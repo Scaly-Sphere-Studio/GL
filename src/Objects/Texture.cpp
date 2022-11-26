@@ -79,24 +79,26 @@ void Texture::setType(Type type) noexcept
     }
     _type = type;
     if (type == Type::Raw) {
-        if (_pixels->empty()) {
+        auto pixels = getRawPixels();
+        if (pixels.empty()) {
             return;
         }
         _updatePlanesScaling();
-        _raw_texture.edit(&_pixels->at(0), _raw_w, _raw_h);
+        _raw_texture.editSettings(_raw_w, _raw_h, _frames.size());
+        _raw_texture.editPixels(pixels.data());
     }
     else if (type == Type::Text) {
         TR::Area* text_area = getTextArea();
         if (text_area) {
             text_area->pixelsGetDimensions(_text_w, _text_h);
             _updatePlanesScaling();
-            _raw_texture.edit(text_area->pixelsGet(), _text_w, _text_h);
+            _raw_texture.editSettings(_text_w, _text_h);
+            _raw_texture.editPixels(text_area->pixelsGet());
         }
         else {
             _text_w = 0;
             _text_h = 0;
             _updatePlanesScaling();
-            _raw_texture.edit(nullptr, 0, 0);
         }
     }
 }
@@ -113,14 +115,14 @@ void Texture::editRawPixels(void const* pixels, int width, int height) try
     _raw_w = width;
     _raw_h = height;
     // Give the image to the OpenGL texture
-    _raw_texture.edit(pixels, _raw_w, _raw_h);
-    if (_pixels3D.size() != 1) {
-        _pixels3D.resize(1);
-        _pixels = _pixels3D.begin();
+    _raw_texture.editSettings(width, height);
+    _raw_texture.editPixels(pixels);
+    if (_frames.size() != 1) {
+        _frames.resize(1);
     }
     // Replace previous pixel storage
     uint32_t const* ptr = reinterpret_cast<uint32_t const*>(pixels);
-    *_pixels = RGBA32::Vector(ptr, ptr + (_raw_w * _raw_h));
+    _frames[0].pixels = RGBA32::Vector(ptr, ptr + (_raw_w * _raw_h));
 
     // Update plane type and scaling
     _type = Type::Raw;
@@ -169,7 +171,7 @@ std::tuple<int, int> Texture::getCurrentDimensions() const noexcept
 
 void Texture::_AsyncLoading::_asyncFunction(std::string filepath)
 {
-    _pixels.clear();
+    _frames.clear();
     _w = 0;
     _h = 0;
     // Check if filepath ends with ".png"
@@ -178,19 +180,31 @@ void Texture::_AsyncLoading::_asyncFunction(std::string filepath)
     static const std::string png(".png");
     // Ends with ".png"
     if (filepath.compare(filepath.length() - png.length(), png.length(), png) == 0) {
-        std::vector<_internal::APNGFrame> frames;
-        if (load_apng(filepath.c_str(), frames) < 0) {
+        // Load frames
+        std::vector<_internal::APNGFrame> apng_frames;
+        if (load_apng(filepath.c_str(), apng_frames) < 0) {
             SSS::throw_exc(CONTEXT_MSG("load_apng error", filepath));
         }
-        _w = frames[0].w;
-        _h = frames[0].h;
-        if (!frames.empty()) {
-            _pixels.reserve(frames.size());
-            for (auto& frame : frames) {
-                uint32_t const* p = reinterpret_cast<uint32_t const*>(frame.vec.data());
-                _pixels.emplace_back() = RGBA32::Vector(p, p + (_w * _h));
-                frame.vec.clear();
-                frame.rows.clear();
+        // Copy data
+        if (!apng_frames.empty()) {
+            _w = apng_frames[0].w;
+            _h = apng_frames[0].h;
+            _frames.reserve(apng_frames.size());
+            // Copy each frame one by one
+            for (auto& apng_frame : apng_frames) {
+                if (_beingCanceled()) return;
+                // Copy pixels and compute delay
+                auto& frame = _frames.emplace_back();
+                uint32_t const* p = reinterpret_cast<uint32_t const*>(apng_frame.vec.data());
+                frame.pixels = RGBA32::Vector(p, p + (_w * _h));
+                if (apng_frame.delay_den > 0)
+                    frame.delay = std::chrono::milliseconds(
+                        1000 * apng_frame.delay_num / apng_frame.delay_den);
+                else
+                    frame.delay = std::chrono::milliseconds(1);
+                // Free raw pixels early
+                apng_frame.vec.clear();
+                apng_frame.rows.clear();
             }
         }
     }
@@ -211,7 +225,8 @@ void Texture::_AsyncLoading::_asyncFunction(std::string filepath)
         }
         // Fill vector
         if (_beingCanceled()) return;
-        _pixels.emplace_back() = RGBA32::Vector(raw_pixels.get(), raw_pixels.get() + (_w * _h));
+        _frames.emplace_back().pixels =
+            RGBA32::Vector(raw_pixels.get(), raw_pixels.get() + (_w * _h));
     }
 }
 
@@ -249,7 +264,8 @@ void Texture::_internalEdit(void const* pixels, int w, int h)
             _updatePlanesScaling();
         }
     }
-    _raw_texture.edit(pixels, w, h);
+    _raw_texture.editSettings(w, h);
+    _raw_texture.editPixels(pixels);
     // Log
     if (Log::GL::Texture::query(Log::GL::Texture::get().edit)) {
         char buff[256];

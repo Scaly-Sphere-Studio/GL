@@ -67,13 +67,19 @@ public:
         Text
     };
 
+    struct Frame {
+        using Vector = std::vector<Frame>;
+        // Pixel array
+        RGBA32::Vector pixels;
+        // Delay in ms. 40 would be 25FPS
+        std::chrono::milliseconds delay{ 40 };
+    };
+
 private:
     Basic::Texture _raw_texture;    // OpenGL texture
     Type _type{ Type::Raw };        // Texture type
-    using RGBA32_Vec3D = std::vector<RGBA32::Vector>;
-    RGBA32_Vec3D _pixels3D{ 1 };    // 3D Vector of pixels
-    // Current RAW pixels (TR pixels aren't stored here)
-    RGBA32_Vec3D::iterator _pixels{ _pixels3D.begin() };
+    Frame::Vector _frames{ 1 };     // Vector of frames (is used for images AND animations)
+    size_t _frame_id{ 0 };          // Current frame
     int _raw_w{ 0 }, _raw_h{ 0 };   // Raw dimensions
     int _text_w{ 0 }, _text_h{ 0 }; // Last TR dimensions (stored for scaling update)
     uint32_t _text_area_id{ 0 };    // TR::Area id
@@ -103,7 +109,7 @@ public:
     /** Returns the raw pixels of this instance.
      *  @sa loadImage(), editRawPixels(), getRawDimensions()
      */
-    inline RGBA32::Vector const& getRawPixels() const noexcept { return *_pixels; };
+    inline auto const& getRawPixels(size_t id = 0) const noexcept { return _frames.at(id).pixels; };
     /** Copies the internal raw pixels' dimensions in given parameters.
      *  @sa loadImage(), editRawPixels(), getRawPixels()
      */
@@ -148,7 +154,7 @@ private:
     protected:
         virtual void _asyncFunction(std::string filepath);
     private:
-        RGBA32_Vec3D _pixels;
+        Frame::Vector _frames;
         int _w{ 0 };
         int _h{ 0 };
     } _loading_thread;
