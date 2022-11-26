@@ -12,16 +12,17 @@ layout(location = 1) in vec2 a_UV;
 
 uniform mat4 u_Models[gl_MaxTextureImageUnits];
 uniform mat4 u_VPs[gl_MaxTextureImageUnits];
+uniform float u_TextureOffsets[gl_MaxTextureImageUnits];
 uniform float u_Alphas[gl_MaxTextureImageUnits];
 
-out vec2 UV;
+out vec3 UVW;
 out float Alpha;
 flat out int instanceID;
 
 void main()
 {
     gl_Position = u_VPs[gl_InstanceID] * u_Models[gl_InstanceID] * vec4(a_Pos, 1);
-    UV = a_UV;
+    UVW = vec3(a_UV, gl_InstanceID);
     Alpha = u_Alphas[gl_InstanceID];
     instanceID = gl_InstanceID;
 }
@@ -31,15 +32,15 @@ void main()
 #version 330 core
 out vec4 FragColor;
 
-in vec2 UV;
+in vec3 UVW;
 in float Alpha;
 flat in int instanceID;
 
-uniform sampler2D u_Textures[gl_MaxTextureImageUnits];
+uniform sampler2DArray u_Textures[gl_MaxTextureImageUnits];
 
 void main()
 {
-    FragColor = texture(u_Textures[instanceID], UV);
+    FragColor = texture(u_Textures[instanceID], UVW);
     FragColor.w *= Alpha;
 }
 )";

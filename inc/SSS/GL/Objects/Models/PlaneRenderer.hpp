@@ -60,6 +60,7 @@ private:
     
     std::vector<glm::mat4> _VPs;
     std::vector<glm::mat4> _Models;
+    std::vector<float> _TextureOffsets;
     std::vector<float> _Alphas;
 
     Plane::Weak _hovered;

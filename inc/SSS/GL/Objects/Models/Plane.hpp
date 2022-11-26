@@ -57,6 +57,10 @@ public:
     inline uint32_t getTextureID() const noexcept { return _texture_id; };
     inline Texture* getTexture() const noexcept { return _window.lock()->getTexture(_texture_id); };
 
+    inline void setAnimation(bool animate) noexcept { _animate = animate; };
+    inline bool isAnimated() const noexcept { return _animate; };
+    inline uint32_t getTextureOffset() const noexcept { return _texture_offset; };
+
     inline void setAlpha(float alpha) noexcept { _alpha = std::clamp(alpha, 0.f, 1.f); };
     inline float getAlpha() const noexcept { return _alpha; };
 
@@ -92,6 +96,8 @@ public:
 
 private:
     uint32_t _texture_id{ 0 };
+    uint32_t _texture_offset{ 0 };
+    bool _animate{ false };
     float _alpha{ 1.f };
     bool _use_texture{ false };
     GLsizei _tex_w{ 0 }, _tex_h{ 0 };

@@ -189,7 +189,7 @@ bool Plane::_hoverTriangle(glm::mat4 const& mvp, glm::vec3 const& A,
     size_t const pixel = static_cast<size_t>(_relative_y * _tex_w + _relative_x);
     switch (texture->getType()) {
     case Texture::Type::Raw: {
-        if (pixel < texture->getRawPixels().size()) {
+        if (pixel < texture->getRawPixels(_texture_offset).size()) {
             is_hovered = texture->getRawPixels().at(pixel).a != 0;
         }
         break;
