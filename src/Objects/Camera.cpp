@@ -7,11 +7,7 @@ std::vector<Camera::Weak> Camera::_instances{};
 Camera::Camera(std::weak_ptr<Window> weak_window)
     : _internal::WindowObject(weak_window)
 {
-    Window::Shared const window = _window.lock();
-    if (!window) {
-        return;
-    }
-    _window_ratio = window->getRatio();
+    _window_ratio = _get_window()->getRatio();
     _computeView();
     _computeProjection();
 }
@@ -41,7 +37,7 @@ Camera::Vector Camera::getInstances(Window::Shared window) noexcept
     Vector vec;
     for (Weak const& weak : _instances) {
         Shared camera = weak.lock();
-        if (camera && (!window || window == camera->_window.lock()))
+        if (camera && (!window || window == camera->_get_window()))
             vec.emplace_back(camera);
     }
     return vec;
@@ -168,9 +164,8 @@ void Camera::_computeProjection()
     }
         break;
     case Projection::OrthoFixed: {
-        Window::Shared window = _window.lock();
         int w, h;
-        window->getDimensions(w, h);
+        _get_window()->getDimensions(w, h);
         float const x = static_cast<float>(w) / 2.f;
         float const y = static_cast<float>(h) / 2.f;
         _projection = glm::ortho(-x, x, -y, y, _z_near, _z_far);

@@ -46,7 +46,7 @@ Plane::Shared Plane::create(Texture const& texture)
 
 Plane::Shared Plane::duplicate() const
 {
-    Shared plane = create(_window.lock());
+    Shared plane = create(_get_window());
     *plane = *this;
     return plane;
 }
@@ -56,7 +56,7 @@ Plane::Vector Plane::getInstances(Window::Shared window) noexcept
     Vector vec;
     for (Weak const& weak : _instances) {
         Shared plane = weak.lock();
-        if (plane && (!window || window == plane->_window.lock()))
+        if (plane && (!window || window == plane->_get_window()))
             vec.emplace_back(plane);
     }
     return vec;
@@ -86,7 +86,7 @@ Plane::Shared Plane::getHovered(Window::Shared window) noexcept
 
     for (Weak weak : _instances) {
         Shared plane(weak);
-        if (plane && plane->isHovered() && plane->_window.lock() == window) {
+        if (plane && plane->isHovered() && plane->_get_window() == window) {
             return plane;
         }
     }
@@ -126,7 +126,7 @@ void Plane::_updateTextureOffset()
 
 void Plane::_updateTexScaling()
 {
-    Window::Shared const window = _window.lock();
+    Window::Shared const window = _get_window();
     if (!window || !_use_texture) {
         _tex_scaling = glm::vec3(1);
         _should_compute_mat4 = true;
@@ -207,11 +207,7 @@ bool Plane::_hoverTriangle(glm::mat4 const& mvp, glm::vec3 const& A,
     }
 
     // Retrieve Texture.
-    Window::Shared const window = _window.lock();
-    if (!window) {
-        return true;
-    }
-    Texture* texture = window->getTexture(_texture_id);
+    Texture* texture = _get_window()->getTexture(_texture_id);
     if (!texture) {
         return true;
     }

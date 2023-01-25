@@ -30,7 +30,7 @@ void Window::window_resize_callback(GLFWwindow* ptr, int w, int h) try
         // Update screen_ratio of cameras
         for (Camera::Weak weak : Camera::_instances) {
             Camera::Shared camera = weak.lock();
-            if (camera && camera->_window.lock() == window) {
+            if (camera && camera->_get_window() == window) {
                 camera->_window_ratio = window->getRatio();
                 camera->_computeProjection();
             }

@@ -3,6 +3,24 @@
 
 SSS_GL_BEGIN;
 
+INTERNAL_BEGIN;
+
+std::shared_ptr<Window> const WindowObject::_get_window() const
+{
+    Window::Shared const window = _window.lock();
+    if (!window) {
+        throw_exc("Trying to use window-dependent object without bounding a valid Window");
+    }
+    return window;
+}
+
+Context const WindowObject::_get_context() const
+{
+    return Context(_window);
+}
+
+INTERNAL_END;
+
 namespace Basic {
 
     Texture::Texture(std::weak_ptr<Window> window, GLenum given_target) try
@@ -20,18 +38,18 @@ namespace Basic {
 
     Texture::~Texture()
     {
-        Context const context(_window);
+        Context const context = _get_context();
         glDeleteTextures(1, &id);
     }
 
     void Texture::bind() const
     {
-        Context const context(_window);
+        Context const context = _get_context();
         glBindTexture(_target, id);
     }
 
     void Texture::setTarget(GLenum new_target) {
-        Context const context(_window);
+        Context const context = _get_context();
         _target = new_target;
         bind();
         switch (_target)
@@ -55,7 +73,7 @@ namespace Basic {
 
     void Texture::parameteri(GLenum pname, GLint param)
     {
-        Context const context(_window);
+        Context const context = _get_context();
         bind();
         glTexParameteri(_target, pname, param);
     }
@@ -66,7 +84,7 @@ namespace Basic {
             return;
         }
 
-        Context const context(_window);
+        Context const context = _get_context();
         bind();
 
         _width = width;
@@ -98,7 +116,7 @@ namespace Basic {
         if (pixels == nullptr) {
             return;
         }
-        Context const context(_window);
+        Context const context = _get_context();
         bind();
 
         switch (_target)
@@ -136,19 +154,19 @@ namespace Basic {
 
     VAO::~VAO()
     {
-        Context const context(_window);
+        Context const context = _get_context();
         glDeleteVertexArrays(1, &id);
     }
 
     void VAO::bind() const
     {
-        Context const context(_window);
+        Context const context = _get_context();
         glBindVertexArray(id);
     }
 
     void VAO::unbind() const
     {
-        Context const context(_window);
+        Context const context = _get_context();
         glBindVertexArray(0);
     }
 
@@ -167,19 +185,19 @@ namespace Basic {
 
     VBO::~VBO()
     {
-        Context const context(_window);
+        Context const context = _get_context();
         glDeleteBuffers(1, &id);
     }
 
     void VBO::bind() const
     {
-        Context const context(_window);
+        Context const context = _get_context();
         glBindBuffer(GL_ARRAY_BUFFER, id);
     }
 
     void VBO::edit(GLsizeiptr size, const void* data, GLenum usage)
     {
-        Context const context(_window);
+        Context const context = _get_context();
         bind();
         glBufferData(GL_ARRAY_BUFFER, size, data, usage);
     }
@@ -199,19 +217,19 @@ namespace Basic {
 
     IBO::~IBO()
     {
-        Context const context(_window);
+        Context const context = _get_context();
         glDeleteBuffers(1, &id);
     }
 
     void IBO::bind() const
     {
-        Context const context(_window);
+        Context const context = _get_context();
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
     }
 
     void IBO::edit(GLsizeiptr size, const void* data, GLenum usage)
     {
-        Context const context(_window);
+        Context const context = _get_context();
         bind();
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, usage);
     }

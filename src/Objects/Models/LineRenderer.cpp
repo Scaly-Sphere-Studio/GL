@@ -3,7 +3,7 @@
 SSS_GL_BEGIN;
 
 LineRenderer::LineRenderer(std::weak_ptr<Window> win, uint32_t id)
-    : Renderer(win, id), _vao(_window), _vbo(_window), _ibo(_window)
+    : Renderer(win, id), _vao(win), _vbo(win), _ibo(win)
 {
     _vao.bind();
 
@@ -79,7 +79,7 @@ void LineRenderer::render()
 {
     static size_t size;
 
-    Context const& context(_window);
+    Context const context = _get_context();
 
     _vao.bind();
 
@@ -110,7 +110,11 @@ void LineRenderer::render()
     }
 
 
-    auto const& shader = _window.lock()->getShaders(getShadersID());
+    Shaders* shader = getShaders();
+    if (!shader) {
+        LOG_METHOD_WRN("No shaders bound");
+        return;
+    }
     glm::mat4 const mvp = camera ? camera->getVP() : glm::mat4(1);
     shader->use();
     shader->setUniformMat4fv("u_MVP", 1, GL_FALSE, &mvp[0][0]);

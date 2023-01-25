@@ -38,6 +38,7 @@ namespace SSS::Log::GL {
 SSS_GL_BEGIN;
 
 class Window; // Pre-declaration of Window class.
+class Context; // Pre-declaration of Context class.
 
 INTERNAL_BEGIN;
 
@@ -48,19 +49,21 @@ public:
     WindowObject() = delete;
 protected:
     WindowObject(std::weak_ptr<Window> window) : _window(window) {};
+    std::shared_ptr<Window> const _get_window() const;
+    Context const _get_context() const;
+private:
     std::weak_ptr<Window> _window;
 };
 
 // This class is to be inherited in all classes whose instances are
 // bounded (with an ID) to a specific Window instance.
-class WindowObjectWithID {
+class WindowObjectWithID : public WindowObject {
 public:
     WindowObjectWithID() = delete;
     uint32_t getID() const noexcept { return _id; };
 protected:
     WindowObjectWithID(std::weak_ptr<Window> window, uint32_t id)
-        : _window(window), _id(id) {};
-    std::weak_ptr<Window> _window;
+        : WindowObject(window), _id(id) {};
     uint32_t const _id;
 };
 

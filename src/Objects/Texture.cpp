@@ -11,7 +11,7 @@ SSS_GL_BEGIN;
 Texture::Texture(std::weak_ptr<Window> window, uint32_t id) try
     : _internal::WindowObjectWithID(window, id), _raw_texture(window, GL_TEXTURE_2D_ARRAY)
 {
-    Context const context(_window);
+    Context const context = _get_context();
     _raw_texture.bind();
     _raw_texture.parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     _raw_texture.parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -22,7 +22,7 @@ Texture::Texture(std::weak_ptr<Window> window, uint32_t id) try
     if (Log::GL::Texture::query(Log::GL::Texture::get().life_state)) {
         char buff[256];
         sprintf_s(buff, "'%s' -> Texture (id: %04u) -> created",
-            WINDOW_TITLE(_window), _id);
+            WINDOW_TITLE(_get_window()), _id);
         LOG_GL_MSG(buff);
     }
 }
@@ -34,7 +34,7 @@ Texture::~Texture()
     if (Log::GL::Texture::query(Log::GL::Texture::get().life_state)) {
         char buff[256];
         sprintf_s(buff, "'%s' -> Texture (id: %04u) -> deleted",
-            WINDOW_TITLE(_window), _id);
+            WINDOW_TITLE(_get_window()), _id);
         LOG_GL_MSG(buff);
     }
 }
@@ -132,7 +132,7 @@ void Texture::editRawPixels(void const* pixels, int width, int height) try
     if (Log::GL::Texture::query(Log::GL::Texture::get().edit)) {
         char buff[256];
         sprintf_s(buff, "'%s' -> Texture (id: %04u) -> edit",
-            WINDOW_TITLE(_window), _id);
+            WINDOW_TITLE(_get_window()), _id);
         LOG_GL_MSG(buff);
     }
 }
@@ -237,14 +237,11 @@ void Texture::_AsyncLoading::_asyncFunction(std::string filepath)
 
 void Texture::_updatePlanes()
 {
-    Window::Shared const window = _window.lock();
-    if (!window) {
-        return;
-    }
+    Window::Shared const window = _get_window();
     // Update texture scaling of all planes & buttons matching this texture
     for (Plane::Weak const& weak : Plane::_instances) {
         Plane::Shared plane = weak.lock();
-        if (plane->_window.lock() == window
+        if (plane->_get_window() == window
             && plane->_use_texture
             && plane->_texture_id == _id)
         {
@@ -277,7 +274,7 @@ void Texture::_internalEdit(void const* pixels, int w, int h)
     if (Log::GL::Texture::query(Log::GL::Texture::get().edit)) {
         char buff[256];
         sprintf_s(buff, "'%s' -> Texture (id: %04u) -> edit",
-            WINDOW_TITLE(_window), _id);
+            WINDOW_TITLE(_get_window()), _id);
         LOG_GL_MSG(buff);
     }
 }

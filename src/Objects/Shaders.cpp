@@ -9,7 +9,7 @@ Shaders::Shaders(std::weak_ptr<Window> window, uint32_t id) try
 	if (Log::GL::Shaders::query(Log::GL::Shaders::get().life_state)) {
 		char buff[256];
 		sprintf_s(buff, "'%s' -> Shaders (id: %04u) -> created",
-			WINDOW_TITLE(_window), _id);
+			WINDOW_TITLE(_get_window()), _id);
 		LOG_GL_MSG(buff);
 	}
 }
@@ -22,19 +22,19 @@ Shaders::~Shaders()
 		if (Log::GL::Shaders::query(Log::GL::Shaders::get().life_state)) {
 			char buff[256];
 			sprintf_s(buff, "'%s' -> Shaders (id: %04u) -> deleted (was never loaded)",
-				WINDOW_TITLE(_window), _id);
+				WINDOW_TITLE(_get_window()), _id);
 			LOG_GL_MSG(buff);
 		}
 		return;
 	}
-	Context const context(_window);
+	Context const context = _get_context();
 	glDeleteProgram(_program_id);
 
 	// Log
 	if (Log::GL::Shaders::query(Log::GL::Shaders::get().life_state)) {
 		char buff[256];
 		sprintf_s(buff, "'%s' -> Shaders (id: %04u) -> deleted",
-			WINDOW_TITLE(_window), _id);
+			WINDOW_TITLE(_get_window()), _id);
 		LOG_GL_MSG(buff);
 	}
 }
@@ -133,7 +133,7 @@ Shaders& Shaders::create(std::string const& vertex_fp, std::string const& fragme
 
 void Shaders::loadFromStrings(std::string const& vertex_data, std::string const& fragment_data) try
 {
-	Context const context(_window);
+	Context const context = _get_context();
 	_program_id = loadShaders(vertex_data, fragment_data);
 	_vertex_data = vertex_data;
 	_fragment_data = fragment_data;
@@ -143,7 +143,7 @@ void Shaders::loadFromStrings(std::string const& vertex_data, std::string const&
 	if (Log::GL::Shaders::query(Log::GL::Shaders::get().loading)) {
 		char buff[256];
 		sprintf_s(buff, "'%s' -> Shaders (id: %04u) -> loaded",
-			WINDOW_TITLE(_window), _id);
+			WINDOW_TITLE(_get_window()), _id);
 		LOG_GL_MSG(buff);
 	}
 }
@@ -163,14 +163,14 @@ void Shaders::use() const
 		LOG_METHOD_WRN(buff);
 		return;
 	}
-	Context const context(_window);
+	Context const context = _get_context();
 	glUseProgram(_program_id);
 }
 
 // Return the location of a uniform variable for this program
 GLint Shaders::getUniformLocation(std::string const& name)
 {
-	Context const context(_window);
+	Context const context = _get_context();
 	return glGetUniformLocation(_program_id, name.c_str());
 }
 

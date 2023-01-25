@@ -6,9 +6,9 @@
 SSS_GL_BEGIN;
 
 PlaneRenderer::PlaneRenderer(std::weak_ptr<Window> window, uint32_t id) try
-    : Renderer(window, id), _vao(_window), _vbo(_window), _ibo(_window)
+    : Renderer(window, id), _vao(window), _vbo(window), _ibo(window)
 {
-    Context const context(_window);
+    Context const context = _get_context();
 
     setShadersID(static_cast<uint32_t>(Shaders::Preset::Plane));
 
@@ -74,11 +74,8 @@ void PlaneRenderer::render() try
     if (!isActive()) {
         return;
     }
-    Window::Shared const window = _window.lock();
-    if (!window) {
-        return;
-    }
-    Context const context(_window);
+    Window::Shared const window = _get_window();
+    Context const context = _get_context();
 
     Shaders* shader = window->getShaders(getShadersID());
     if (!shader)
@@ -142,11 +139,6 @@ bool PlaneRenderer::_findNearestModel(float x, float y)
     _hovered.reset();
     _hovered_z = DBL_MAX;
     if (!isActive()) {
-        return false;
-    }
-    // Retrieve window and its objects
-    Window::Shared const window = _window.lock();
-    if (!window) {
         return false;
     }
     // Loop over each Renderer::Chunk in reverse order

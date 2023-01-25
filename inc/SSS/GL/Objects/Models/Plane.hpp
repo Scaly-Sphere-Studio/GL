@@ -56,7 +56,7 @@ public:
     inline void setTexture(Texture const& texture) { setTextureID(texture.getID()); };
     /** Returns the Texture ID used for this instance.*/
     inline uint32_t getTextureID() const noexcept { return _texture_id; };
-    inline Texture* getTexture() const noexcept { return _window.lock()->getTexture(_texture_id); };
+    inline Texture* getTexture() const noexcept { return _get_window()->getTexture(_texture_id); };
 
     inline void play() noexcept { _is_playing = true; };
     inline void pause() noexcept { _is_playing = false; };
