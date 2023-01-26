@@ -10,7 +10,7 @@ PlaneRenderer::PlaneRenderer(std::shared_ptr<Window> window, uint32_t id) try
 {
     Context const context = _get_context();
 
-    setShadersID(static_cast<uint32_t>(Shaders::Preset::Plane));
+    setShaders(_get_window()->getPresetShaders(static_cast<uint32_t>(Shaders::Preset::Plane)));
 
     _vao.bind();
     _vbo.bind();
@@ -77,7 +77,7 @@ void PlaneRenderer::render() try
     Window::Shared const window = _get_window();
     Context const context = _get_context();
 
-    Shaders* shader = window->getShaders(getShadersID());
+    Shaders::Shared shader = getShaders();
     if (!shader)
         return;
     shader->use();

@@ -51,14 +51,12 @@ public:
     virtual void render() = 0;
 
 private:
-    uint32_t _shaders_id{ 0 };
+    Shaders::Shared _shaders;
 public:
-    /** Sets the Shaders ID to be used in render().*/
-    inline void setShadersID(uint32_t id) noexcept { _shaders_id = id; };
-    inline void setShaders(Shaders const& shaders) noexcept { setShadersID(shaders.getID()); };
-    /** Retrieves the set Shaders ID to be used in render().*/
-    inline uint32_t getShadersID() const noexcept { return _shaders_id; };
-    inline Shaders* getShaders() const noexcept { return _get_window()->getShaders(_shaders_id); };
+    /** Sets the Shaders to be used in render().*/
+    inline void setShaders(Shaders::Shared shaders) noexcept { _shaders = shaders; };
+    /** Retrieves the set Shaders to be used in render().*/
+    inline Shaders::Shared getShaders() const noexcept { return _shaders; };
 
 private:
     bool _is_active{ true };

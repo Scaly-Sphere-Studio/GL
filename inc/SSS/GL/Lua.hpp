@@ -24,9 +24,9 @@ inline void lua_setup_GL(sol::state& lua)
     shaders["loadFromFiles"] = &Shaders::loadFromFiles;
     shaders["loadFromStrings"] = &Shaders::loadFromStrings;
     shaders["create"] = sol::overload(
-        sol::resolve<Shaders&(Window::Shared)>(Shaders::create),
-        sol::resolve<Shaders&()>(Shaders::create),
-        sol::resolve<Shaders&(std::string const&, std::string const&)>(Shaders::create)
+        sol::resolve<Shaders::Shared(Window::Shared)>(Shaders::create),
+        sol::resolve<Shaders::Shared()>(Shaders::create),
+        sol::resolve<Shaders::Shared(std::string const&, std::string const&)>(Shaders::create)
     );
 
     auto renderer = gl.new_usertype<Renderer>("Renderer", sol::no_constructor);

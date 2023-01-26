@@ -2,14 +2,16 @@
 
 SSS_GL_BEGIN;
 
-Shaders::Shaders(std::shared_ptr<Window> window, uint32_t id) try
-	: _internal::WindowObjectWithID(window, id)
+std::vector<Shaders::Weak> Shaders::_instances{};
+
+Shaders::Shaders(std::shared_ptr<Window> window) try
+	: _internal::SharedWindowObject<Shaders>(window)
 {
 	// Log
 	if (Log::GL::Shaders::query(Log::GL::Shaders::get().life_state)) {
 		char buff[256];
 		sprintf_s(buff, "'%s' -> Shaders (id: %04u) -> created",
-			WINDOW_TITLE(_get_window()), _id);
+			WINDOW_TITLE(_get_window()), 0);
 		LOG_GL_MSG(buff);
 	}
 }
@@ -22,7 +24,7 @@ Shaders::~Shaders()
 		if (Log::GL::Shaders::query(Log::GL::Shaders::get().life_state)) {
 			char buff[256];
 			sprintf_s(buff, "'%s' -> Shaders (id: %04u) -> deleted (was never loaded)",
-				WINDOW_TITLE(_get_window()), _id);
+				WINDOW_TITLE(_get_window()), 0);
 			LOG_GL_MSG(buff);
 		}
 		return;
@@ -40,7 +42,7 @@ Shaders::~Shaders()
 	if (Log::GL::Shaders::query(Log::GL::Shaders::get().life_state)) {
 		char buff[256];
 		sprintf_s(buff, "'%s' -> Shaders (id: %04u) -> deleted",
-			WINDOW_TITLE(_get_window()), _id);
+			WINDOW_TITLE(_get_window()), 0);
 		LOG_GL_MSG(buff);
 	}
 }
@@ -111,29 +113,10 @@ static GLuint loadShaders(std::string const& vertex_data, std::string const& fra
 	return program_id;
 }
 
-Shaders& Shaders::create(std::shared_ptr<Window> win) try
+Shaders::Shared Shaders::create(std::string const& vertex_fp, std::string const& fragment_fp)
 {
-	if (!win) {
-		throw_exc("Given Window is nullptr.");
-	}
-	return win->createShaders();
-}
-CATCH_AND_RETHROW_FUNC_EXC;
-
-Shaders& Shaders::create() try
-{
-	Window::Shared win = Window::getFirst();
-	if (!win) {
-		throw_exc("No Window instance exists.");
-	}
-	return win->createShaders();
-}
-CATCH_AND_RETHROW_FUNC_EXC;
-
-Shaders& Shaders::create(std::string const& vertex_fp, std::string const& fragment_fp)
-{
-	Shaders& shader = create();
-	shader.loadFromFiles(vertex_fp, fragment_fp);
+	Shaders::Shared shader = create();
+	shader->loadFromFiles(vertex_fp, fragment_fp);
 	return shader;
 }
 
@@ -149,7 +132,7 @@ void Shaders::loadFromStrings(std::string const& vertex_data, std::string const&
 	if (Log::GL::Shaders::query(Log::GL::Shaders::get().loading)) {
 		char buff[256];
 		sprintf_s(buff, "'%s' -> Shaders (id: %04u) -> loaded",
-			WINDOW_TITLE(_get_window()), _id);
+			WINDOW_TITLE(_get_window()), 0);
 		LOG_GL_MSG(buff);
 	}
 }
@@ -165,7 +148,7 @@ void Shaders::use() const
 {
 	if (!_loaded) {
 		char buff[256];
-		sprintf_s(buff, "Shaders (id: %04u) were not loaded!", _id);
+		sprintf_s(buff, "Shaders (id: %04u) were not loaded!", 0);
 		LOG_METHOD_WRN(buff);
 		return;
 	}

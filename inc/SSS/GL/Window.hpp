@@ -190,18 +190,14 @@ public :
     inline bool keyIsPressed(int key) const noexcept { return _key_inputs[key]; };
 
 private:
-    std::map<uint32_t, std::unique_ptr<Shaders>> _shaders;    // Shaders
+    std::map<uint32_t, std::shared_ptr<Shaders>> _preset_shaders;   // Preset shaders
     std::map<uint32_t, std::unique_ptr<Renderer>> _renderers; // Renderers
     std::map<uint32_t, std::unique_ptr<Texture>> _textures;   // Textures
 
 public:
-    /** Creates a Shaders at given ID (see Shaders::Preset).
-     *  @sa removeShaders()
-     */
-    Shaders& createShaders(uint32_t id);
-    Shaders& createShaders();
-    Shaders* getShaders(uint32_t id) const noexcept;
-    inline auto const& getShadersMap() const noexcept { return _shaders; };
+
+    std::shared_ptr<Shaders> getPresetShaders(uint32_t id) const noexcept;
+
     /** Creates a derived Renderer at given ID.
      *  @sa removeRenderer()
      */
@@ -221,10 +217,6 @@ public:
     Texture* getTexture(uint32_t id) const noexcept;
     inline auto const& getTextureMap() const noexcept { return _textures; };
 
-    /** Removes the Shaders at given ID (see Shaders::Preset).
-     *  @sa createShaders()
-     */
-    void removeShaders(uint32_t id);
     /** Removes the Renderer at given ID.
      *  @sa createRenderer()
      */

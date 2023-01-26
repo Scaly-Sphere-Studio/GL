@@ -130,7 +130,7 @@ CATCH_AND_RETHROW_METHOD_EXC;
 Window::~Window()
 {
     // Free all bound objects
-    _shaders.clear();
+    _preset_shaders.clear();
     _renderers.clear();
     _textures.clear();
     // Remove weak ptr from instance vector

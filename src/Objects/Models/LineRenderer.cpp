@@ -110,7 +110,7 @@ void LineRenderer::render()
     }
 
 
-    Shaders* shader = getShaders();
+    Shaders::Shared shader = getShaders();
     if (!shader) {
         LOG_METHOD_WRN("No shaders bound");
         return;

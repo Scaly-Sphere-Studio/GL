@@ -21,12 +21,13 @@ SSS_GL_BEGIN;
 /** Non-exhaustive abstractization of \b OpenGL shaders.
  *  @sa Window::createShaders(), Renderer::setShadersID()
  */
-class Shaders final : public _internal::WindowObjectWithID {
+class Shaders final : public _internal::SharedWindowObject<Shaders> {
+    friend class _internal::SharedWindowObject<Shaders>;
     friend class Window;
 
 private:
     // Constructor 
-    Shaders(std::shared_ptr<Window> window, uint32_t id);
+    Shaders(std::shared_ptr<Window> window);
 
 public:
     /** Destructor, unloads internal glProgram if needed.
@@ -36,19 +37,12 @@ public:
     
     /** Internal preset shaders IDs*/
     enum class Preset : uint32_t {
-        /** Indicates that further ID values are reserved.*/
-        First = 0x80000000,
         /** Plane shaders, used by Plane::Renderer by default.*/
         Plane
     };
 
-    /** Creates an instance stored in Window at given ID (see Preset).
-     *  If no window is specified, the first one (Window::getFirst()) is used.\n
-     *  @sa Window::removeShaders()
-     */
-    static Shaders& create(std::shared_ptr<Window> win);
-    static Shaders& create();
-    static Shaders& create(std::string const& vert_file, std::string const& frag_file);
+    using _internal::SharedWindowObject<Shaders>::create;
+    static Shared create(std::string const& vert_file, std::string const& frag_file);
 
     /** Loads shaders from raw strings (useful for Preset shaders).
      *  Context will always be accurately set.
