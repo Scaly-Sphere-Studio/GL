@@ -43,7 +43,7 @@ class Context; // Pre-declaration of Context class.
 INTERNAL_BEGIN;
 
 // This class is to be inherited in all classes whose instances are
-// bounded (without ID) to a specific Window instance.
+// bound to a specific Window instance.
 class WindowObject {
 public:
     WindowObject() = delete;
@@ -67,6 +67,42 @@ protected:
     WindowObjectWithID(std::shared_ptr<Window> window, uint32_t id)
         : WindowObject(window), _id(id) {};
     uint32_t const _id;
+};
+
+template<class T>
+class SharedWindowObject : public WindowObject {
+public:
+    SharedWindowObject() = delete;
+    using Shared = std::shared_ptr<T>;
+    using Vector = std::vector<Shared>;
+
+protected:
+    SharedWindowObject(std::shared_ptr<Window> window) : WindowObject(window) {};
+    using Weak = std::weak_ptr<T>;
+    static std::vector<Weak> _instances;
+
+public:
+    static Shared create(std::shared_ptr<Window> window)
+    {
+        if (!window) {
+            window = Window::getFirst();
+        }
+        Shared shared(new T(window));
+        _instances.emplace_back(shared);
+        return shared;
+    }
+    static Shared create() { return create(nullptr); }
+
+    static Vector getInstances(std::shared_ptr<Window> window) noexcept {
+        Vector vec;
+        for (Weak const& weak : _instances) {
+            Shared const instance = weak.lock();
+            if (instance && (!window || window == instance->_get_window()))
+                vec.emplace_back(instance);
+        }
+        return vec;
+    }
+    static Vector getInstances() noexcept { return getInstances(nullptr); }
 };
 
 INTERNAL_END;

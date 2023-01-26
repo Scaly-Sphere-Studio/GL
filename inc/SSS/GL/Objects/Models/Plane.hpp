@@ -12,6 +12,7 @@ SSS_GL_BEGIN;
 
 /** 2D plane derived from Model.*/
 class Plane final : public Model<Plane> {
+    friend class _internal::SharedWindowObject<Plane>;
     friend class PlaneRenderer;
     friend class Window;
     friend class Texture;
@@ -30,22 +31,9 @@ public:
     /** Destructor, default.*/
     virtual ~Plane();
 
-    /** Shared ptr to Plane instance.*/
-    using Shared = std::shared_ptr<Plane>;
-    using Vector = std::vector<Shared>;
-private:
-    using Weak = std::weak_ptr<Plane>;
-    static std::vector<Weak> _instances;
-public:
-    /** Creates a Shared plane instance.
-     *  If no window is specified, the first one (Window::getFirst()) is used.
-     */
-    static Shared create(std::shared_ptr<Window> win);
-    static Shared create();
+    using Model::create;
     static Shared create(Texture const& texture);
     Shared duplicate() const;
-
-    static Vector getInstances(Window::Shared window = nullptr) noexcept;
 
     virtual glm::mat4 getModelMat4();
     virtual void getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles,

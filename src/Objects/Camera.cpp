@@ -5,7 +5,7 @@ SSS_GL_BEGIN;
 std::vector<Camera::Weak> Camera::_instances{};
 
 Camera::Camera(std::shared_ptr<Window> weak_window)
-    : _internal::WindowObject(weak_window)
+    : _internal::SharedWindowObject<Camera>(weak_window)
 {
     _window_ratio = _get_window()->getRatio();
     _computeView();
@@ -15,32 +15,6 @@ Camera::Camera(std::shared_ptr<Window> weak_window)
 Camera::~Camera()
 {
     cleanWeakPtrVector(_instances);
-}
-
-Camera::Shared Camera::create(std::shared_ptr<Window> win)
-{
-    if (!win) {
-        win = Window::getFirst();
-    }
-    Shared camera(new Camera(win));
-    _instances.emplace_back(camera);
-    return camera;
-}
-
-Camera::Shared Camera::create()
-{
-    return create(nullptr);
-}
-
-Camera::Vector Camera::getInstances(Window::Shared window) noexcept
-{
-    Vector vec;
-    for (Weak const& weak : _instances) {
-        Shared camera = weak.lock();
-        if (camera && (!window || window == camera->_get_window()))
-            vec.emplace_back(camera);
-    }
-    return vec;
 }
 
 void Camera::setPosition(glm::vec3 position)

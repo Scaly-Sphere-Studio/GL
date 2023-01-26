@@ -22,21 +22,6 @@ void Plane::setTextureID(uint32_t texture_id)
     _updateTexScaling();
 }
 
-Plane::Shared Plane::create(std::shared_ptr<Window> win)
-{
-    if (!win) {
-        win = Window::getFirst();
-    }
-    Shared plane(new Plane(win));
-    _instances.emplace_back(plane);
-    return plane;
-}
-
-Plane::Shared Plane::create()
-{
-    return create(nullptr);
-}
-
 Plane::Shared Plane::create(Texture const& texture)
 {
     Shared ret = create();
@@ -49,17 +34,6 @@ Plane::Shared Plane::duplicate() const
     Shared plane = create(_get_window());
     *plane = *this;
     return plane;
-}
-
-Plane::Vector Plane::getInstances(Window::Shared window) noexcept
-{
-    Vector vec;
-    for (Weak const& weak : _instances) {
-        Shared plane = weak.lock();
-        if (plane && (!window || window == plane->_get_window()))
-            vec.emplace_back(plane);
-    }
-    return vec;
 }
 
 glm::mat4 Plane::getModelMat4()

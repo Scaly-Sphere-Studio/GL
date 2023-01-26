@@ -14,9 +14,9 @@ SSS_GL_BEGIN;
 /** Abstractization of View and Projection matrices, used in Renderer::Chunk.
  *  @sa create()
  */
-class Camera final : public _internal::WindowObject {
+class Camera final : public _internal::SharedWindowObject<Camera> {
     friend class Window;
-
+    friend class _internal::SharedWindowObject<Camera>;
 private:
     Camera(std::shared_ptr<Window> window);           // Constructor
 public:
@@ -32,22 +32,6 @@ public:
     Camera& operator=(const Camera&)    = delete;   // Copy assignment
     Camera& operator=(Camera&&)         = delete;   // Move assignment
     /** \endcond*/
-
-    /** Shared ptr to Camera instance.*/
-    using Shared = std::shared_ptr<Camera>;
-    using Vector = std::vector<Shared>;
-private:
-    using Weak = std::weak_ptr<Camera>;
-    static std::vector<Weak> _instances;
-
-public:
-    /** Creates a Shared camera instance.
-     *  If no window is specified, the first one (Window::getFirst()) is used.
-     */
-    static Shared create(std::shared_ptr<Window> win);
-    static Shared create();
-
-    static Vector getInstances(Window::Shared window) noexcept;
 
     /** Sets the position coordinates of the camera.
      *  The default coordinates are (0, 0, 0).

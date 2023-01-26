@@ -14,7 +14,7 @@ SSS_GL_BEGIN;
  *  @sa Plane
  */
 template <class T>
-class Model : public _internal::WindowObject {
+class Model : public _internal::SharedWindowObject<T> {
     friend class Window;
 
 protected:
@@ -99,7 +99,7 @@ std::map<uint32_t, typename Model<T>::OnClickFunc> Model<T>::on_click_funcs {};
 
 template <class T>
 Model<T>::Model(std::shared_ptr<Window> window) try
-    : _internal::WindowObject(window)
+    : _internal::SharedWindowObject<T>(window)
 {
     setScaling();
     setRotation();
