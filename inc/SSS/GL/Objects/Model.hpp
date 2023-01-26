@@ -19,7 +19,7 @@ class Model : public _internal::WindowObject {
 
 protected:
     /** Constructor, ensures the renderer is bound to a Window instance.*/
-    Model(std::weak_ptr<Window> window);
+    Model(std::shared_ptr<Window> window);
 
 public:
     /** Virtual destructor, default.*/
@@ -98,7 +98,7 @@ template <class T>
 std::map<uint32_t, typename Model<T>::OnClickFunc> Model<T>::on_click_funcs {};
 
 template <class T>
-Model<T>::Model(std::weak_ptr<Window> window) try
+Model<T>::Model(std::shared_ptr<Window> window) try
     : _internal::WindowObject(window)
 {
     setScaling();

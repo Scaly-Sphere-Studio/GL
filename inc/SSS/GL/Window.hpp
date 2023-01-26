@@ -519,8 +519,8 @@ public:
     ~Context();
     /** @cond INTERNAL*/
     Context()                           = delete;   // Default constructor
-    Context(const Context&)             = delete;   // Copy constructor
-    Context(Context&&)                  = delete;   // Move constructor
+    Context(const Context&)             = default;  // Copy constructor
+    Context(Context&&)                  = default;  // Move constructor
     Context& operator=(const Context&)  = delete;   // Copy assignment
     Context& operator=(Context&&)       = delete;   // Move assignment
     /** @endcond*/

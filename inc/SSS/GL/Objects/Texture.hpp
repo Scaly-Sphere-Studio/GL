@@ -42,7 +42,7 @@ class Texture final : public _internal::WindowObjectWithID {
     friend class Window;
 
 private:
-    Texture(std::weak_ptr<Window> window, uint32_t id);
+    Texture(std::shared_ptr<Window> window, uint32_t id);
 
 public:
     /** Destructor, can log but otherwise default.*/

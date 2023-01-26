@@ -11,7 +11,7 @@ class LineRenderer : public Renderer {
     friend class Window;
 
 private:
-    LineRenderer(std::weak_ptr<Window> win, uint32_t id);
+    LineRenderer(std::shared_ptr<Window> win, uint32_t id);
 
 public:
     Camera::Shared camera;

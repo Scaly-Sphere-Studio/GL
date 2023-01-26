@@ -5,7 +5,7 @@
 
 SSS_GL_BEGIN;
 
-PlaneRenderer::PlaneRenderer(std::weak_ptr<Window> window, uint32_t id) try
+PlaneRenderer::PlaneRenderer(std::shared_ptr<Window> window, uint32_t id) try
     : Renderer(window, id), _vao(window), _vbo(window), _ibo(window)
 {
     Context const context = _get_context();

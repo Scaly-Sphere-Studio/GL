@@ -5,25 +5,40 @@ SSS_GL_BEGIN;
 
 INTERNAL_BEGIN;
 
+WindowObject::WindowObject(std::shared_ptr<Window> window)
+{
+    _changeWindow(window);
+}
+
+void WindowObject::_changeWindow(std::shared_ptr<Window> window)
+{
+    _window = window;
+    _glfw_window = _get_window()->getGLFWwindow();
+}
+
 std::shared_ptr<Window> const WindowObject::_get_window() const
 {
     Window::Shared const window = _window.lock();
     if (!window) {
-        throw_exc("Trying to use window-dependent object without bounding a valid Window");
+        throw_exc("Trying to use window-dependent object without bounding a valid Window.");
     }
     return window;
 }
 
 Context const WindowObject::_get_context() const
 {
-    return Context(_window);
+    Context const context(_glfw_window);
+    if (glfwGetCurrentContext() == nullptr) {
+        throw_exc("Trying to make a destroyed Window's context current.");
+    }
+    return context;
 }
 
 INTERNAL_END;
 
 namespace Basic {
 
-    Texture::Texture(std::weak_ptr<Window> window, GLenum given_target) try
+    Texture::Texture(std::shared_ptr<Window> window, GLenum given_target) try
         :   _internal::WindowObject(window),
             id([&]()->GLuint {
                 Context const context(window);
@@ -38,8 +53,14 @@ namespace Basic {
 
     Texture::~Texture()
     {
-        Context const context = _get_context();
-        glDeleteTextures(1, &id);
+        try {
+            Context const context = _get_context();
+            glDeleteTextures(1, &id);
+        }
+        catch (...) {
+            LOG_CTX_WRN(THIS_NAME, "Could not delete properly: no valid Window bound.");
+            return;
+        };
     }
 
     void Texture::bind() const
@@ -140,7 +161,7 @@ namespace Basic {
     CATCH_AND_RETHROW_METHOD_EXC;
 
 
-    VAO::VAO(std::weak_ptr<Window> window) try
+    VAO::VAO(std::shared_ptr<Window> window) try
         :   _internal::WindowObject(window),
             id([&]()->GLuint {
                 Context const context(window);
@@ -154,8 +175,14 @@ namespace Basic {
 
     VAO::~VAO()
     {
-        Context const context = _get_context();
-        glDeleteVertexArrays(1, &id);
+        try {
+            Context const context = _get_context();
+            glDeleteVertexArrays(1, &id);
+        }
+        catch (...) {
+            LOG_CTX_WRN(THIS_NAME, "Could not delete properly: no valid Window bound.");
+            return;
+        };
     }
 
     void VAO::bind() const
@@ -170,7 +197,7 @@ namespace Basic {
         glBindVertexArray(0);
     }
 
-    VBO::VBO(std::weak_ptr<Window> window) try
+    VBO::VBO(std::shared_ptr<Window> window) try
         :   _internal::WindowObject(window),
             id([&]()->GLuint {
                 Context const context(window);
@@ -185,8 +212,14 @@ namespace Basic {
 
     VBO::~VBO()
     {
-        Context const context = _get_context();
-        glDeleteBuffers(1, &id);
+        try {
+            Context const context = _get_context();
+            glDeleteBuffers(1, &id);
+        }
+        catch (...) {
+            LOG_CTX_WRN(THIS_NAME, "Could not delete properly: no valid Window bound.");
+            return;
+        };
     }
 
     void VBO::bind() const
@@ -203,7 +236,7 @@ namespace Basic {
     }
 
 
-    IBO::IBO(std::weak_ptr<Window> window) try
+    IBO::IBO(std::shared_ptr<Window> window) try
         :   _internal::WindowObject(window),
             id([&]()->GLuint {
                 Context const context(window);
@@ -217,8 +250,14 @@ namespace Basic {
 
     IBO::~IBO()
     {
-        Context const context = _get_context();
-        glDeleteBuffers(1, &id);
+        try {
+            Context const context = _get_context();
+            glDeleteBuffers(1, &id);
+        }
+        catch (...) {
+            LOG_CTX_WRN(THIS_NAME, "Could not delete properly: no valid Window bound.");
+            return;
+        };
     }
 
     void IBO::bind() const

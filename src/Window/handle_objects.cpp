@@ -11,7 +11,7 @@ Shaders& Window::createShaders(uint32_t id) try
         throw_exc(CONTEXT_MSG("Given ID is in reserved values", id));
     }
     auto& ptr = _shaders[id];
-    ptr.reset(new Shaders(weak_from_this(), id));
+    ptr.reset(new Shaders(shared_from_this(), id));
     return *ptr;
 }
 CATCH_AND_RETHROW_METHOD_EXC;
@@ -43,7 +43,7 @@ Renderer* Window::getRenderer(uint32_t id) const noexcept
 Texture& Window::createTexture(uint32_t id) try
 {
     auto& ptr = _textures[id];
-    ptr.reset(new Texture(weak_from_this(), id));
+    ptr.reset(new Texture(shared_from_this(), id));
     return *ptr;
 }
 CATCH_AND_RETHROW_METHOD_EXC;

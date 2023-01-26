@@ -16,7 +16,7 @@ class PlaneRenderer final : public Renderer {
     friend class Window;
 
 private:
-    PlaneRenderer(std::weak_ptr<Window> window, uint32_t id);
+    PlaneRenderer(std::shared_ptr<Window> window, uint32_t id);
 
     void _renderPart(Shaders& shader, uint32_t& count, bool reset_depth) const;
 

@@ -8,7 +8,7 @@
 
 SSS_GL_BEGIN;
 
-Texture::Texture(std::weak_ptr<Window> window, uint32_t id) try
+Texture::Texture(std::shared_ptr<Window> window, uint32_t id) try
     : _internal::WindowObjectWithID(window, id), _raw_texture(window, GL_TEXTURE_2D_ARRAY)
 {
     Context const context = _get_context();

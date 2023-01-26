@@ -15,7 +15,7 @@ SSS_GL_BEGIN;
 class Renderer : public _internal::WindowObjectWithID {
 protected:
     /** Constructor, ensures the renderer is bound to a Window instance.*/
-    Renderer(std::weak_ptr<Window> window, uint32_t id)
+    Renderer(std::shared_ptr<Window> window, uint32_t id)
         : _internal::WindowObjectWithID(window, id) {};
 public:
     /** Virtual destructor, default.*/
@@ -73,7 +73,7 @@ template<class Derived>
 inline Derived& Window::createRenderer(uint32_t id) try
 {
     auto& ptr = _renderers[id];
-    ptr.reset(new Derived(weak_from_this(), id));
+    ptr.reset(new Derived(shared_from_this(), id));
     return ptr->castAs<Derived>();
 }
 CATCH_AND_RETHROW_METHOD_EXC;

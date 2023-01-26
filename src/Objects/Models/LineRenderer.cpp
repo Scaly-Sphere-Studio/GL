@@ -2,7 +2,7 @@
 
 SSS_GL_BEGIN;
 
-LineRenderer::LineRenderer(std::weak_ptr<Window> win, uint32_t id)
+LineRenderer::LineRenderer(std::shared_ptr<Window> win, uint32_t id)
     : Renderer(win, id), _vao(win), _vbo(win), _ibo(win)
 {
     _vao.bind();

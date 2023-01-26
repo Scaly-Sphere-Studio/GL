@@ -18,7 +18,7 @@ class Plane final : public Model<Plane> {
     friend bool pollEverything();
 
 private:
-    Plane(std::weak_ptr<Window> window);
+    Plane(std::shared_ptr<Window> window);
 
     // Make copy & move operations private
     Plane(const Plane&)             = default;   // Copy constructor

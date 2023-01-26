@@ -4,7 +4,7 @@ SSS_GL_BEGIN;
 
 std::vector<Camera::Weak> Camera::_instances{};
 
-Camera::Camera(std::weak_ptr<Window> weak_window)
+Camera::Camera(std::shared_ptr<Window> weak_window)
     : _internal::WindowObject(weak_window)
 {
     _window_ratio = _get_window()->getRatio();

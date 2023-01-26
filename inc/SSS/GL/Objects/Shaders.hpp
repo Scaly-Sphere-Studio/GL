@@ -26,7 +26,7 @@ class Shaders final : public _internal::WindowObjectWithID {
 
 private:
     // Constructor 
-    Shaders(std::weak_ptr<Window> window, uint32_t id);
+    Shaders(std::shared_ptr<Window> window, uint32_t id);
 
 public:
     /** Destructor, unloads internal glProgram if needed.

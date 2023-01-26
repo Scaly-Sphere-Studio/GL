@@ -4,7 +4,7 @@ SSS_GL_BEGIN;
 
 std::vector<Plane::Weak> Plane::_instances{};
 
-Plane::Plane(std::weak_ptr<Window> window) try
+Plane::Plane(std::shared_ptr<Window> window) try
     : Model(window)
 {
 }

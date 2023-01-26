@@ -2,7 +2,7 @@
 
 SSS_GL_BEGIN;
 
-Shaders::Shaders(std::weak_ptr<Window> window, uint32_t id) try
+Shaders::Shaders(std::shared_ptr<Window> window, uint32_t id) try
 	: _internal::WindowObjectWithID(window, id)
 {
 	// Log
@@ -27,8 +27,14 @@ Shaders::~Shaders()
 		}
 		return;
 	}
-	Context const context = _get_context();
-	glDeleteProgram(_program_id);
+	try {
+		Context const context = _get_context();
+		glDeleteProgram(_program_id);
+	}
+	catch (...) {
+		LOG_CTX_WRN(THIS_NAME, "Could not delete properly: no valid Window bound.");
+		return;
+	};
 
 	// Log
 	if (Log::GL::Shaders::query(Log::GL::Shaders::get().life_state)) {

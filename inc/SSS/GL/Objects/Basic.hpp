@@ -48,11 +48,13 @@ class WindowObject {
 public:
     WindowObject() = delete;
 protected:
-    WindowObject(std::weak_ptr<Window> window) : _window(window) {};
+    WindowObject(std::shared_ptr<Window> window);
+    void _changeWindow(std::shared_ptr<Window> window);
     std::shared_ptr<Window> const _get_window() const;
     Context const _get_context() const;
 private:
     std::weak_ptr<Window> _window;
+    GLFWwindow* _glfw_window;
 };
 
 // This class is to be inherited in all classes whose instances are
@@ -62,7 +64,7 @@ public:
     WindowObjectWithID() = delete;
     uint32_t getID() const noexcept { return _id; };
 protected:
-    WindowObjectWithID(std::weak_ptr<Window> window, uint32_t id)
+    WindowObjectWithID(std::shared_ptr<Window> window, uint32_t id)
         : WindowObject(window), _id(id) {};
     uint32_t const _id;
 };
@@ -80,7 +82,7 @@ namespace Basic {
          *  Forces to be bound to a Window instance.
          *  @sa ~Texture()
          */
-        Texture(std::weak_ptr<Window> window, GLenum given_target);
+        Texture(std::shared_ptr<Window> window, GLenum given_target);
         /** Destructor, deletes the \b OpenGL texture of corresponding #id.
          *  @sa Texture()
          */
@@ -130,7 +132,7 @@ namespace Basic {
          *  Forces to be bound to a Window instance.
          *  @sa ~VAO()
          */
-        VAO(std::weak_ptr<Window> window);
+        VAO(std::shared_ptr<Window> window);
         /** Destructor, deletes the \b OpenGL vertex array
          *  of corresponding #id.
          *  @sa VAO()
@@ -157,7 +159,7 @@ namespace Basic {
          *  Forces to be bound to a Window instance.
          *  @sa ~VBO()
          */
-        VBO(std::weak_ptr<Window> window);
+        VBO(std::shared_ptr<Window> window);
         /** Destructor, deletes the \b OpenGL buffer object
          *  of corresponding #id.
          *  @sa VBO()
@@ -189,7 +191,7 @@ namespace Basic {
          *  Forces to be bound to a Window instance.
          *  @sa ~IBO()
          */
-        IBO(std::weak_ptr<Window> window);
+        IBO(std::shared_ptr<Window> window);
          /** Destructor, deletes the \b OpenGL buffer object
           *  of corresponding #id.
           *  @sa VBO()

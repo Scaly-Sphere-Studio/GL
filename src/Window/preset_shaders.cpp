@@ -58,7 +58,7 @@ void Window::_loadPresetShaders() try
         // Retrieve shader pointer
         auto& shader = _shaders[id];
         // Allocate new shader
-        shader.reset(new Shaders(weak_from_this(), id));
+        shader.reset(new Shaders(shared_from_this(), id));
         // Retrieve shader data
         _planeShadersData(vertex_data, fragment_data);
         // Load shader

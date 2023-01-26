@@ -18,7 +18,7 @@ class Camera final : public _internal::WindowObject {
     friend class Window;
 
 private:
-    Camera(std::weak_ptr<Window> window);           // Constructor
+    Camera(std::shared_ptr<Window> window);           // Constructor
 public:
     /** Destructor, default
      *  @sa Window::removeCamera()
