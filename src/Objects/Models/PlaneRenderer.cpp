@@ -112,10 +112,7 @@ void PlaneRenderer::render() try
             if (count == window->maxGLSLTextureUnits()) {
                 _renderPart(*shader, count, false);
             }
-            if (!plane || !plane->_use_texture)
-                continue;
-            Texture* texture = window->getTexture(plane->_texture_id);
-            if (!texture)
+            if (!plane || !plane->_texture)
                 continue;
 
             // Store MVP components (set uniforms later)
@@ -125,7 +122,7 @@ void PlaneRenderer::render() try
             _Alphas[count] = plane->getAlpha();
             // Bind another active texture (set uniform IDs later)
             glActiveTexture(GL_TEXTURE0 + count);
-            texture->bind();
+            plane->_texture->bind();
 
             ++count;
         }

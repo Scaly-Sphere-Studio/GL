@@ -32,19 +32,17 @@ public:
     virtual ~Plane();
 
     using Model::create;
-    static Shared create(Texture const& texture);
+    static Shared create(Texture::Shared texture);
     Shared duplicate() const;
 
     virtual glm::mat4 getModelMat4();
     virtual void getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles,
         glm::vec3& translation);
     
-    /** Sets the Texture ID to be used for this instance.*/
-    void setTextureID(uint32_t texture_id);
-    inline void setTexture(Texture const& texture) { setTextureID(texture.getID()); };
-    /** Returns the Texture ID used for this instance.*/
-    inline uint32_t getTextureID() const noexcept { return _texture_id; };
-    Texture* getTexture() const noexcept;
+    /** Sets the Texture to be used for this instance.*/
+    void setTexture(Texture::Shared texture);;
+    /** Returns the Texture used for this instance.*/
+    inline Texture::Shared getTexture() const noexcept { return _texture; };
 
     inline void play() noexcept { _is_playing = true; };
     inline void pause() noexcept { _is_playing = false; };
@@ -93,13 +91,12 @@ public:
 private:
     void _updateTextureOffset();
 
-    uint32_t _texture_id{ 0 };
+    Texture::Shared _texture;
     uint32_t _texture_offset{ 0 };
     bool _is_playing{ false };
     bool _looping{ false };
-    std::chrono::nanoseconds _animation_duration;
+    std::chrono::nanoseconds _animation_duration{ 0 };
     float _alpha{ 1.f };
-    bool _use_texture{ false };
     GLsizei _tex_w{ 0 }, _tex_h{ 0 };
     glm::vec3 _tex_scaling{ 1 };
 

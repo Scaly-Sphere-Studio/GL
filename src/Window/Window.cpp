@@ -129,7 +129,6 @@ Window::~Window()
     // Free all bound objects
     _preset_shaders.clear();
     _renderers.clear();
-    _textures.clear();
     // Remove weak ptr from instance vector
     cleanWeakPtrVector(_instances);
     // Terminate GLFW

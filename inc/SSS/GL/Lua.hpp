@@ -52,7 +52,7 @@ inline void lua_setup_GL(sol::state& lua)
     shaders["loadFromFiles"] = &Shaders::loadFromFiles;
     shaders["loadFromStrings"] = &Shaders::loadFromStrings;
     shaders["create"] = sol::overload(
-        sol::resolve<Shaders::Shared(Window::Shared)>(Shaders::create),
+        sol::resolve<Shaders::Shared(GLFWwindow*)>(Shaders::create),
         sol::resolve<Shaders::Shared()>(Shaders::create),
         sol::resolve<Shaders::Shared(std::string const&, std::string const&)>(Shaders::create)
     );
@@ -62,7 +62,7 @@ inline void lua_setup_GL(sol::state& lua)
         sol::no_constructor, sol::base_classes, sol::bases<Renderer<PlaneRenderer>>());
     plane_renderer["chunks"] = &PlaneRenderer::chunks;
     plane_renderer["create"] = sol::overload(
-        sol::resolve<PlaneRenderer::Shared(Window::Shared)>(PlaneRenderer::create),
+        sol::resolve<PlaneRenderer::Shared(GLFWwindow*)>(PlaneRenderer::create),
         sol::resolve<PlaneRenderer::Shared()>(PlaneRenderer::create)
     );
     plane_renderer["shaders"] = sol::property(&PlaneRenderer::getShaders, &PlaneRenderer::setShaders);
@@ -82,7 +82,7 @@ inline void lua_setup_GL(sol::state& lua)
         sol::no_constructor, sol::base_classes, sol::bases<Renderer<LineRenderer>>());
     line_renderer["camera"] = &LineRenderer::camera;
     line_renderer["create"] = sol::overload(
-        sol::resolve<LineRenderer::Shared (Window::Shared)>(LineRenderer::create),
+        sol::resolve<LineRenderer::Shared (GLFWwindow*)>(LineRenderer::create),
         sol::resolve<LineRenderer::Shared ()>(LineRenderer::create)
     );
     line_renderer["shaders"] = sol::property(&LineRenderer::getShaders, &LineRenderer::setShaders);
@@ -96,12 +96,11 @@ inline void lua_setup_GL(sol::state& lua)
     texture["text_area"] = sol::property(&Texture::getTextArea, &Texture::setTextArea);
     texture["getDimensions"] = sol::resolve<std::tuple<int, int>() const>(&Texture::getCurrentDimensions);
     texture["create"] = sol::overload(
-        sol::resolve<Texture&(Window::Shared)>(Texture::create),
-        sol::resolve<Texture&()>(Texture::create),
-        sol::resolve<Texture&(std::string const&)>(Texture::create),
-        sol::resolve<Texture&(TR::Area const&)>(Texture::create)
+        sol::resolve<Texture::Shared(GLFWwindow*)>(Texture::create),
+        sol::resolve<Texture::Shared()>(Texture::create),
+        sol::resolve<Texture::Shared(std::string const&)>(Texture::create),
+        sol::resolve<Texture::Shared(TR::Area const&)>(Texture::create)
     );
-    texture["id"] = sol::property(&Texture::getID);
     gl.new_enum<Texture::Type>("TextureType", {
         { "Raw", Texture::Type::Raw },
         { "Text", Texture::Type::Text }
@@ -118,7 +117,7 @@ inline void lua_setup_GL(sol::state& lua)
     camera["z_near"] = sol::property(&Camera::getZNear, &Camera::setZNear);
     camera["z_far"] = sol::property(&Camera::getZFar, &Camera::setZFar);
     camera["create"] = sol::overload(
-        sol::resolve<Camera::Shared(Window::Shared)>(Camera::create), 
+        sol::resolve<Camera::Shared(GLFWwindow*)>(Camera::create), 
         sol::resolve<Camera::Shared()>(Camera::create)),
     gl.new_enum<Camera::Projection>("Projection", {
         { "Ortho", Camera::Projection::Ortho },
@@ -146,9 +145,9 @@ inline void lua_setup_GL(sol::state& lua)
     plane["on_click_func_id"] = sol::property(&Plane::getOnClickFuncID, &Plane::setOnClickFuncID);
     plane["hitbox"] = sol::property(&Plane::getHitbox, &Plane::setHitbox);
     plane["create"] = sol::overload(
-        sol::resolve<Plane::Shared(Window::Shared)>(Plane::create),
+        sol::resolve<Plane::Shared(GLFWwindow*)>(Plane::create),
         sol::resolve<Plane::Shared()>(Plane::create),
-        sol::resolve<Plane::Shared(Texture const&)>(Plane::create)
+        [](Texture* texture) { return Plane::create(Texture::get(texture)); }
     );
     plane["duplicate"] = &Plane::duplicate;
     gl.new_enum<Plane::Hitbox>("PlaneHitbox", {

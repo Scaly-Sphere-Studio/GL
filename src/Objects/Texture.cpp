@@ -9,8 +9,10 @@
 
 SSS_GL_BEGIN;
 
-Texture::Texture(std::shared_ptr<Window> window, uint32_t id) try
-    : _internal::WindowObjectWithID(window, id), _raw_texture(window, GL_TEXTURE_2D_ARRAY)
+std::vector<Texture::Weak> Texture::_instances{};
+
+Texture::Texture(std::shared_ptr<Window> window) try
+    : _internal::SharedWindowObject<Texture>(window), _raw_texture(window, GL_TEXTURE_2D_ARRAY)
 {
     Context const context = _get_context();
     _raw_texture.bind();
@@ -23,7 +25,7 @@ Texture::Texture(std::shared_ptr<Window> window, uint32_t id) try
     if (Log::GL::Texture::query(Log::GL::Texture::get().life_state)) {
         char buff[256];
         sprintf_s(buff, "'%s' -> Texture (id: %04u) -> created",
-            WINDOW_TITLE(_get_window()), _id);
+            WINDOW_TITLE(_get_window()), 0);
         LOG_GL_MSG(buff);
     }
 }
@@ -35,41 +37,22 @@ Texture::~Texture()
     if (Log::GL::Texture::query(Log::GL::Texture::get().life_state)) {
         char buff[256];
         sprintf_s(buff, "'%s' -> Texture (id: %04u) -> deleted",
-            WINDOW_TITLE(_get_window()), _id);
+            WINDOW_TITLE(_get_window()), 0);
         LOG_GL_MSG(buff);
     }
 }
 
-Texture& Texture::create(std::shared_ptr<Window> win) try
+Texture::Shared Texture::create(std::string const& filepath)
 {
-    if (!win) {
-        throw_exc("Given Window is nullptr.");
-    }
-	return win->createTexture();
-}
-CATCH_AND_RETHROW_FUNC_EXC;
-
-Texture& Texture::create() try
-{
-    std::shared_ptr<Window> win = Window::getFirst();
-    if (!win) {
-        throw_exc("No Window instance exists.");
-    }
-	return win->createTexture();
-}
-CATCH_AND_RETHROW_FUNC_EXC;
-
-Texture& Texture::create(std::string const& filepath)
-{
-    Texture& ret = create();
-    ret.loadImage(filepath);
+    Shared ret = create();
+    ret->loadImage(filepath);
     return ret;
 }
 
-Texture& Texture::create(TR::Area const& area)
+Texture::Shared Texture::create(TR::Area const& area)
 {
-    Texture& ret = create();
-    ret.setTextArea(area);
+    Shared ret = create();
+    ret->setTextArea(area);
     return ret;
 }
 
@@ -133,7 +116,7 @@ void Texture::editRawPixels(void const* pixels, int width, int height) try
     if (Log::GL::Texture::query(Log::GL::Texture::get().edit)) {
         char buff[256];
         sprintf_s(buff, "'%s' -> Texture (id: %04u) -> edit",
-            WINDOW_TITLE(_get_window()), _id);
+            WINDOW_TITLE(_get_window()), 0);
         LOG_GL_MSG(buff);
     }
 }
@@ -238,14 +221,11 @@ void Texture::_AsyncLoading::_asyncFunction(std::string filepath)
 
 void Texture::_updatePlanes()
 {
-    Window::Shared const window = _get_window();
+    Shared const shared = shared_from_this();
     // Update texture scaling of all planes & buttons matching this texture
     for (Plane::Weak const& weak : Plane::_instances) {
-        Plane::Shared plane = weak.lock();
-        if (plane->_get_window() == window
-            && plane->_use_texture
-            && plane->_texture_id == _id)
-        {
+        Plane::Shared const plane = weak.lock();
+        if (plane->_texture == shared) {
             plane->_updateTexScaling();
             plane->_animation_duration = std::chrono::nanoseconds(0);
             plane->_texture_offset = 0;
@@ -275,7 +255,7 @@ void Texture::_internalEdit(void const* pixels, int w, int h)
     if (Log::GL::Texture::query(Log::GL::Texture::get().edit)) {
         char buff[256];
         sprintf_s(buff, "'%s' -> Texture (id: %04u) -> edit",
-            WINDOW_TITLE(_get_window()), _id);
+            WINDOW_TITLE(_get_window()), 0);
         LOG_GL_MSG(buff);
     }
 }

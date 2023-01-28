@@ -36,26 +36,22 @@ INTERNAL_END;
  *  internal Basic::Texture.
  *  @sa Window::createTexture()
  */
-class Texture final : public _internal::WindowObjectWithID {
+class Texture final : public _internal::SharedWindowObject<Texture> {
 
+    friend _internal::SharedWindowObject<Texture>;
     friend bool pollEverything();
     friend class Window;
 
 private:
-    Texture(std::shared_ptr<Window> window, uint32_t id);
+    Texture(std::shared_ptr<Window> window);
 
 public:
     /** Destructor, can log but otherwise default.*/
     ~Texture();
 
-    /** Creates an instance stored in Window at given ID.
-     *  If no window is specified, the first one (Window::getFirst()) is used.\n
-     *  @sa Window::removeTexture()
-     */
-    static Texture& create(std::shared_ptr<Window> win);
-    static Texture& create();
-    static Texture& create(std::string const& filepath);
-    static Texture& create(TR::Area const& area);
+    using _internal::SharedWindowObject<Texture>::create;
+    static Shared create(std::string const& filepath);
+    static Shared create(TR::Area const& area);
 
     /** The Texture type, mainly to know which pixels to use (internal or TR).
      *  @sa setType(), getType()
@@ -79,7 +75,7 @@ private:
     Basic::Texture _raw_texture;    // OpenGL texture
     Type _type{ Type::Raw };        // Texture type
     Frame::Vector _frames{ 1 };     // Vector of frames (is used for images AND animations)
-    std::chrono::nanoseconds _total_frames_time; // Total time for current animation to loop
+    std::chrono::nanoseconds _total_frames_time{ 0 }; // Total time for current animation to loop
     int _raw_w{ 0 }, _raw_h{ 0 };   // Raw dimensions
     int _text_w{ 0 }, _text_h{ 0 }; // Last TR dimensions (stored for scaling update)
     uint32_t _text_area_id{ 0 };    // TR::Area id

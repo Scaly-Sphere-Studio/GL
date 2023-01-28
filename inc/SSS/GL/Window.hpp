@@ -57,16 +57,6 @@ using RendererVector = std::vector<RendererVariant>;
  */
 bool pollEverything();
 
-template <class T>
-uint32_t getAvailableID(std::map<uint32_t, T> const& map)
-{
-    uint32_t id = 0;
-    while (id < UINT32_MAX && map.count(id) != 0) {
-        ++id;
-    }
-    return id;
-}
-
 /** Abstractization of \c GLFWwindow logic.*/
 class Window final : public std::enable_shared_from_this<Window> {
     
@@ -197,7 +187,6 @@ public :
 private:
     std::map<uint32_t, std::shared_ptr<Shaders>> _preset_shaders;   // Preset shaders
     RendererVector _renderers; // Renderers
-    std::map<uint32_t, std::unique_ptr<Texture>> _textures;   // Textures
 
 public:
 
@@ -208,19 +197,6 @@ public:
     void addRenderer(RendererVariant renderer, size_t index);
     void addRenderer(RendererVariant renderer);
     void removeRenderer(RendererVariant renderer);
-
-    /** Creates a Texture at given ID.
-     *  @sa removeTexture()
-     */
-    Texture& createTexture(uint32_t id);
-    Texture& createTexture();
-    Texture* getTexture(uint32_t id) const noexcept;
-    inline auto const& getTextureMap() const noexcept { return _textures; };
-
-    /** Removes the Texture at given ID.
-     *  @sa createTexture()
-     */
-    void removeTexture(uint32_t id);
 
     /** Draws everything in order of Renderer IDs.
      *  @sa printFrame()

@@ -57,20 +57,8 @@ private:
     GLFWwindow* _glfw_window;
 };
 
-// This class is to be inherited in all classes whose instances are
-// bounded (with an ID) to a specific Window instance.
-class WindowObjectWithID : public WindowObject {
-public:
-    WindowObjectWithID() = delete;
-    uint32_t getID() const noexcept { return _id; };
-protected:
-    WindowObjectWithID(std::shared_ptr<Window> window, uint32_t id)
-        : WindowObject(window), _id(id) {};
-    uint32_t const _id;
-};
-
 template<class T>
-class SharedWindowObject : public WindowObject {
+class SharedWindowObject : public WindowObject, public std::enable_shared_from_this<T> {
 public:
     SharedWindowObject() = delete;
     ~SharedWindowObject() { cleanWeakPtrVector(_instances); };
@@ -92,7 +80,8 @@ public:
         _instances.emplace_back(shared);
         return shared;
     }
-    static Shared create() { return create(nullptr); }
+    static Shared create() { return create(std::shared_ptr<Window>(nullptr)); }
+    static Shared create(GLFWwindow* window) { return create(Window::get(window)); }
 
     static Vector getInstances(std::shared_ptr<Window> window) noexcept {
         Vector vec;

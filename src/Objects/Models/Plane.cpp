@@ -16,19 +16,7 @@ Plane::~Plane()
     cleanWeakPtrVector(_instances);
 }
 
-void Plane::setTextureID(uint32_t texture_id)
-{
-    _texture_id = texture_id;
-    _use_texture = true;
-    _updateTexScaling();
-}
-
-Texture* Plane::getTexture() const noexcept
-{
-    return _get_window()->getTexture(_texture_id);
-}
-
-Plane::Shared Plane::create(Texture const& texture)
+Plane::Shared Plane::create(Texture::Shared texture)
 {
     Shared ret = create();
     ret->setTexture(texture);
@@ -58,6 +46,12 @@ void Plane::getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles, glm
     scaling /= _tex_scaling;
 }
 
+void Plane::setTexture(Texture::Shared texture)
+{
+    _texture = texture;
+    _updateTexScaling();
+}
+
 Plane::Shared Plane::getHovered(Window::Shared window) noexcept
 {
     if (!window) {
@@ -76,21 +70,20 @@ Plane::Shared Plane::getHovered(Window::Shared window) noexcept
 void Plane::_updateTextureOffset()
 {
     _texture_offset = 0;
-    Texture* tex = getTexture();
-    if (!tex || tex->getTotalFramesTime() == std::chrono::nanoseconds(0))
+    if (!_texture || _texture->getTotalFramesTime() == std::chrono::nanoseconds(0))
         return;
-    auto const& frames = tex->getFrames();
+    auto const& frames = _texture->getFrames();
 
     // If loop disabled & animation completed, stop playing
-    if (!_looping && _animation_duration >= tex->getTotalFramesTime()) {
+    if (!_looping && _animation_duration >= _texture->getTotalFramesTime()) {
         _is_playing = false;
         _animation_duration = std::chrono::nanoseconds(0);
         _texture_offset = static_cast<uint32_t>(frames.size()) - 1;
     }
 
     // Remove excess time
-    while (_animation_duration >= tex->getTotalFramesTime()) {
-        _animation_duration -= tex->getTotalFramesTime();
+    while (_animation_duration >= _texture->getTotalFramesTime()) {
+        _animation_duration -= _texture->getTotalFramesTime();
     }
 
     // Find current texture offset
@@ -106,19 +99,14 @@ void Plane::_updateTextureOffset()
 
 void Plane::_updateTexScaling()
 {
-    Window::Shared const window = _get_window();
-    if (!window || !_use_texture) {
+    if (!_texture) {
         _tex_scaling = glm::vec3(1);
         _should_compute_mat4 = true;
         return;
     }
-    Texture* texture = window->getTexture(_texture_id);
-    if (!texture) {
-        return;
-    }
     // Check if dimensions changed
     int w, h;
-    texture->getCurrentDimensions(w, h);
+    _texture->getCurrentDimensions(w, h);
     if (_tex_w == w && _tex_h == h) {
         return;
     }
@@ -181,28 +169,22 @@ bool Plane::_hoverTriangle(glm::mat4 const& mvp, glm::vec3 const& A,
     _relative_y = static_cast<int>(P.y * static_cast<float>(_tex_h));
 
     // End function if no texture provided, or if the hitbox doesn't care about alpha.
-    if (!_use_texture || _hitbox == Hitbox::Full) {
+    if (!_texture || _hitbox == Hitbox::Full) {
         is_hovered = true;
-        return true;
-    }
-
-    // Retrieve Texture.
-    Texture* texture = _get_window()->getTexture(_texture_id);
-    if (!texture) {
         return true;
     }
 
     // Update status if the position is on an opaque pixel
     size_t const pixel = static_cast<size_t>(_relative_y * _tex_w + _relative_x);
-    switch (texture->getType()) {
+    switch (_texture->getType()) {
     case Texture::Type::Raw: {
-        if (pixel < texture->getRawPixels(_texture_offset).size()) {
-            is_hovered = texture->getRawPixels().at(pixel).a != 0;
+        if (pixel < _texture->getRawPixels(_texture_offset).size()) {
+            is_hovered = _texture->getRawPixels().at(pixel).a != 0;
         }
         break;
     }
     case Texture::Type::Text: {
-        TR::Area* text_area = texture->getTextArea();
+        TR::Area* text_area = _texture->getTextArea();
         if (text_area) {
             int w, h;
             text_area->pixelsGetDimensions(w, h);
