@@ -2,7 +2,7 @@
 #define SSS_GL_TEXTURE_HPP
 
 #include <SSS/Text-Rendering.hpp>
-#include "SSS/GL/Window.hpp"
+#include "SSS/GL/Objects/Basic.hpp"
 
 /** @file
  *  Defines class SSS::GL::Texture.

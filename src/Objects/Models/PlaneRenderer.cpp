@@ -1,12 +1,15 @@
 #include "SSS/GL/Objects/Models/PlaneRenderer.hpp"
 #include "SSS/GL/Objects/Models/Plane.hpp"
 #include "SSS/GL/Objects/Texture.hpp"
+#include "SSS/GL/Window.hpp"
 #include <ranges>
 
 SSS_GL_BEGIN;
 
-PlaneRenderer::PlaneRenderer(std::shared_ptr<Window> window, uint32_t id) try
-    : Renderer(window, id), _vao(window), _vbo(window), _ibo(window)
+std::vector<PlaneRenderer::Weak> PlaneRenderer::_instances{};
+
+PlaneRenderer::PlaneRenderer(std::shared_ptr<Window> window) try
+    : Renderer(window), _vao(window), _vbo(window), _ibo(window)
 {
     Context const context = _get_context();
 

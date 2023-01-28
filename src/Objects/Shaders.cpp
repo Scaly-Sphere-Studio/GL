@@ -1,4 +1,5 @@
 #include "SSS/GL/Objects/Shaders.hpp"
+#include "SSS/GL/Window.hpp"
 
 SSS_GL_BEGIN;
 

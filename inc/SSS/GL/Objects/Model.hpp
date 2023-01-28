@@ -1,8 +1,9 @@
 #ifndef SSS_GL_MODEL_HPP
 #define SSS_GL_MODEL_HPP
 
-#include "SSS/GL/Window.hpp"
+#include "SSS/GL/Objects/Basic.hpp"
 #include <glm/gtx/matrix_decompose.hpp>
+#include <map>
 
 /** @file
  *  Defines template abstract class SSS::GL::Model.

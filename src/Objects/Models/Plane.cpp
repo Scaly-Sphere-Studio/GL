@@ -1,4 +1,5 @@
 #include "SSS/GL/Objects/Models/Plane.hpp"
+#include "SSS/GL/Window.hpp"
 
 SSS_GL_BEGIN;
 
@@ -20,6 +21,11 @@ void Plane::setTextureID(uint32_t texture_id)
     _texture_id = texture_id;
     _use_texture = true;
     _updateTexScaling();
+}
+
+Texture* Plane::getTexture() const noexcept
+{
+    return _get_window()->getTexture(_texture_id);
 }
 
 Plane::Shared Plane::create(Texture const& texture)

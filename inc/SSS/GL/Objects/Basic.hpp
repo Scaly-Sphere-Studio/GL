@@ -73,6 +73,7 @@ template<class T>
 class SharedWindowObject : public WindowObject {
 public:
     SharedWindowObject() = delete;
+    ~SharedWindowObject() { cleanWeakPtrVector(_instances); };
     using Shared = std::shared_ptr<T>;
     using Vector = std::vector<Shared>;
 
@@ -103,6 +104,16 @@ public:
         return vec;
     }
     static Vector getInstances() noexcept { return getInstances(nullptr); }
+
+    static Shared get(T* raw_ptr) {
+        for (auto const& weak_ptr : _instances) {
+            Shared shared_ptr = weak_ptr.lock();
+            if (shared_ptr && shared_ptr.get() == raw_ptr) {
+                return shared_ptr;
+            }
+        }
+        return nullptr;
+    }
 };
 
 INTERNAL_END;

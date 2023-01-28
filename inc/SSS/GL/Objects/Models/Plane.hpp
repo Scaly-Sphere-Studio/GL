@@ -44,7 +44,7 @@ public:
     inline void setTexture(Texture const& texture) { setTextureID(texture.getID()); };
     /** Returns the Texture ID used for this instance.*/
     inline uint32_t getTextureID() const noexcept { return _texture_id; };
-    inline Texture* getTexture() const noexcept { return _get_window()->getTexture(_texture_id); };
+    Texture* getTexture() const noexcept;
 
     inline void play() noexcept { _is_playing = true; };
     inline void pause() noexcept { _is_playing = false; };
@@ -82,7 +82,7 @@ public:
      *  or an empty ptr.
      *  @sa isHovered()
      */
-    static Shared getHovered(Window::Shared window = nullptr) noexcept;
+    static Shared getHovered(std::shared_ptr<Window> window = nullptr) noexcept;
     /** Returns whether this Plane instance is currently hovered.
      *  @sa getHovered(), getRelativeCoords()
      */

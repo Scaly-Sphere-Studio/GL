@@ -7,21 +7,16 @@
 
 SSS_GL_BEGIN;
 
-class LineRenderer : public Renderer {
+class LineRenderer : public Renderer<LineRenderer> {
+    friend class _internal::SharedWindowObject<LineRenderer>;
     friend class Window;
 
 private:
-    LineRenderer(std::shared_ptr<Window> win, uint32_t id);
+    LineRenderer(std::shared_ptr<Window> win);
 
 public:
     Camera::Shared camera;
-    virtual void render();
-    static inline LineRenderer& create() {
-        return Renderer::create<LineRenderer>();
-    };
-    static inline LineRenderer& create(Window::Shared win) {
-        return Renderer::create<LineRenderer>(win);
-    };
+    void render() override;
 
 private:
     Basic::VAO _vao;

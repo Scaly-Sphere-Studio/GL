@@ -1,9 +1,12 @@
 #ifndef SSS_GL_WINDOW_HPP
 #define SSS_GL_WINDOW_HPP
 
-#include "SSS/GL/Objects/Basic.hpp"
+#include "SSS/GL/Objects/Texture.hpp"
+#include "SSS/GL/Objects/Models/PlaneRenderer.hpp"
+#include "SSS/GL/Objects/Models/LineRenderer.hpp"
 #include <map>
 #include <array>
+#include <variant>
 
 /** @file
  *  Defines class SSS::GL::Window and its bound class SSS::GL::Context.
@@ -38,9 +41,11 @@ namespace SSS::Log::GL {
 
 SSS_GL_BEGIN;
     
-class Shaders;
-class Renderer;
-class Texture;
+using RendererVariant = std::variant<
+    PlaneRenderer::Shared,
+    LineRenderer::Shared
+>;
+using RendererVector = std::vector<RendererVariant>;
 
 /** Global function which polls everything in the library.
  *  Process is as follow:
@@ -191,24 +196,19 @@ public :
 
 private:
     std::map<uint32_t, std::shared_ptr<Shaders>> _preset_shaders;   // Preset shaders
-    std::map<uint32_t, std::unique_ptr<Renderer>> _renderers; // Renderers
+    RendererVector _renderers; // Renderers
     std::map<uint32_t, std::unique_ptr<Texture>> _textures;   // Textures
 
 public:
 
     std::shared_ptr<Shaders> getPresetShaders(uint32_t id) const noexcept;
 
-    /** Creates a derived Renderer at given ID.
-     *  @sa removeRenderer()
-     */
-    template<class Derived = Renderer>
-    Derived& createRenderer(uint32_t id);
-    template<class Derived = Renderer>
-    Derived& createRenderer();
-    Renderer* getRenderer(uint32_t id) const noexcept;
-    template<class Derived = Renderer>
-    Derived* getRenderer(uint32_t id) const noexcept;
-    inline auto const& getRendererMap() const noexcept { return _renderers; };
+    inline void setRenderers(RendererVector const& renderers) noexcept { _renderers = renderers; };
+    inline RendererVector const& getRenderers() const noexcept { return _renderers; };
+    void addRenderer(RendererVariant renderer, size_t index);
+    void addRenderer(RendererVariant renderer);
+    void removeRenderer(RendererVariant renderer);
+
     /** Creates a Texture at given ID.
      *  @sa removeTexture()
      */
@@ -217,10 +217,6 @@ public:
     Texture* getTexture(uint32_t id) const noexcept;
     inline auto const& getTextureMap() const noexcept { return _textures; };
 
-    /** Removes the Renderer at given ID.
-     *  @sa createRenderer()
-     */
-    void removeRenderer(uint32_t id);
     /** Removes the Texture at given ID.
      *  @sa createTexture()
      */

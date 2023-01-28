@@ -12,22 +12,17 @@
 SSS_GL_BEGIN;
 
 /** Dedicated Renderer for Plane instances.*/
-class PlaneRenderer final : public Renderer {
+class PlaneRenderer final : public Renderer<PlaneRenderer> {
+    friend class _internal::SharedWindowObject<PlaneRenderer>;
     friend class Window;
 
 private:
-    PlaneRenderer(std::shared_ptr<Window> window, uint32_t id);
+    PlaneRenderer(std::shared_ptr<Window> window);
 
     void _renderPart(Shaders& shader, uint32_t& count, bool reset_depth) const;
 
 public:
-    virtual void render();
-    static inline PlaneRenderer& create() {
-        return Renderer::create<PlaneRenderer>();
-    };
-    static inline PlaneRenderer& create(Window::Shared win) {
-        return Renderer::create<PlaneRenderer>(win);
-    };
+    void render() override;
 
     /** Specify a chunk of objects to be rendered.
      *  This is useful to enforce specific orders of chunks without

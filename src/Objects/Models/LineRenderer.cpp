@@ -1,9 +1,12 @@
 #include "SSS/GL/Objects/Models/LineRenderer.hpp"
+#include "SSS/GL/Window.hpp"
 
 SSS_GL_BEGIN;
 
-LineRenderer::LineRenderer(std::shared_ptr<Window> win, uint32_t id)
-    : Renderer(win, id), _vao(win), _vbo(win), _ibo(win)
+std::vector<LineRenderer::Weak> LineRenderer::_instances{};
+
+LineRenderer::LineRenderer(std::shared_ptr<Window> win)
+    : Renderer(win), _vao(win), _vbo(win), _ibo(win)
 {
     _vao.bind();
 

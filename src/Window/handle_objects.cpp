@@ -1,7 +1,4 @@
 #include "SSS/GL/Window.hpp"
-#include "SSS/GL/Objects/Shaders.hpp"
-#include "SSS/GL/Objects/Renderer.hpp"
-#include "SSS/GL/Objects/Texture.hpp"
 
 SSS_GL_BEGIN;
 
@@ -14,14 +11,30 @@ Shaders::Shared Window::getPresetShaders(uint32_t id) const noexcept
     return _preset_shaders.at(id);
 }
 
-Renderer* Window::getRenderer(uint32_t id) const noexcept
+void Window::addRenderer(RendererVariant renderer, size_t index)
 {
-    if (_renderers.count(id) == 0) {
-        return nullptr;
+    if (index > _renderers.size()) {
+        LOG_METHOD_CTX_WRN("Index out of bound", index);
+        return;
     }
-    return _renderers.at(id).get();
+    if (std::visit([](auto&& var) { return !var; }, renderer)) {
+        LOG_METHOD_WRN("Given renderer is nullptr");
+
+    }
+    _renderers.insert(_renderers.cbegin() + index, renderer);
 }
 
+void Window::addRenderer(RendererVariant renderer)
+{
+    addRenderer(renderer, _renderers.size());
+}
+
+void Window::removeRenderer(RendererVariant renderer)
+{
+    auto const it = std::find(_renderers.cbegin(), _renderers.cend(), renderer);
+    if (it != _renderers.cend())
+        _renderers.erase(it);
+}
 
 Texture& Window::createTexture(uint32_t id) try
 {
@@ -44,13 +57,6 @@ Texture* Window::getTexture(uint32_t id) const noexcept
     return _textures.at(id).get();
 }
 
-
-void Window::removeRenderer(uint32_t id)
-{
-    if (_renderers.count(id) != 0) {
-        _renderers.erase(_renderers.find(id));
-    }
-}
 
 void Window::removeTexture(uint32_t id)
 {

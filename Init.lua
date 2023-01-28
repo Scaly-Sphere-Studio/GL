@@ -36,7 +36,9 @@ do
 
     line_shaders = GL.Shaders.create("glsl/line.vert", "glsl/line.frag")
     line_renderer = GL.LineRenderer.create()
-    
+
+    window:setRenderers({ plane_renderer, line_renderer })
+
     camera = GL.Camera.create()
     plane = GL.Plane.create(texture)
 end

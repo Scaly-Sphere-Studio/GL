@@ -1,5 +1,6 @@
 #include "SSS/GL/Objects/Texture.hpp"
 #include "SSS/GL/Objects/Models/Plane.hpp"
+#include "SSS/GL/Window.hpp"
 
 // Init STB
 #define STB_IMAGE_IMPLEMENTATION
