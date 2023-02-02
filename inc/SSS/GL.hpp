@@ -2,9 +2,7 @@
 #define SSS_GL_HPP
 
 #include "GL/Lua.hpp"
-#include "GL/Objects/Texture.hpp"
-#include "GL/Objects/Models/PlaneRenderer.hpp"
-#include "GL/Objects/Models/LineRenderer.hpp"
+#include "GL/Window.hpp"
 
 /** @file
  *  Header of the

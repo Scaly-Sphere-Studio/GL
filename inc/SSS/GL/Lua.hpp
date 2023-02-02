@@ -14,36 +14,6 @@ inline std::ostream& operator<<(std::ostream& out, glm::vec3 const& vec)
 
 SSS_GL_BEGIN;
 
-INTERNAL_BEGIN;
-using RawRendererVariant = std::variant<
-    PlaneRenderer*,
-    LineRenderer*
->;
-using RawRendererVector = std::vector<RawRendererVariant>;
-
-static RendererVariant convert_raw_renderer(RawRendererVariant raw_renderer) {
-    return std::visit([](auto&& renderer)->RendererVariant {
-        using T = std::decay_t<decltype(renderer)>;
-        if constexpr (std::is_same_v<T, PlaneRenderer*>) {
-            return PlaneRenderer::get(renderer);
-        }
-        if constexpr (std::is_same_v<T, LineRenderer*>) {
-            return LineRenderer::get(renderer);
-        }
-        return PlaneRenderer::Shared(nullptr);
-    }, raw_renderer);
-}
-
-static RendererVector convert_raw_renderer_vector(RawRendererVector raw_vector) {
-    RendererVector ret;
-    ret.reserve(raw_vector.size());
-    for (auto const& raw_ptr : raw_vector) {
-        ret.emplace_back(convert_raw_renderer(raw_ptr));
-    }
-    return ret;
-}
-INTERNAL_END;
-
 inline void lua_setup_GL(sol::state& lua)
 {
     auto gl = lua["GL"].get_or_create<sol::table>();
@@ -57,17 +27,18 @@ inline void lua_setup_GL(sol::state& lua)
         sol::resolve<Shaders::Shared(std::string const&, std::string const&)>(Shaders::create)
     );
 
+    auto renderer = gl.new_usertype<RendererBase>("RendererBase", sol::no_constructor);
+    renderer["shaders"] = sol::property(&RendererBase::getShaders, &RendererBase::setShaders);
+    renderer["active"] = sol::property(&RendererBase::isActive, &RendererBase::setActivity);
+    renderer["title"] = &RendererBase::title;
 
     auto plane_renderer = gl.new_usertype<PlaneRenderer>("PlaneRenderer",
-        sol::no_constructor, sol::base_classes, sol::bases<Renderer<PlaneRenderer>>());
+        sol::no_constructor, sol::base_classes, sol::bases<RendererBase>());
     plane_renderer["chunks"] = &PlaneRenderer::chunks;
     plane_renderer["create"] = sol::overload(
         sol::resolve<PlaneRenderer::Shared(GLFWwindow*)>(PlaneRenderer::create),
         sol::resolve<PlaneRenderer::Shared()>(PlaneRenderer::create)
     );
-    plane_renderer["shaders"] = sol::property(&PlaneRenderer::getShaders, &PlaneRenderer::setShaders);
-    plane_renderer["active"] = sol::property(&PlaneRenderer::isActive, &PlaneRenderer::setActivity);
-    plane_renderer["title"] = &PlaneRenderer::title;
     auto chunk = gl.new_usertype<PlaneRenderer::Chunk>("Chunk", sol::constructors<
         PlaneRenderer::Chunk(),
         PlaneRenderer::Chunk(Camera::Shared),
@@ -79,15 +50,12 @@ inline void lua_setup_GL(sol::state& lua)
     chunk["planes"] = &PlaneRenderer::Chunk::planes;
 
     auto line_renderer = gl.new_usertype<LineRenderer>("LineRenderer",
-        sol::no_constructor, sol::base_classes, sol::bases<Renderer<LineRenderer>>());
+        sol::no_constructor, sol::base_classes, sol::bases<RendererBase>());
     line_renderer["camera"] = &LineRenderer::camera;
     line_renderer["create"] = sol::overload(
         sol::resolve<LineRenderer::Shared (GLFWwindow*)>(LineRenderer::create),
         sol::resolve<LineRenderer::Shared ()>(LineRenderer::create)
     );
-    line_renderer["shaders"] = sol::property(&LineRenderer::getShaders, &LineRenderer::setShaders);
-    line_renderer["active"] = sol::property(&LineRenderer::isActive, &LineRenderer::setActivity);
-    line_renderer["title"] = &LineRenderer::title;
 
     auto texture = gl.new_usertype<Texture>("Texture", sol::no_constructor);
     texture["type"] = sol::property(&Texture::getType, &Texture::setType);
@@ -160,17 +128,11 @@ inline void lua_setup_GL(sol::state& lua)
     window["blockInputs"] = &Window::blockInputs;
     window["unblockInputs"] = &Window::unblockInputs;
     window["keyIsPressed"] = &Window::keyIsPressed;
-    window["getRenderers"] = &Window::getRenderers;
-    window["setRenderers"] = [](Window* win, _internal::RawRendererVector raw_vec)
-        { win->setRenderers(convert_raw_renderer_vector(raw_vec)); };
     window["addRenderer"] = sol::overload(
-        [](Window* win, _internal::RawRendererVariant raw_ptr)
-            { win->addRenderer(convert_raw_renderer(raw_ptr)); },
-        [](Window* win, _internal::RawRendererVariant raw_ptr, size_t index)
-            { win->addRenderer(convert_raw_renderer(raw_ptr), index); }
+        sol::resolve<void(RendererBase::Shared, size_t)>(&Window::addRenderer),
+        sol::resolve<void(RendererBase::Shared)>(&Window::addRenderer)
     );
-    window["removeRenderer"] = [](Window* win, _internal::RawRendererVariant raw_ptr)
-        { win->removeRenderer(convert_raw_renderer(raw_ptr)); };
+    window["removeRenderer"] = &Window::removeRenderer;
 
     window["fps_limit"] = sol::property(&Window::getFPSLimit, &Window::setFPSLimit);
     window["vsync"] = sol::property(&Window::getVSYNC, &Window::setVSYNC);

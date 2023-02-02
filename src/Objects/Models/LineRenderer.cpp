@@ -3,8 +3,6 @@
 
 SSS_GL_BEGIN;
 
-std::vector<LineRenderer::Weak> LineRenderer::_instances{};
-
 LineRenderer::LineRenderer(std::shared_ptr<Window> win)
     : Renderer(win), _vao(win), _vbo(win), _ibo(win)
 {
@@ -82,7 +80,7 @@ void LineRenderer::render()
 {
     static size_t size;
 
-    Context const context = _get_context();
+    Context const context = getContext();
 
     _vao.bind();
 

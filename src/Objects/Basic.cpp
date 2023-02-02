@@ -13,10 +13,10 @@ WindowObject::WindowObject(std::shared_ptr<Window> window)
 void WindowObject::_changeWindow(std::shared_ptr<Window> window)
 {
     _window = window;
-    _glfw_window = _get_window()->getGLFWwindow();
+    _glfw_window = getWindow()->getGLFWwindow();
 }
 
-std::shared_ptr<Window> const WindowObject::_get_window() const
+std::shared_ptr<Window> const WindowObject::getWindow() const
 {
     Window::Shared const window = _window.lock();
     if (!window) {
@@ -25,7 +25,7 @@ std::shared_ptr<Window> const WindowObject::_get_window() const
     return window;
 }
 
-Context const WindowObject::_get_context() const
+Context const WindowObject::getContext() const
 {
     Context const context(_glfw_window);
     if (glfwGetCurrentContext() == nullptr) {
@@ -54,7 +54,7 @@ namespace Basic {
     Texture::~Texture()
     {
         try {
-            Context const context = _get_context();
+            Context const context = getContext();
             glDeleteTextures(1, &id);
         }
         catch (...) {
@@ -65,12 +65,12 @@ namespace Basic {
 
     void Texture::bind() const
     {
-        Context const context = _get_context();
+        Context const context = getContext();
         glBindTexture(_target, id);
     }
 
     void Texture::setTarget(GLenum new_target) {
-        Context const context = _get_context();
+        Context const context = getContext();
         _target = new_target;
         bind();
         switch (_target)
@@ -94,7 +94,7 @@ namespace Basic {
 
     void Texture::parameteri(GLenum pname, GLint param)
     {
-        Context const context = _get_context();
+        Context const context = getContext();
         bind();
         glTexParameteri(_target, pname, param);
     }
@@ -105,7 +105,7 @@ namespace Basic {
             return;
         }
 
-        Context const context = _get_context();
+        Context const context = getContext();
         bind();
 
         _width = width;
@@ -137,7 +137,7 @@ namespace Basic {
         if (pixels == nullptr) {
             return;
         }
-        Context const context = _get_context();
+        Context const context = getContext();
         bind();
 
         switch (_target)
@@ -176,7 +176,7 @@ namespace Basic {
     VAO::~VAO()
     {
         try {
-            Context const context = _get_context();
+            Context const context = getContext();
             glDeleteVertexArrays(1, &id);
         }
         catch (...) {
@@ -187,13 +187,13 @@ namespace Basic {
 
     void VAO::bind() const
     {
-        Context const context = _get_context();
+        Context const context = getContext();
         glBindVertexArray(id);
     }
 
     void VAO::unbind() const
     {
-        Context const context = _get_context();
+        Context const context = getContext();
         glBindVertexArray(0);
     }
 
@@ -213,7 +213,7 @@ namespace Basic {
     VBO::~VBO()
     {
         try {
-            Context const context = _get_context();
+            Context const context = getContext();
             glDeleteBuffers(1, &id);
         }
         catch (...) {
@@ -224,13 +224,13 @@ namespace Basic {
 
     void VBO::bind() const
     {
-        Context const context = _get_context();
+        Context const context = getContext();
         glBindBuffer(GL_ARRAY_BUFFER, id);
     }
 
     void VBO::edit(GLsizeiptr size, const void* data, GLenum usage)
     {
-        Context const context = _get_context();
+        Context const context = getContext();
         bind();
         glBufferData(GL_ARRAY_BUFFER, size, data, usage);
     }
@@ -251,7 +251,7 @@ namespace Basic {
     IBO::~IBO()
     {
         try {
-            Context const context = _get_context();
+            Context const context = getContext();
             glDeleteBuffers(1, &id);
         }
         catch (...) {
@@ -262,13 +262,13 @@ namespace Basic {
 
     void IBO::bind() const
     {
-        Context const context = _get_context();
+        Context const context = getContext();
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
     }
 
     void IBO::edit(GLsizeiptr size, const void* data, GLenum usage)
     {
-        Context const context = _get_context();
+        Context const context = getContext();
         bind();
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, usage);
     }

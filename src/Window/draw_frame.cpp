@@ -13,12 +13,10 @@ void Window::drawObjects()
         // Make context current for this scope
         Context const context(_window.get());
         // Render all active renderers
-        for (auto const& renderer_variant : _renderers) {
-            std::visit([](auto&& renderer) {
-                if (!renderer || !renderer->isActive())
-                    return;
-                renderer->render();
-            }, renderer_variant);
+        for (auto const& renderer : _renderers) {
+            if (!renderer || !renderer->isActive())
+                return;
+            renderer->render();
         }
     }
 }
@@ -49,36 +47,32 @@ void Window::_updateHoveredModel()
 
     // Loop over each renderer (in reverse order) and find their nearest
     // models at mouse coordinates
-    for (auto const& renderer_variant : _renderers) {
-        if (std::visit([&](auto&& renderer)->bool {
-            if (!renderer || !renderer->isActive())
-                return false;
-            using T = std::decay_t<decltype(renderer)>;
-            if constexpr (std::is_same_v<T, PlaneRenderer::Shared>) {
-                if (renderer != nullptr && renderer->_findNearestModel(x, y)) {
-                    // If a model was found, update hover status
-                    if (renderer->_hovered_z < z) {
-                        z = renderer->_hovered_z;
-                        _hovered_type = HoveredType::Plane;
-                    }
-                    // If the depth buffer was reset at least once by the renderer, previous
-                    // tested models will always be on top of all not-yet-tested models,
-                    // which means we must skip further tests.
-                    // This is why we're testing renderers in their reverse order.
-                    bool depth_buffer_was_reset = false;
-                    for (auto it = renderer->chunks.cbegin(); it != renderer->chunks.cend(); ++it) {
-                        if (it->reset_depth_before) {
-                            depth_buffer_was_reset = true;
-                            break;
-                        }
-                    }
-                    if (depth_buffer_was_reset)
-                        return true;
+    for (auto const& renderer : _renderers) {
+        if (!renderer || !renderer->isActive())
+            continue;
+        RendererBase* ptr = renderer.get();
+        // Try to cast to Plane::Renderer, and find its nearest model
+        PlaneRenderer* renderer = dynamic_cast<PlaneRenderer*>(ptr);
+        if (renderer != nullptr && renderer->_findNearestModel(x, y)) {
+            // If a model was found, update hover status
+            if (renderer->_hovered_z < z) {
+                z = renderer->_hovered_z;
+                _hovered_type = HoveredType::Plane;
+            }
+            // If the depth buffer was reset at least once by the renderer, previous
+            // tested models will always be on top of all not-yet-tested models,
+            // which means we must skip further tests.
+            // This is why we're testing renderers in their reverse order.
+            bool depth_buffer_was_reset = false;
+            for (auto it = renderer->chunks.cbegin(); it != renderer->chunks.cend(); ++it) {
+                if (it->reset_depth_before) {
+                    depth_buffer_was_reset = true;
+                    break;
                 }
             }
-            return false;
-        }, renderer_variant))
-            break;
+            if (depth_buffer_was_reset)
+                break;
+        }
     }
     if (_hovered_type != HoveredType::None
         && Log::GL::Window::query(Log::GL::Window::get().hovered_model)) {

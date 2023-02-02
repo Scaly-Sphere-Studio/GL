@@ -6,16 +6,15 @@ SSS_GL_BEGIN;
 std::vector<Camera::Weak> Camera::_instances{};
 
 Camera::Camera(std::shared_ptr<Window> weak_window)
-    : _internal::SharedWindowObject<Camera>(weak_window)
+    : _internal::InstancedWindowObject<Camera>(weak_window)
 {
-    _window_ratio = _get_window()->getRatio();
+    _window_ratio = getWindow()->getRatio();
     _computeView();
     _computeProjection();
 }
 
 Camera::~Camera()
 {
-    cleanWeakPtrVector(_instances);
 }
 
 void Camera::setPosition(glm::vec3 position)
@@ -140,7 +139,7 @@ void Camera::_computeProjection()
         break;
     case Projection::OrthoFixed: {
         int w, h;
-        _get_window()->getDimensions(w, h);
+        getWindow()->getDimensions(w, h);
         float const x = static_cast<float>(w) / 2.f;
         float const y = static_cast<float>(h) / 2.f;
         _projection = glm::ortho(-x, x, -y, y, _z_near, _z_far);

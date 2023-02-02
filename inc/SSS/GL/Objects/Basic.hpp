@@ -47,11 +47,11 @@ INTERNAL_BEGIN;
 class WindowObject {
 public:
     WindowObject() = delete;
+    std::shared_ptr<Window> const getWindow() const;
+    Context const getContext() const;
 protected:
     WindowObject(std::shared_ptr<Window> window);
     void _changeWindow(std::shared_ptr<Window> window);
-    std::shared_ptr<Window> const _get_window() const;
-    Context const _get_context() const;
 private:
     std::weak_ptr<Window> _window;
     GLFWwindow* _glfw_window;
@@ -61,14 +61,11 @@ template<class T>
 class SharedWindowObject : public WindowObject, public std::enable_shared_from_this<T> {
 public:
     SharedWindowObject() = delete;
-    ~SharedWindowObject() { cleanWeakPtrVector(_instances); };
     using Shared = std::shared_ptr<T>;
     using Vector = std::vector<Shared>;
 
 protected:
     SharedWindowObject(std::shared_ptr<Window> window) : WindowObject(window) {};
-    using Weak = std::weak_ptr<T>;
-    static std::vector<Weak> _instances;
 
 public:
     static Shared create(std::shared_ptr<Window> window)
@@ -76,32 +73,52 @@ public:
         if (!window) {
             window = Window::getFirst();
         }
-        Shared shared(new T(window));
-        _instances.emplace_back(shared);
-        return shared;
+        return Shared(new T(window));
     }
     static Shared create() { return create(std::shared_ptr<Window>(nullptr)); }
     static Shared create(GLFWwindow* window) { return create(Window::get(window)); }
+};
 
-    static Vector getInstances(std::shared_ptr<Window> window) noexcept {
-        Vector vec;
+template<class T>
+class InstancedWindowObject : public SharedWindowObject<T>
+{
+public:
+    InstancedWindowObject() = delete;
+    ~InstancedWindowObject() { cleanWeakPtrVector(_instances); };
+protected:
+    InstancedWindowObject(std::shared_ptr<Window> window) : SharedWindowObject<T>(window) {};
+    using Weak = std::weak_ptr<T>;
+    static std::vector<Weak> _instances;
+
+public:
+    static auto create(std::shared_ptr<Window> window)
+    {
+        auto shared = SharedWindowObject<T>::create(window);
+        _instances.emplace_back(shared);
+        return shared;
+    }
+    static auto create() { return create(std::shared_ptr<Window>(nullptr)); }
+    static auto create(GLFWwindow* window) { return create(Window::get(window)); }
+
+    static auto getInstances(std::shared_ptr<Window> window) noexcept {
+        SharedWindowObject<T>::template Vector vec;
         for (Weak const& weak : _instances) {
-            Shared const instance = weak.lock();
-            if (instance && (!window || window == instance->_get_window()))
+            auto const instance = weak.lock();
+            if (instance && (!window || window == instance->getWindow()))
                 vec.emplace_back(instance);
         }
         return vec;
     }
-    static Vector getInstances() noexcept { return getInstances(nullptr); }
+    static auto getInstances() noexcept { return getInstances(nullptr); }
 
-    static Shared get(T* raw_ptr) {
+    static auto get(T* raw_ptr) {
         for (auto const& weak_ptr : _instances) {
-            Shared shared_ptr = weak_ptr.lock();
+            auto shared_ptr = weak_ptr.lock();
             if (shared_ptr && shared_ptr.get() == raw_ptr) {
                 return shared_ptr;
             }
         }
-        return nullptr;
+        return SharedWindowObject<T>::template Shared(nullptr);
     }
 };
 

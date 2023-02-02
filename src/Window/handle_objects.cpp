@@ -11,25 +11,25 @@ Shaders::Shared Window::getPresetShaders(uint32_t id) const noexcept
     return _preset_shaders.at(id);
 }
 
-void Window::addRenderer(RendererVariant renderer, size_t index)
+void Window::addRenderer(RendererBase::Shared renderer, size_t index)
 {
     if (index > _renderers.size()) {
         LOG_METHOD_CTX_WRN("Index out of bound", index);
         return;
     }
-    if (std::visit([](auto&& var) { return !var; }, renderer)) {
+    if (!renderer) {
         LOG_METHOD_WRN("Given renderer is nullptr");
         return;
     }
     _renderers.insert(_renderers.cbegin() + index, renderer);
 }
 
-void Window::addRenderer(RendererVariant renderer)
+void Window::addRenderer(RendererBase::Shared renderer)
 {
     addRenderer(renderer, _renderers.size());
 }
 
-void Window::removeRenderer(RendererVariant renderer)
+void Window::removeRenderer(RendererBase::Shared renderer)
 {
     auto const it = std::find(_renderers.cbegin(), _renderers.cend(), renderer);
     if (it != _renderers.cend())

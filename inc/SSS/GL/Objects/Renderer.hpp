@@ -10,25 +10,14 @@
 SSS_GL_BEGIN;
 
 /** Abstract class for specialized rendering logic.
+ *  Don't inherit from this, only used to be stored in Window instances
  *  @sa Window::createRenderer(), Plane::Renderer
  */
-template<class Derived>
-class Renderer : public _internal::SharedWindowObject<Derived> {
-protected:
-    /** Constructor, ensures the renderer is bound to a Window instance.*/
-    Renderer(std::shared_ptr<Window> window)
-        : _internal::SharedWindowObject<Derived>(window) {};
+class RendererBase {
 public:
-    /** Virtual destructor, default.*/
-    virtual ~Renderer()                     = default;  // Destructor
-    /** \cond INTERNAL*/
-    Renderer()                              = delete;   // Constructor (default)
-    Renderer(const Renderer&)               = delete;   // Copy constructor
-    Renderer(Renderer&&)                    = delete;   // Move constructor
-    Renderer& operator=(const Renderer&)    = delete;   // Copy assignment
-    Renderer& operator=(Renderer&&)         = delete;   // Move assignment
-    /** \endcond*/
-    
+    using Shared = std::shared_ptr<RendererBase>;
+    using Vector = std::vector<Shared>;
+
     /** Optional title for UI purpose only.*/
     std::string title;
 
@@ -52,6 +41,25 @@ public:
     inline bool isActive() const noexcept { return _is_active; };
 };
 
+template<class Derived>
+class Renderer : public RendererBase, public _internal::SharedWindowObject<Derived> {
+protected:
+    /** Constructor, ensures the renderer is bound to a Window instance.*/
+    Renderer(std::shared_ptr<Window> window)
+        : _internal::SharedWindowObject<Derived>(window) {};
+public:
+    /** Virtual destructor, default.*/
+    virtual ~Renderer()                     = default;  // Destructor
+    /** \cond INTERNAL*/
+    Renderer()                              = delete;   // Constructor (default)
+    Renderer(const Renderer&)               = delete;   // Copy constructor
+    Renderer(Renderer&&)                    = delete;   // Move constructor
+    Renderer& operator=(const Renderer&)    = delete;   // Copy assignment
+    Renderer& operator=(Renderer&&)         = delete;   // Move assignment
+    /** \endcond*/
+
+    using _internal::SharedWindowObject<Derived>::Shared;
+};
 SSS_GL_END;
 
 #endif // SSS_GL_RENDERER_HPP

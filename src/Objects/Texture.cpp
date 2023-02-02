@@ -12,9 +12,9 @@ SSS_GL_BEGIN;
 std::vector<Texture::Weak> Texture::_instances{};
 
 Texture::Texture(std::shared_ptr<Window> window) try
-    : _internal::SharedWindowObject<Texture>(window), _raw_texture(window, GL_TEXTURE_2D_ARRAY)
+    : _internal::InstancedWindowObject<Texture>(window), _raw_texture(window, GL_TEXTURE_2D_ARRAY)
 {
-    Context const context = _get_context();
+    Context const context = getContext();
     _raw_texture.bind();
     _raw_texture.parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     _raw_texture.parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -25,7 +25,7 @@ Texture::Texture(std::shared_ptr<Window> window) try
     if (Log::GL::Texture::query(Log::GL::Texture::get().life_state)) {
         char buff[256];
         sprintf_s(buff, "'%s' -> Texture (id: %04u) -> created",
-            WINDOW_TITLE(_get_window()), 0);
+            WINDOW_TITLE(getWindow()), 0);
         LOG_GL_MSG(buff);
     }
 }
@@ -37,7 +37,7 @@ Texture::~Texture()
     if (Log::GL::Texture::query(Log::GL::Texture::get().life_state)) {
         char buff[256];
         sprintf_s(buff, "'%s' -> Texture (id: %04u) -> deleted",
-            WINDOW_TITLE(_get_window()), 0);
+            WINDOW_TITLE(getWindow()), 0);
         LOG_GL_MSG(buff);
     }
 }
@@ -116,7 +116,7 @@ void Texture::editRawPixels(void const* pixels, int width, int height) try
     if (Log::GL::Texture::query(Log::GL::Texture::get().edit)) {
         char buff[256];
         sprintf_s(buff, "'%s' -> Texture (id: %04u) -> edit",
-            WINDOW_TITLE(_get_window()), 0);
+            WINDOW_TITLE(getWindow()), 0);
         LOG_GL_MSG(buff);
     }
 }
@@ -255,7 +255,7 @@ void Texture::_internalEdit(void const* pixels, int w, int h)
     if (Log::GL::Texture::query(Log::GL::Texture::get().edit)) {
         char buff[256];
         sprintf_s(buff, "'%s' -> Texture (id: %04u) -> edit",
-            WINDOW_TITLE(_get_window()), 0);
+            WINDOW_TITLE(getWindow()), 0);
         LOG_GL_MSG(buff);
     }
 }

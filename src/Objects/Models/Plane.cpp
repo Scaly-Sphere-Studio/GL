@@ -25,7 +25,7 @@ Plane::Shared Plane::create(Texture::Shared texture)
 
 Plane::Shared Plane::duplicate() const
 {
-    Shared plane = create(_get_window());
+    Shared plane = create(getWindow());
     *plane = *this;
     return plane;
 }
@@ -60,7 +60,7 @@ Plane::Shared Plane::getHovered(Window::Shared window) noexcept
 
     for (Weak weak : _instances) {
         Shared plane(weak);
-        if (plane && plane->isHovered() && plane->_get_window() == window) {
+        if (plane && plane->isHovered() && plane->getWindow() == window) {
             return plane;
         }
     }

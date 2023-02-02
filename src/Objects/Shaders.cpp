@@ -3,8 +3,6 @@
 
 SSS_GL_BEGIN;
 
-std::vector<Shaders::Weak> Shaders::_instances{};
-
 Shaders::Shaders(std::shared_ptr<Window> window) try
 	: _internal::SharedWindowObject<Shaders>(window)
 {
@@ -12,7 +10,7 @@ Shaders::Shaders(std::shared_ptr<Window> window) try
 	if (Log::GL::Shaders::query(Log::GL::Shaders::get().life_state)) {
 		char buff[256];
 		sprintf_s(buff, "'%s' -> Shaders (id: %04u) -> created",
-			WINDOW_TITLE(_get_window()), 0);
+			WINDOW_TITLE(getWindow()), 0);
 		LOG_GL_MSG(buff);
 	}
 }
@@ -25,13 +23,13 @@ Shaders::~Shaders()
 		if (Log::GL::Shaders::query(Log::GL::Shaders::get().life_state)) {
 			char buff[256];
 			sprintf_s(buff, "'%s' -> Shaders (id: %04u) -> deleted (was never loaded)",
-				WINDOW_TITLE(_get_window()), 0);
+				WINDOW_TITLE(getWindow()), 0);
 			LOG_GL_MSG(buff);
 		}
 		return;
 	}
 	try {
-		Context const context = _get_context();
+		Context const context = getContext();
 		glDeleteProgram(_program_id);
 	}
 	catch (...) {
@@ -43,7 +41,7 @@ Shaders::~Shaders()
 	if (Log::GL::Shaders::query(Log::GL::Shaders::get().life_state)) {
 		char buff[256];
 		sprintf_s(buff, "'%s' -> Shaders (id: %04u) -> deleted",
-			WINDOW_TITLE(_get_window()), 0);
+			WINDOW_TITLE(getWindow()), 0);
 		LOG_GL_MSG(buff);
 	}
 }
@@ -123,7 +121,7 @@ Shaders::Shared Shaders::create(std::string const& vertex_fp, std::string const&
 
 void Shaders::loadFromStrings(std::string const& vertex_data, std::string const& fragment_data) try
 {
-	Context const context = _get_context();
+	Context const context = getContext();
 	_program_id = loadShaders(vertex_data, fragment_data);
 	_vertex_data = vertex_data;
 	_fragment_data = fragment_data;
@@ -133,7 +131,7 @@ void Shaders::loadFromStrings(std::string const& vertex_data, std::string const&
 	if (Log::GL::Shaders::query(Log::GL::Shaders::get().loading)) {
 		char buff[256];
 		sprintf_s(buff, "'%s' -> Shaders (id: %04u) -> loaded",
-			WINDOW_TITLE(_get_window()), 0);
+			WINDOW_TITLE(getWindow()), 0);
 		LOG_GL_MSG(buff);
 	}
 }
@@ -153,14 +151,14 @@ void Shaders::use() const
 		LOG_METHOD_WRN(buff);
 		return;
 	}
-	Context const context = _get_context();
+	Context const context = getContext();
 	glUseProgram(_program_id);
 }
 
 // Return the location of a uniform variable for this program
 GLint Shaders::getUniformLocation(std::string const& name)
 {
-	Context const context = _get_context();
+	Context const context = getContext();
 	return glGetUniformLocation(_program_id, name.c_str());
 }
 

@@ -41,12 +41,6 @@ namespace SSS::Log::GL {
 
 SSS_GL_BEGIN;
     
-using RendererVariant = std::variant<
-    PlaneRenderer::Shared,
-    LineRenderer::Shared
->;
-using RendererVector = std::vector<RendererVariant>;
-
 /** Global function which polls everything in the library.
  *  Process is as follow:
  * - Calls glfwPollEvents().
@@ -185,18 +179,18 @@ public :
     inline bool keyIsPressed(int key) const noexcept { return _key_inputs[key]; };
 
 private:
-    std::map<uint32_t, std::shared_ptr<Shaders>> _preset_shaders;   // Preset shaders
-    RendererVector _renderers; // Renderers
+    std::map<uint32_t, Shaders::Shared> _preset_shaders;   // Preset shaders
+    RendererBase::Vector _renderers; // Renderers
 
 public:
 
-    std::shared_ptr<Shaders> getPresetShaders(uint32_t id) const noexcept;
+    Shaders::Shared getPresetShaders(uint32_t id) const noexcept;
 
-    inline void setRenderers(RendererVector const& renderers) noexcept { _renderers = renderers; };
-    inline RendererVector const& getRenderers() const noexcept { return _renderers; };
-    void addRenderer(RendererVariant renderer, size_t index);
-    void addRenderer(RendererVariant renderer);
-    void removeRenderer(RendererVariant renderer);
+    inline void setRenderers(RendererBase::Vector const& renderers) noexcept { _renderers = renderers; };
+    inline auto const& getRenderers() const noexcept { return _renderers; };
+    void addRenderer(RendererBase::Shared renderer, size_t index);
+    void addRenderer(RendererBase::Shared renderer);
+    void removeRenderer(RendererBase::Shared renderer);
 
     /** Draws everything in order of Renderer IDs.
      *  @sa printFrame()

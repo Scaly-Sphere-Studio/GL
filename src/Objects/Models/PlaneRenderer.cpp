@@ -6,14 +6,12 @@
 
 SSS_GL_BEGIN;
 
-std::vector<PlaneRenderer::Weak> PlaneRenderer::_instances{};
-
 PlaneRenderer::PlaneRenderer(std::shared_ptr<Window> window) try
     : Renderer(window), _vao(window), _vbo(window), _ibo(window)
 {
-    Context const context = _get_context();
+    Context const context = getContext();
 
-    setShaders(_get_window()->getPresetShaders(static_cast<uint32_t>(Shaders::Preset::Plane)));
+    setShaders(getWindow()->getPresetShaders(static_cast<uint32_t>(Shaders::Preset::Plane)));
 
     _vao.bind();
     _vbo.bind();
@@ -77,8 +75,8 @@ void PlaneRenderer::render() try
     if (!isActive()) {
         return;
     }
-    Window::Shared const window = _get_window();
-    Context const context = _get_context();
+    Window::Shared const window = getWindow();
+    Context const context = getContext();
 
     Shaders::Shared shader = getShaders();
     if (!shader)
