@@ -145,6 +145,8 @@ public:
     void getCurrentDimensions(int& w, int& h) const noexcept;
     std::tuple<int, int> getCurrentDimensions() const noexcept;
 
+    void savePNG() const;
+
 private:
 
     // Async class which fills _raw_pixels using stb_image

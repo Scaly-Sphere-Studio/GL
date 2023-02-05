@@ -1,6 +1,9 @@
 #include "SSS/GL/Objects/Texture.hpp"
 #include "SSS/GL/Objects/Models/Plane.hpp"
 #include "SSS/GL/Window.hpp"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#pragma warning(suppress : 4996)
+#include <stb_image_write.h>
 
 // Init STB
 #define STB_IMAGE_IMPLEMENTATION
@@ -151,6 +154,25 @@ std::tuple<int, int> Texture::getCurrentDimensions() const noexcept
     int w, h;
     getCurrentDimensions(w, h);
     return std::make_tuple(w, h);
+}
+
+void Texture::savePNG() const
+{
+    int w, h;
+    getCurrentDimensions(w, h);
+    std::vector<uint8_t> pixels(4 * w * h);
+    Context const context = getContext();
+    
+    glGetTextureImage(_raw_texture.id, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels.size(), &pixels[0]);
+
+    std::string time = std::format("{:%Y-%m-%d_%H-%M-%S}", std::chrono::system_clock::now());
+    size_t const index = time.find('.');
+    if (index < time.size()) {
+        time.resize(index);
+    }
+
+    std::string const name = time + "_" + THIS_ADDR + ".png";
+    stbi_write_png(name.c_str(), w, h, 4, &pixels[0], 0);
 }
 
 void Texture::_AsyncLoading::_asyncFunction(std::string filepath)

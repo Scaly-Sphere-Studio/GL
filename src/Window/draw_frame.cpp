@@ -1,5 +1,4 @@
 #include "SSS/GL/Window.hpp"
-#define STB_IMAGE_WRITE_IMPLEMENTATION
 #pragma warning(suppress : 4996)
 #include <stb_image_write.h>
 #include <filesystem>
