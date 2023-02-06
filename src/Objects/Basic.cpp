@@ -27,11 +27,7 @@ std::shared_ptr<Window> const WindowObject::getWindow() const
 
 Context const WindowObject::getContext() const
 {
-    Context const context(_glfw_window);
-    if (glfwGetCurrentContext() == nullptr) {
-        throw_exc("Trying to make a destroyed Window's context current.");
-    }
-    return context;
+    return Context(_glfw_window);
 }
 
 INTERNAL_END;

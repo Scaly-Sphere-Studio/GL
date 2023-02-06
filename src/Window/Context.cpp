@@ -4,6 +4,9 @@ SSS_GL_BEGIN;
 
 void Context::_init(GLFWwindow* ptr)
 {
+    if (ptr == nullptr) {
+        LOG_CTX_WRN(THIS_NAME, "given ptr is nullptr, are you sure this is intentional?");
+    }
     _given = ptr;
     _previous = glfwGetCurrentContext();
     _equal = _given == _previous;
