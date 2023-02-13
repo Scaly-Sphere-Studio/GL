@@ -128,6 +128,7 @@ inline void lua_setup_GL(sol::state& lua)
     window["blockInputs"] = &Window::blockInputs;
     window["unblockInputs"] = &Window::unblockInputs;
     window["keyIsPressed"] = &Window::keyIsPressed;
+    window["keyIsHeld"] = &Window::keyIsHeld;
     window["addRenderer"] = sol::overload(
         sol::resolve<void(RendererBase::Shared, size_t)>(&Window::addRenderer),
         sol::resolve<void(RendererBase::Shared)>(&Window::addRenderer)

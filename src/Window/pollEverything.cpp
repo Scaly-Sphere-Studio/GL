@@ -28,6 +28,19 @@ bool pollEverything() try
         Context const context(window);
         // Call all passive functions
         window->_callPassiveFunctions();
+
+        // Process inputs
+        using Input = Window::Input;
+        // Swap previously "pressed" keys' input to "held"
+        for (auto& key : window->_key_inputs) {
+            if (key == Input::Press)
+                key = Input::Held;
+        }
+        // Process input queue
+        for (; !window->_key_queue.empty(); window->_key_queue.pop()) {
+            auto const& key = window->_key_queue.front();
+            window->_key_inputs[key.first] = key.second ? Input::Press : Input::None;
+        }
     }
     
     // Loop over each Texture instance

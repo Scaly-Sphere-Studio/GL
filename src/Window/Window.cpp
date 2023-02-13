@@ -187,8 +187,8 @@ void Window::blockInputs(int unblocking_key) noexcept
 {
     _block_inputs = true;
     _unblocking_key = unblocking_key;
-    for (bool& key : _key_inputs) {
-        key = false;
+    for (auto& key : _key_inputs) {
+        key = Input::None;
     }
 }
 

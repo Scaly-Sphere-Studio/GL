@@ -156,8 +156,11 @@ void Window::mouse_button_callback(GLFWwindow* ptr, int button, int action, int 
                 plane->getRelativeCoords(x, y);
                 area->cursorPlace(x, y);
                 // Reset key_inputs
-                for (bool& key : window->_key_inputs) {
-                    key = false;
+                while (!window->_key_queue.empty()) {
+                    window->_key_queue.pop();
+                }
+                for (auto& key : window->_key_inputs) {
+                    key = Window::Input::None;
                 }
             }
         }
@@ -193,19 +196,15 @@ void Window::key_callback(GLFWwindow* ptr, int key, int scancode, int action, in
     if (window->_block_inputs)
         return;
 
-    bool const pressed_or_repeat = action == GLFW_PRESS || action == GLFW_REPEAT;
     bool const has_focused_area = TR::Area::getFocused() != nullptr;
 
-    // Fill inputs if no focused text Area
-    if (!(has_focused_area && pressed_or_repeat)) {
-        // Store key input if in range
-        if (key >= 0 && key <= GLFW_KEY_LAST) {
-            window->_key_inputs[key] = pressed_or_repeat;
-        }
+    // Fill inputs if no focused text Area OR key was released
+    if (action != GLFW_REPEAT && (!has_focused_area || action == GLFW_RELEASE)) {
+        window->_key_queue.push(std::make_pair(key, action));
     }
 
     // Text-Rendering inputs
-    if (has_focused_area && pressed_or_repeat) {
+    if (has_focused_area && action != GLFW_RELEASE) {
         using namespace SSS::TR;
         bool const ctrl = mods & GLFW_MOD_CONTROL;
         switch (key) {

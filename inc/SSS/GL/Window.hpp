@@ -6,7 +6,7 @@
 #include "SSS/GL/Objects/Models/LineRenderer.hpp"
 #include <map>
 #include <array>
-#include <variant>
+#include <queue>
 
 /** @file
  *  Defines class SSS::GL::Window and its bound class SSS::GL::Context.
@@ -168,15 +168,8 @@ public :
      */
     inline bool areInputsBlocked() const noexcept { return _block_inputs; };
 
-    /** Array storing currently-pressed keys (see glfw key macros).
-     *  @sa getKeyInputs()
-     */
-    using KeyInputs = std::array<bool, GLFW_KEY_LAST + 1>;
-    /** Returns an array storing currently-pressed keys (see glfw key macros).
-     *  @sa setCallback()
-     */
-    inline KeyInputs const& getKeyInputs() const noexcept { return _key_inputs; }
-    inline bool keyIsPressed(int key) const noexcept { return _key_inputs[key]; };
+    inline bool keyIsPressed(int key) const noexcept { return _key_inputs[key] == Input::Press; };
+    inline bool keyIsHeld(int key) const noexcept { return _key_inputs[key] != Input::None; };
 
 private:
     std::map<uint32_t, Shaders::Shared> _preset_shaders;   // Preset shaders
@@ -394,8 +387,14 @@ private:
     // Key to unblock inputs
     int _unblocking_key{ 0 };
 
-    // Array of keyboard keys being currently pressed
-    KeyInputs _key_inputs;
+    enum class Input {
+        None,
+        Press,
+        Held
+    };
+
+    std::queue<std::pair<int, bool>> _key_queue;
+    std::array<Input, GLFW_KEY_LAST + 1> _key_inputs;
 
     // Sets the window's main monitor
     void _setMainMonitor(int id);
