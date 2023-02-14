@@ -76,13 +76,8 @@ public:
     /** Returns the Hitbox type of this instance.*/
     inline Hitbox getHitbox() const noexcept { return _hitbox; };
 
-    /** Returns the curerntly hovered Plane instance on given window,
-     *  or an empty ptr.
-     *  @sa isHovered()
-     */
-    static Shared getHovered(std::shared_ptr<Window> window = nullptr) noexcept;
     /** Returns whether this Plane instance is currently hovered.
-     *  @sa getHovered(), getRelativeCoords()
+     *  @sa Window::getHoveredPlane(), getRelativeCoords()
      */
     inline bool isHovered() const noexcept { return _is_hovered; };
     /** Returns relative hovering coordinates (only valid if isHovered() returns true).*/

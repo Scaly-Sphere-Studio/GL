@@ -344,7 +344,7 @@ void Window::_callOnClickFunction(int button, int action, int mods)
     case HoveredType::None:
         break;
     case HoveredType::Plane: {
-        Plane::Shared plane = Plane::getHovered();
+        Plane::Shared const plane = getHoveredPlane();
         if (!plane)
             break;
         uint32_t const func_id = plane->_on_click_func_id;

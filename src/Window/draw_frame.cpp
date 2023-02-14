@@ -1,7 +1,8 @@
 #include "SSS/GL/Window.hpp"
+#include <filesystem>
+
 #pragma warning(suppress : 4996)
 #include <stb_image_write.h>
-#include <filesystem>
 
 SSS_GL_BEGIN;
 

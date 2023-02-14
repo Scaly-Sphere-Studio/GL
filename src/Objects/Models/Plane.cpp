@@ -1,5 +1,4 @@
 #include "SSS/GL/Objects/Models/Plane.hpp"
-#include "SSS/GL/Window.hpp"
 
 SSS_GL_BEGIN;
 
@@ -50,21 +49,6 @@ void Plane::setTexture(Texture::Shared texture)
 {
     _texture = texture;
     _updateTexScaling();
-}
-
-Plane::Shared Plane::getHovered(Window::Shared window) noexcept
-{
-    if (!window) {
-        window = Window::getFirst();
-    }
-
-    for (Weak weak : _instances) {
-        Shared plane(weak);
-        if (plane && plane->isHovered() && plane->getWindow() == window) {
-            return plane;
-        }
-    }
-    return Shared();
 }
 
 void Plane::_updateTextureOffset()

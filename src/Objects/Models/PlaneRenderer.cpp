@@ -1,6 +1,4 @@
 #include "SSS/GL/Objects/Models/PlaneRenderer.hpp"
-#include "SSS/GL/Objects/Models/Plane.hpp"
-#include "SSS/GL/Objects/Texture.hpp"
 #include "SSS/GL/Window.hpp"
 #include <ranges>
 

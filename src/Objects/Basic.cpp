@@ -16,6 +16,11 @@ void WindowObject::_changeWindow(std::shared_ptr<Window> window)
     _glfw_window = getWindow()->getGLFWwindow();
 }
 
+std::shared_ptr<Window> WindowObject::_getFirstWindow()
+{
+    return Window::getFirst();
+}
+
 std::shared_ptr<Window> const WindowObject::getWindow() const
 {
     Window::Shared const window = _window.lock();
@@ -23,6 +28,15 @@ std::shared_ptr<Window> const WindowObject::getWindow() const
         throw_exc("Trying to use window-dependent object without bounding a valid Window.");
     }
     return window;
+}
+
+char const* WindowObject::getWindowTitle() const
+{
+    Window::Shared const window = _window.lock();
+    if (!window) {
+        throw_exc("Trying to use window-dependent object without bounding a valid Window.");
+    }
+    return window->getTitle().c_str();
 }
 
 Context const WindowObject::getContext() const

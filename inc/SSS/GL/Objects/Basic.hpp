@@ -9,20 +9,20 @@
  *  Defines namespace SSS::GL::Basic and subsequent classes.
  */
 
- /** Declares the SSS::GL namespace.
-  *  Further code will be nested in the SSS::GL namespace.\n
-  *  Should be used in pair with with #SSS_GL_END.
-  */
+/** Declares the SSS::GL namespace.
+ *  Further code will be nested in the SSS::GL namespace.\n
+ *  Should be used in pair with with #SSS_GL_END.
+ */
 #define SSS_GL_BEGIN SSS_BEGIN; namespace GL {
-  /** Closes the SSS::GL namespace declaration.
-   *  Further code will no longer be nested in the SSS::GL namespace.\n
-   *  Should be used in pair with with #SSS_GL_BEGIN.
-   */
+/** Closes the SSS::GL namespace declaration.
+ *  Further code will no longer be nested in the SSS::GL namespace.\n
+ *  Should be used in pair with with #SSS_GL_BEGIN.
+ */
 #define SSS_GL_END SSS_END; }
 
-   /** \cond INTERNAL*/
+/** \cond INTERNAL*/
 
-   /** Logs the given message with "SSS/GL: " prepended to it.*/
+/** Logs the given message with "SSS/GL: " prepended to it.*/
 #define LOG_GL_MSG(X) LOG_CTX_MSG("SSS/GL", X)
 
 /** Logs the given message with "SSS/GL: %window_name%: " prepended to it.*/
@@ -38,7 +38,47 @@ namespace SSS::Log::GL {
 SSS_GL_BEGIN;
 
 class Window; // Pre-declaration of Window class.
-class Context; // Pre-declaration of Context class.
+
+/** Abstractization of glfw contexts, inspired by std::lock.
+ *  Make given context current in scope.
+ *  @usage
+ *  @code
+ *  // Context is set to something
+ *  
+ *  void func(Window::Shared window)
+ *  {
+ *      // Set context to given window
+ *      Context const context(window);
+ *      
+ *      // OpenGL operations ...
+ *  }
+ * 
+ *  // Context is back to previous
+ *  @endcode
+ */
+
+class Context final {
+private:
+    void _init(GLFWwindow* ptr);
+public:
+    /** Make given context current if needed.*/
+    Context(std::weak_ptr<Window> ptr);
+    /** Make given context current if needed.*/
+    Context(GLFWwindow* ptr);
+    /** Swap to previous context if it was changed in constructor.*/
+    ~Context();
+    /** @cond INTERNAL*/
+    Context()                           = delete;   // Default constructor
+    Context(const Context&)             = delete;   // Copy constructor
+    Context(Context&&)                  = delete;   // Move constructor
+    Context& operator=(const Context&)  = delete;   // Copy assignment
+    Context& operator=(Context&&)       = delete;   // Move assignment
+    /** @endcond*/
+private:
+    GLFWwindow* _given{ nullptr };
+    GLFWwindow* _previous{ nullptr };
+    bool _equal{ true };
+};
 
 class Input {
 public:
@@ -86,10 +126,12 @@ class WindowObject {
 public:
     WindowObject() = delete;
     std::shared_ptr<Window> const getWindow() const;
+    char const* getWindowTitle() const;
     Context const getContext() const;
 protected:
     WindowObject(std::shared_ptr<Window> window);
     void _changeWindow(std::shared_ptr<Window> window);
+    static std::shared_ptr<Window> _getFirstWindow();
 private:
     std::weak_ptr<Window> _window;
     GLFWwindow* _glfw_window;
@@ -109,7 +151,7 @@ public:
     static Shared create(std::shared_ptr<Window> window)
     {
         if (!window) {
-            window = Window::getFirst();
+            window = _getFirstWindow();
         }
         return Shared(new T(window));
     }

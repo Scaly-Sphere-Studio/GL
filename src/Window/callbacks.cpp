@@ -10,7 +10,7 @@ void Window::window_resize_callback(GLFWwindow* ptr, int w, int h) try
     if (Log::GL::Callbacks::query(Log::GL::Callbacks::get().window_resize)) {
         char buff[256];
         sprintf_s(buff, "'%s' -> Callback -> resize (%d, %d)",
-            WINDOW_TITLE(window), w, h);
+            window->getTitle().c_str(), w, h);
         LOG_GL_MSG(buff);
     }
 
@@ -48,7 +48,7 @@ void Window::window_pos_callback(GLFWwindow* ptr, int x, int y) try
     if (Log::GL::Callbacks::query(Log::GL::Callbacks::get().window_pos)) {
         char buff[256];
         sprintf_s(buff, "'%s' -> Callback -> position (%d, %d)",
-            WINDOW_TITLE(window), x, y);
+            window->getTitle().c_str(), x, y);
         LOG_GL_MSG(buff);
     }
 
@@ -92,7 +92,7 @@ void Window::mouse_position_callback(GLFWwindow* ptr, double x, double y)
     if (Log::GL::Callbacks::query(Log::GL::Callbacks::get().mouse_position)) {
         char buff[256];
         sprintf_s(buff, "'%s' -> Callback -> mouse position (%.1f, %.1f)",
-            WINDOW_TITLE(window), x, y);
+            window->getTitle().c_str(), x, y);
         LOG_GL_MSG(buff);
     }
 
@@ -114,7 +114,7 @@ void Window::window_iconify_callback(GLFWwindow* ptr, int state)
     if (Log::GL::Callbacks::query(Log::GL::Callbacks::get().window_iconify)) {
         char buff[256];
         sprintf_s(buff, "'%s' -> Callback -> iconify (%s)",
-            WINDOW_TITLE(window), toString(window->_is_iconified).c_str());
+            window->getTitle().c_str(), toString(window->_is_iconified).c_str());
         LOG_GL_MSG(buff);
     }
 
@@ -132,7 +132,7 @@ void Window::mouse_button_callback(GLFWwindow* ptr, int button, int action, int 
     if (Log::GL::Callbacks::query(Log::GL::Callbacks::get().mouse_button)) {
         char buff[256];
         sprintf_s(buff, "'%s' -> Callback -> mouse button (#%d -> %d, %d)",
-            WINDOW_TITLE(window), button, action, mods);
+            window->getTitle().c_str(), button, action, mods);
         LOG_GL_MSG(buff);
     }
 
@@ -148,7 +148,7 @@ void Window::mouse_button_callback(GLFWwindow* ptr, int button, int action, int 
     // Set focus of Text Area
     if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS) {
         TR::Area::resetFocus();
-        Plane::Shared const plane = Plane::getHovered(window);
+        Plane::Shared const plane = window->getHoveredPlane();
         if (plane && plane->_texture && plane->_texture->getType() == Texture::Type::Text) {
             TR::Area* area = plane->_texture->getTextArea();
             if (area) {
@@ -184,7 +184,7 @@ void Window::key_callback(GLFWwindow* ptr, int key, int scancode, int action, in
     if (Log::GL::Callbacks::query(Log::GL::Callbacks::get().key)) {
         char buff[256];
         sprintf_s(buff, "'%s' -> Callback -> key (#%d (=%d) -> %d, %d)",
-            WINDOW_TITLE(window), key, scancode, action, mods);
+            window->getTitle().c_str(), key, scancode, action, mods);
         LOG_GL_MSG(buff);
     }
     

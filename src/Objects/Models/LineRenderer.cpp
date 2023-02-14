@@ -1,5 +1,4 @@
 #include "SSS/GL/Objects/Models/LineRenderer.hpp"
-#include "SSS/GL/Window.hpp"
 
 SSS_GL_BEGIN;
 

@@ -1,11 +1,10 @@
 #include "SSS/GL/Objects/Texture.hpp"
 #include "SSS/GL/Objects/Models/Plane.hpp"
-#include "SSS/GL/Window.hpp"
+
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #pragma warning(suppress : 4996)
 #include <stb_image_write.h>
 
-// Init STB
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_FAILURE_USERMSG
 #include <stb_image.h>
@@ -27,8 +26,7 @@ Texture::Texture(std::shared_ptr<Window> window) try
     // Log
     if (Log::GL::Texture::query(Log::GL::Texture::get().life_state)) {
         char buff[256];
-        sprintf_s(buff, "'%s' -> Texture (id: %04u) -> created",
-            WINDOW_TITLE(getWindow()), 0);
+        sprintf_s(buff, "'%s' -> Texture -> created", getWindowTitle());
         LOG_GL_MSG(buff);
     }
 }
@@ -39,8 +37,7 @@ Texture::~Texture()
     // Log
     if (Log::GL::Texture::query(Log::GL::Texture::get().life_state)) {
         char buff[256];
-        sprintf_s(buff, "'%s' -> Texture (id: %04u) -> deleted",
-            WINDOW_TITLE(getWindow()), 0);
+        sprintf_s(buff, "'%s' -> Texture -> deleted", getWindowTitle());
         LOG_GL_MSG(buff);
     }
 }
@@ -118,8 +115,7 @@ void Texture::editRawPixels(void const* pixels, int width, int height) try
     // Log
     if (Log::GL::Texture::query(Log::GL::Texture::get().edit)) {
         char buff[256];
-        sprintf_s(buff, "'%s' -> Texture (id: %04u) -> edit",
-            WINDOW_TITLE(getWindow()), 0);
+        sprintf_s(buff, "'%s' -> Texture -> edit", getWindowTitle());
         LOG_GL_MSG(buff);
     }
 }
@@ -276,8 +272,7 @@ void Texture::_internalEdit(void const* pixels, int w, int h)
     // Log
     if (Log::GL::Texture::query(Log::GL::Texture::get().edit)) {
         char buff[256];
-        sprintf_s(buff, "'%s' -> Texture (id: %04u) -> edit",
-            WINDOW_TITLE(getWindow()), 0);
+        sprintf_s(buff, "'%s' -> Texture -> edit", getWindowTitle());
         LOG_GL_MSG(buff);
     }
 }

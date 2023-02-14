@@ -199,6 +199,11 @@ public:
     void addRenderer(RendererBase::Shared renderer);
     void removeRenderer(RendererBase::Shared renderer);
 
+    /** Returns the curerntly hovered Plane instance or an empty ptr.
+     *  @sa Plane::isHovered()
+     */
+    Plane::Shared getHoveredPlane() const noexcept;
+
     /** Draws everything in order of Renderer IDs.
      *  @sa printFrame()
      */
@@ -437,63 +442,6 @@ inline void Window::setCallback(Callback(*set)(GLFWwindow*, Callback), Callback 
     else {
         set(_window.get(), callback);
     }
-};
-
-INTERNAL_BEGIN;
-inline char const* windowTitle(Window::Shared win) noexcept
-{
-    if (win) {
-        return win->getTitle().c_str();
-    }
-    return nullptr;
-}
-
-inline char const* windowTitle(std::weak_ptr<Window> win) noexcept
-{
-    return windowTitle(win.lock());
-}
-#define WINDOW_TITLE(X) _internal::windowTitle(X)
-
-INTERNAL_END;
-
-/** Abstractization of glfw contexts, inspired by std::lock.
- *  Make given context current in scope.
- *  @usage
- *  @code
- *  // Context is set to something
- *  
- *  void func(Window::Shared window)
- *  {
- *      // Set context to given window
- *      Context const context(window);
- *      
- *      // OpenGL operations ...
- *  }
- * 
- *  // Context is back to previous
- *  @endcode
- */
-class Context final {
-private:
-    void _init(GLFWwindow* ptr);
-public:
-    /** Make given context current if needed.*/
-    Context(std::weak_ptr<Window> ptr);
-    /** Make given context current if needed.*/
-    Context(GLFWwindow* ptr);
-    /** Swap to previous context if it was changed in constructor.*/
-    ~Context();
-    /** @cond INTERNAL*/
-    Context()                           = delete;   // Default constructor
-    Context(const Context&)             = delete;   // Copy constructor
-    Context(Context&&)                  = delete;   // Move constructor
-    Context& operator=(const Context&)  = delete;   // Copy assignment
-    Context& operator=(Context&&)       = delete;   // Move assignment
-    /** @endcond*/
-private:
-    GLFWwindow* _given{ nullptr };
-    GLFWwindow* _previous{ nullptr };
-    bool _equal{ true };
 };
 
 SSS_GL_END;

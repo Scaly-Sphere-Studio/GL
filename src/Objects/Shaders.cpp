@@ -1,5 +1,4 @@
 #include "SSS/GL/Objects/Shaders.hpp"
-#include "SSS/GL/Window.hpp"
 
 SSS_GL_BEGIN;
 
@@ -9,8 +8,7 @@ Shaders::Shaders(std::shared_ptr<Window> window) try
 	// Log
 	if (Log::GL::Shaders::query(Log::GL::Shaders::get().life_state)) {
 		char buff[256];
-		sprintf_s(buff, "'%s' -> Shaders (id: %04u) -> created",
-			WINDOW_TITLE(getWindow()), 0);
+		sprintf_s(buff, "'%s' -> Shaders -> created", getWindowTitle());
 		LOG_GL_MSG(buff);
 	}
 }
@@ -22,8 +20,7 @@ Shaders::~Shaders()
 		// Log
 		if (Log::GL::Shaders::query(Log::GL::Shaders::get().life_state)) {
 			char buff[256];
-			sprintf_s(buff, "'%s' -> Shaders (id: %04u) -> deleted (was never loaded)",
-				WINDOW_TITLE(getWindow()), 0);
+			sprintf_s(buff, "'%s' -> Shaders -> deleted (was never loaded)", getWindowTitle());
 			LOG_GL_MSG(buff);
 		}
 		return;
@@ -40,8 +37,7 @@ Shaders::~Shaders()
 	// Log
 	if (Log::GL::Shaders::query(Log::GL::Shaders::get().life_state)) {
 		char buff[256];
-		sprintf_s(buff, "'%s' -> Shaders (id: %04u) -> deleted",
-			WINDOW_TITLE(getWindow()), 0);
+		sprintf_s(buff, "'%s' -> Shaders -> deleted", getWindowTitle());
 		LOG_GL_MSG(buff);
 	}
 }
@@ -130,8 +126,7 @@ void Shaders::loadFromStrings(std::string const& vertex_data, std::string const&
 	// Log
 	if (Log::GL::Shaders::query(Log::GL::Shaders::get().loading)) {
 		char buff[256];
-		sprintf_s(buff, "'%s' -> Shaders (id: %04u) -> loaded",
-			WINDOW_TITLE(getWindow()), 0);
+		sprintf_s(buff, "'%s' -> Shaders -> loaded", getWindowTitle());
 		LOG_GL_MSG(buff);
 	}
 }
@@ -147,7 +142,7 @@ void Shaders::use() const
 {
 	if (!_loaded) {
 		char buff[256];
-		sprintf_s(buff, "Shaders (id: %04u) were not loaded!", 0);
+		sprintf_s(buff, "Shaders were not loaded!");
 		LOG_METHOD_WRN(buff);
 		return;
 	}
