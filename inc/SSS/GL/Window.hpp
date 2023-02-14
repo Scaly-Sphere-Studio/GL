@@ -170,6 +170,10 @@ public :
 
     inline auto const& getKeyInputs() const noexcept { return _key_inputs; };
 
+    inline void setInputStackTime(std::chrono::milliseconds ms) { _input_stack_time = ms; };
+    inline auto getInputStackTime() const noexcept { return _input_stack_time; };
+
+
     inline bool keyIsHeld(int key) const noexcept { return _key_inputs[key].is_held(); };
     inline bool keyIsHeld(int key, int min_count) const noexcept
         { return _key_inputs[key].is_held(min_count); };
@@ -182,8 +186,21 @@ public :
 
     inline int keyCount(int key) const noexcept { return _key_inputs[key].count(); }
 
-    inline void setInputStackTime(std::chrono::milliseconds ms) { _input_stack_time = ms; };
-    inline auto getInputStackTime() const noexcept { return _input_stack_time; };
+
+    inline auto const& getClickInputs() const noexcept { return _click_inputs; };
+
+    inline bool clickIsHeld(int button) const noexcept { return _click_inputs[button].is_held(); };
+    inline bool clickIsHeld(int button, int min_count) const noexcept
+        { return _click_inputs[button].is_held(min_count); };
+
+    inline bool clickIsPressed(int button) const noexcept { return _click_inputs[button].is_pressed(); };
+    inline bool clickIsPressed(int button, int min_count) const noexcept
+        { return _click_inputs[button].is_pressed(min_count); };
+
+    inline bool clickIsReleased(int button) const noexcept { return _click_inputs[button].is_released(); };
+
+    inline int clickCount(int button) const noexcept { return _click_inputs[button].count(); }
+
 
 private:
     std::map<uint32_t, Shaders::Shared> _preset_shaders;   // Preset shaders
@@ -405,10 +422,14 @@ private:
     bool _block_inputs{ false };
     // Key to unblock inputs
     int _unblocking_key{ 0 };
+    // Maximum delay for inputs to be considered stacked (eg: double click)
+    std::chrono::milliseconds _input_stack_time{ 250 };
 
     std::queue<std::pair<int, bool>> _key_queue;
     std::array<Input, GLFW_KEY_LAST + 1> _key_inputs;
-    std::chrono::milliseconds _input_stack_time{ 250 };
+    
+    std::queue<std::pair<int, bool>> _click_queue;
+    std::array<Input, GLFW_KEY_LAST + 1> _click_inputs;
 
     // Sets the window's main monitor
     void _setMainMonitor(int id);

@@ -127,6 +127,8 @@ inline void lua_setup_GL(sol::state& lua)
     auto window = gl.new_usertype<Window>("Window", sol::no_constructor);
     window["blockInputs"] = &Window::blockInputs;
     window["unblockInputs"] = &Window::unblockInputs;
+    window["input_stack_time"] = sol::property(&Window::getInputStackTime, &Window::setInputStackTime);
+
     window["keyIsHeld"] = sol::overload(
         sol::resolve<bool(int) const>(&Window::keyIsHeld),
         sol::resolve<bool(int, int) const>(&Window::keyIsHeld)
@@ -137,7 +139,17 @@ inline void lua_setup_GL(sol::state& lua)
     );
     window["keyIsReleased"] = &Window::keyIsReleased;
     window["keyCount"] = &Window::keyCount;
-    window["input_stack_time"] = sol::property(&Window::getInputStackTime, &Window::setInputStackTime);
+
+    window["clickIsHeld"] = sol::overload(
+        sol::resolve<bool(int) const>(&Window::clickIsHeld),
+        sol::resolve<bool(int, int) const>(&Window::clickIsHeld)
+    );
+    window["clickIsPressed"] = sol::overload(
+        sol::resolve<bool(int) const>(&Window::clickIsPressed),
+        sol::resolve<bool(int, int) const > (&Window::clickIsPressed)
+    );
+    window["clickIsReleased"] = &Window::clickIsReleased;
+    window["clickCount"] = &Window::clickCount;
 
     window["addRenderer"] = sol::overload(
         sol::resolve<void(RendererBase::Shared, size_t)>(&Window::addRenderer),
@@ -307,6 +319,21 @@ inline void lua_setup_GL(sol::state& lua)
         gl["KEY_RIGHT_ALT"]     = GLFW_KEY_RIGHT_ALT;
         gl["KEY_RIGHT_SUPER"]   = GLFW_KEY_RIGHT_SUPER;
         gl["KEY_MENU"]          = GLFW_KEY_MENU;
+    }
+    // GLFW_MOUSE_BUTTON_XXX macros
+    {
+        gl["LEFT_CLICK"]    = GLFW_MOUSE_BUTTON_LEFT;
+        gl["MIDDLE_CLICK"]  = GLFW_MOUSE_BUTTON_MIDDLE;
+        gl["RIGHT_CLICK"]   = GLFW_MOUSE_BUTTON_RIGHT;
+        gl["CLICK_1"]       = GLFW_MOUSE_BUTTON_1;
+        gl["CLICK_2"]       = GLFW_MOUSE_BUTTON_2;
+        gl["CLICK_3"]       = GLFW_MOUSE_BUTTON_3;
+        gl["CLICK_4"]       = GLFW_MOUSE_BUTTON_4;
+        gl["CLICK_5"]       = GLFW_MOUSE_BUTTON_5;
+        gl["CLICK_6"]       = GLFW_MOUSE_BUTTON_6;
+        gl["CLICK_7"]       = GLFW_MOUSE_BUTTON_7;
+        gl["CLICK_8"]       = GLFW_MOUSE_BUTTON_8;
+
     }
 }
 

@@ -2,6 +2,28 @@
 
 SSS_GL_BEGIN;
 
+template<size_t size>
+static void processInputs(  std::queue<std::pair<int, bool>>& queue,
+                            std::array<Input, size>& inputs,
+                            std::chrono::milliseconds const& input_stack_time)
+{
+    // Mark previously pressed inputs as handled so that is_pressed() returns false
+    for (Input& input : inputs) {
+        input.handled();
+    }
+    // Process input queue
+    for (; !queue.empty(); queue.pop()) {
+        auto const& queued_input = queue.front();
+        Input& input = inputs[queued_input.first];
+        if (queued_input.second) {
+            input.increment(input_stack_time);
+        }
+        else {
+            input.reset();
+        }
+    }
+}
+
 bool pollEverything() try
 {
     using namespace std::chrono;
@@ -29,21 +51,10 @@ bool pollEverything() try
         // Call all passive functions
         window->_callPassiveFunctions();
 
-        // Swap previously "pressed" keys' input to "held"
-        for (auto& key : window->_key_inputs) {
-            key.handled();
-        }
-        // Process input queue
-        for (; !window->_key_queue.empty(); window->_key_queue.pop()) {
-            auto const& queued_key = window->_key_queue.front();
-            auto& key = window->_key_inputs[queued_key.first];
-            if (queued_key.second) {
-                key.increment(window->_input_stack_time);
-            }
-            else {
-                key.reset();
-            }
-        }
+        // Process inputs
+        processInputs(window->_key_queue, window->_key_inputs, window->_input_stack_time);
+        processInputs(window->_click_queue, window->_click_inputs, window->_input_stack_time);
+
     }
     
     // Loop over each Texture instance

@@ -30,6 +30,19 @@ then
     print("TRIPLE SPACE")
 end
 
+if(window:clickIsPressed(GL.LEFT_CLICK))
+then
+    print("LEFT CLICK")
+end
+if(window:clickIsPressed(GL.LEFT_CLICK, 2))
+then
+    print("DOUBLE LEFT CLICK")
+end
+if(window:clickIsPressed(GL.LEFT_CLICK, 3))
+then
+    print("TRIPLE LEFT CLICK")
+end
+
 if (plane.alpha == 1)
 then
     alpha_coeff = -0.01
