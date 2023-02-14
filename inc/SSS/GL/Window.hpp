@@ -168,8 +168,22 @@ public :
      */
     inline bool areInputsBlocked() const noexcept { return _block_inputs; };
 
-    inline bool keyIsPressed(int key) const noexcept { return _key_inputs[key] == Input::Press; };
-    inline bool keyIsHeld(int key) const noexcept { return _key_inputs[key] != Input::None; };
+    inline auto const& getKeyInputs() const noexcept { return _key_inputs; };
+
+    inline bool keyIsHeld(int key) const noexcept { return _key_inputs[key].is_held(); };
+    inline bool keyIsHeld(int key, int min_count) const noexcept
+        { return _key_inputs[key].is_held(min_count); };
+
+    inline bool keyIsPressed(int key) const noexcept { return _key_inputs[key].is_pressed(); };
+    inline bool keyIsPressed(int key, int min_count) const noexcept
+        { return _key_inputs[key].is_pressed(min_count); };
+
+    inline bool keyIsReleased(int key) const noexcept { return _key_inputs[key].is_released(); };
+
+    inline int keyCount(int key) const noexcept { return _key_inputs[key].count(); }
+
+    inline void setInputStackTime(std::chrono::milliseconds ms) { _input_stack_time = ms; };
+    inline auto getInputStackTime() const noexcept { return _input_stack_time; };
 
 private:
     std::map<uint32_t, Shaders::Shared> _preset_shaders;   // Preset shaders
@@ -387,14 +401,9 @@ private:
     // Key to unblock inputs
     int _unblocking_key{ 0 };
 
-    enum class Input {
-        None,
-        Press,
-        Held
-    };
-
     std::queue<std::pair<int, bool>> _key_queue;
     std::array<Input, GLFW_KEY_LAST + 1> _key_inputs;
+    std::chrono::milliseconds _input_stack_time{ 250 };
 
     // Sets the window's main monitor
     void _setMainMonitor(int id);

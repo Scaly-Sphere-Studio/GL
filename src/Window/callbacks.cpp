@@ -160,7 +160,7 @@ void Window::mouse_button_callback(GLFWwindow* ptr, int button, int action, int 
                     window->_key_queue.pop();
                 }
                 for (auto& key : window->_key_inputs) {
-                    key = Window::Input::None;
+                    key.reset();
                 }
             }
         }
@@ -199,7 +199,9 @@ void Window::key_callback(GLFWwindow* ptr, int key, int scancode, int action, in
     bool const has_focused_area = TR::Area::getFocused() != nullptr;
 
     // Fill inputs if no focused text Area OR key was released
-    if (action != GLFW_REPEAT && (!has_focused_area || action == GLFW_RELEASE)) {
+    if (action != GLFW_REPEAT && (!has_focused_area || action == GLFW_RELEASE)
+        && key >= 0 && key < window->_key_inputs.size())
+    {
         window->_key_queue.push(std::make_pair(key, action));
     }
 

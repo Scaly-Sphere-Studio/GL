@@ -127,8 +127,18 @@ inline void lua_setup_GL(sol::state& lua)
     auto window = gl.new_usertype<Window>("Window", sol::no_constructor);
     window["blockInputs"] = &Window::blockInputs;
     window["unblockInputs"] = &Window::unblockInputs;
-    window["keyIsPressed"] = &Window::keyIsPressed;
-    window["keyIsHeld"] = &Window::keyIsHeld;
+    window["keyIsHeld"] = sol::overload(
+        sol::resolve<bool(int) const>(&Window::keyIsHeld),
+        sol::resolve<bool(int, int) const>(&Window::keyIsHeld)
+    );
+    window["keyIsPressed"] = sol::overload(
+        sol::resolve<bool(int) const>(&Window::keyIsPressed),
+        sol::resolve<bool(int, int) const > (&Window::keyIsPressed)
+    );
+    window["keyIsReleased"] = &Window::keyIsReleased;
+    window["keyCount"] = &Window::keyCount;
+    window["input_stack_time"] = sol::property(&Window::getInputStackTime, &Window::setInputStackTime);
+
     window["addRenderer"] = sol::overload(
         sol::resolve<void(RendererBase::Shared, size_t)>(&Window::addRenderer),
         sol::resolve<void(RendererBase::Shared)>(&Window::addRenderer)

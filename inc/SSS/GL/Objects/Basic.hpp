@@ -40,6 +40,44 @@ SSS_GL_BEGIN;
 class Window; // Pre-declaration of Window class.
 class Context; // Pre-declaration of Context class.
 
+class Input {
+public:
+    inline int count() const noexcept { return _count; }
+    
+    inline bool is_held() const noexcept { return _count != 0; };
+    inline bool is_held(int min_count) const noexcept { return min_count <= _count; };
+    inline operator bool() const noexcept { return is_held(); };
+    
+    inline bool is_pressed() const noexcept { return _is_pressed && is_held(); };
+    inline bool is_pressed(int min_count) const noexcept { return _is_pressed && is_held(min_count); };
+    
+    inline bool is_released() const noexcept { return _is_pressed && !is_held(); };
+
+    inline void increment(std::chrono::milliseconds const& input_stack_time) noexcept {
+        auto const now = std::chrono::steady_clock::now();
+        if ((now - _last_pressed) <= input_stack_time) {
+            _count = _old_count;
+        }
+        ++_count;
+        _is_pressed = true;
+        _last_pressed = now;
+    }
+    inline void reset() noexcept {
+        _old_count = _count;
+        _count = 0;
+        _is_pressed = true;
+    }
+    inline void handled() noexcept {
+        _is_pressed = false;
+    };
+private:
+    int _count{ 0 };
+    int _old_count{ 0 };
+    bool _is_pressed{ false };
+    std::chrono::steady_clock::time_point _last_pressed;
+};
+
+
 INTERNAL_BEGIN;
 
 // This class is to be inherited in all classes whose instances are
