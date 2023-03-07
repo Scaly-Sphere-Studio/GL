@@ -93,13 +93,19 @@ inline void lua_setup_GL(sol::state& lua)
         { "Perspective", Camera::Projection::Perspective }
     });
 
-    auto plane = gl.new_usertype<Plane>("Plane", sol::no_constructor);
-    plane["scaling"] = sol::property(&Plane::getScaling, &Plane::setScaling);
-    plane["rotation"] = sol::property(&Plane::getRotation, &Plane::setRotation);
-    plane["translation"] = sol::property(&Plane::getTranslation, &Plane::setTranslation);
-    plane["scale"] = sol::resolve<void(float)>(&Plane::scale);
-    plane["rotate"] = &Plane::rotate;
-    plane["translate"] = &Plane::translate;
+    auto model = gl.new_usertype<ModelBase>("Model", sol::no_constructor);
+    model["scaling"] = sol::property(&ModelBase::getScaling, &ModelBase::setScaling);
+    model["rotation"] = sol::property(&ModelBase::getRotation, &ModelBase::setRotation);
+    model["translation"] = sol::property(&ModelBase::getTranslation, &ModelBase::setTranslation);
+    model["scale"] = sol::resolve<void(float)>(&ModelBase::scale);
+    model["rotate"] = &ModelBase::rotate;
+    model["translate"] = &ModelBase::translate;
+    model["isHovered"] = sol::resolve<bool() const>(&ModelBase::isHovered);
+    model["isClicked"] = sol::resolve<bool() const>(&ModelBase::isClicked);
+    model["isHeld"] = sol::resolve<bool() const>(&ModelBase::isHeld);
+
+    auto plane = gl.new_usertype<Plane>("Plane", sol::no_constructor,
+        sol::base_classes, sol::bases<ModelBase>());
     plane["texture"] = sol::property(&Plane::getTexture, &Plane::setTexture);
     plane["play"] = &Plane::play;
     plane["pause"] = &Plane::pause;

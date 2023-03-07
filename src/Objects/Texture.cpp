@@ -11,8 +11,6 @@
 
 SSS_GL_BEGIN;
 
-std::vector<Texture::Weak> Texture::_instances{};
-
 Texture::Texture(std::shared_ptr<Window> window) try
     : _internal::InstancedWindowObject<Texture>(window), _raw_texture(window, GL_TEXTURE_2D_ARRAY)
 {

@@ -1,5 +1,6 @@
 #include "SSS/GL/Window.hpp"
 #include <filesystem>
+#include <ranges>
 
 #pragma warning(suppress : 4996)
 #include <stb_image_write.h>
@@ -24,7 +25,7 @@ void Window::drawObjects()
 void Window::_updateHoveredModel()
 {
     // Reset hovering
-    _hovered_type = HoveredType::None;
+    _hovered_model.reset();
     double z = DBL_MAX;
 
     // If the cursor is disabled (Camera mode), then its relative position is at
@@ -47,7 +48,7 @@ void Window::_updateHoveredModel()
 
     // Loop over each renderer (in reverse order) and find their nearest
     // models at mouse coordinates
-    for (auto const& renderer : _renderers) {
+    for (auto const& renderer : _renderers | std::views::reverse) {
         if (!renderer || !renderer->isActive())
             continue;
         RendererBase* ptr = renderer.get();
@@ -56,8 +57,8 @@ void Window::_updateHoveredModel()
         if (renderer != nullptr && renderer->_findNearestModel(x, y)) {
             // If a model was found, update hover status
             if (renderer->_hovered_z < z) {
+                _hovered_model = renderer->_hovered;
                 z = renderer->_hovered_z;
-                _hovered_type = HoveredType::Plane;
             }
             // If the depth buffer was reset at least once by the renderer, previous
             // tested models will always be on top of all not-yet-tested models,
@@ -74,20 +75,18 @@ void Window::_updateHoveredModel()
                 break;
         }
     }
-    if (_hovered_type != HoveredType::None
-        && Log::GL::Window::query(Log::GL::Window::get().hovered_model)) {
-        std::string model_type;
-        switch (_hovered_type) {
-        case HoveredType::Plane:
-            model_type = "Plane";
-            break;
-        default:
-            model_type = "Unknown";
+    if (Log::GL::Window::query(Log::GL::Window::get().hovered_model)) {
+        auto const model = _hovered_model.lock();
+        if (model) {
+            std::string type;
+            if (std::dynamic_pointer_cast<Plane>(model))
+                type = "Plane";
+            else
+                type = "Unknown";
+            char buff[256];
+            sprintf_s(buff, "'%s' -> Hovered: %s #%p", _title.c_str(), type.c_str(), model.get());
+            LOG_GL_MSG(buff);
         }
-        char buff[256];
-        sprintf_s(buff, "'%s' -> Hovered: %s #%u",
-            _title.c_str(), model_type.c_str(), _hovered_id);
-        LOG_GL_MSG(buff);
     }
     _hover_waiting_time = std::chrono::nanoseconds(0);
 }

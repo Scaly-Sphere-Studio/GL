@@ -11,7 +11,7 @@
 SSS_GL_BEGIN;
 
 /** 2D plane derived from Model.*/
-class Plane final : public Model, public _internal::InstancedWindowObject<Plane> {
+class Plane final : public Model<Plane> {
     friend class _internal::SharedWindowObject<Plane>;
     friend class PlaneRenderer;
     friend class Window;
@@ -35,9 +35,9 @@ public:
     static Shared create(Texture::Shared texture);
     Shared duplicate() const;
 
-    virtual glm::mat4 getModelMat4();
+    virtual glm::mat4 getModelMat4() override;
     virtual void getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles,
-        glm::vec3& translation);
+        glm::vec3& translation) override;
     
     /** Sets the Texture to be used for this instance.*/
     void setTexture(Texture::Shared texture);;
@@ -76,10 +76,6 @@ public:
     /** Returns the Hitbox type of this instance.*/
     inline Hitbox getHitbox() const noexcept { return _hitbox; };
 
-    /** Returns whether this Plane instance is currently hovered.
-     *  @sa Window::getHoveredPlane(), getRelativeCoords()
-     */
-    inline bool isHovered() const noexcept { return _is_hovered; };
     /** Returns relative hovering coordinates (only valid if isHovered() returns true).*/
     inline void getRelativeCoords(int& x, int& y) const noexcept { x = _relative_x; y = _relative_y; };
 
@@ -100,8 +96,6 @@ private:
     // Type of hitbox
     Hitbox _hitbox{ Hitbox::None };
 
-    // Whether the Plane instance is hovered, handled by Renderer
-    bool _is_hovered{ false };
     // Mouse hovering relative position, updated via Window::render every x ms.
     int _relative_x{ 0 };
     int _relative_y{ 0 };

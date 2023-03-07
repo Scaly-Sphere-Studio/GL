@@ -216,10 +216,32 @@ public:
     void addRenderer(RendererBase::Shared renderer);
     void removeRenderer(RendererBase::Shared renderer);
 
-    /** Returns the curerntly hovered Plane instance or an empty ptr.
-     *  @sa Plane::isHovered()
-     */
-    Plane::Shared getHoveredPlane() const noexcept;
+    ModelBase::Shared getHovered() const { return _hovered_model.lock(); };
+    template<class Derived>
+    std::shared_ptr<Derived> getHovered() const {
+        ModelBase::Shared model = getHovered();
+        if (model == nullptr)
+            return nullptr;
+        return std::dynamic_pointer_cast<Derived>(model);
+    }
+
+    ModelBase::Shared getClicked() const { return _clicked_model.lock(); };
+    template<class Derived>
+    std::shared_ptr<Derived> getClicked() const {
+        ModelBase::Shared const model = getClicked();
+        if (!model)
+            return nullptr;
+        return std::dynamic_pointer_cast<Derived>(model);
+    }
+
+    ModelBase::Shared getHeld() const { return _held_model.lock(); };
+    template<class Derived>
+    std::shared_ptr<Derived> getHeld() const {
+        ModelBase::Shared const model = getHeld();
+        if (!model)
+            return nullptr;
+        return std::dynamic_pointer_cast<Derived>(model);
+    }
 
     /** Draws everything in order of Renderer IDs.
      *  @sa printFrame()
@@ -251,15 +273,16 @@ private:
     void _saveScreenshot();
 
     FrameTimer _frame_timer;
+    
     std::chrono::steady_clock::time_point _last_render_time;
     std::chrono::steady_clock::duration _hover_waiting_time;
+    
     bool _cursor_is_moving{ false };
     double _old_cursor_x{ 0 }, _old_cursor_y{ 0 };
-    uint32_t _hovered_id{ 0 };
-    enum class HoveredType {
-        None = 0,
-        Plane
-    } _hovered_type{ HoveredType::None };
+
+    ModelBase::Weak _hovered_model;
+    ModelBase::Weak _clicked_model;    // (left click)
+    ModelBase::Weak _held_model;       // (left click)
     void _updateHoveredModel();
     void _updateHoveredModelIfNeeded(std::chrono::steady_clock::time_point const& now);
 

@@ -22,6 +22,7 @@ do
     area = TR.Area.create()
     area.w = 300
     area.h = 300
+    area.focusable = true
     local fmt = area:getFmt()
     fmt.charsize = 50
     fmt.text_color.func = TR.ColorFunc.Rainbow

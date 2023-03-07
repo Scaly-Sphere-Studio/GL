@@ -43,6 +43,20 @@ then
     print("TRIPLE LEFT CLICK")
 end
 
+if (plane:isHovered())
+then
+    --print("Hovered")
+end
+if (plane:isClicked())
+then
+    --print("Clicked")
+end
+if (plane:isHeld())
+then
+    --print("Held")
+end
+
+
 if (plane.alpha == 1)
 then
     alpha_coeff = -0.01

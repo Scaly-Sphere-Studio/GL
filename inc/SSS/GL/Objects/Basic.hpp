@@ -142,6 +142,7 @@ class SharedWindowObject : public WindowObject, public std::enable_shared_from_t
 public:
     SharedWindowObject() = delete;
     using Shared = std::shared_ptr<T>;
+    using Weak = std::weak_ptr<T>;
     using Vector = std::vector<Shared>;
 
 protected:
@@ -201,6 +202,9 @@ public:
         return SharedWindowObject<T>::template Shared(nullptr);
     }
 };
+
+template <class T>
+std::vector<std::weak_ptr<T>> _internal::InstancedWindowObject<T>::_instances{};
 
 INTERNAL_END;
 

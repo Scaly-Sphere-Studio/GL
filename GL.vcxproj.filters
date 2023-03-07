@@ -103,7 +103,7 @@
       <Filter>src\Objects</Filter>
     </ClCompile>
     <ClCompile Include="src\Objects\Model.cpp">
-      <Filter>src</Filter>
+      <Filter>src\Objects</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

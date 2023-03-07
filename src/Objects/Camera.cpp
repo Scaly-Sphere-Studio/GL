@@ -3,8 +3,6 @@
 
 SSS_GL_BEGIN;
 
-std::vector<Camera::Weak> Camera::_instances{};
-
 Camera::Camera(std::shared_ptr<Window> weak_window)
     : _internal::InstancedWindowObject<Camera>(weak_window)
 {

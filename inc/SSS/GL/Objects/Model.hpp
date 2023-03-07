@@ -5,19 +5,22 @@
 #include <glm/gtx/matrix_decompose.hpp>
 
 /** @file
- *  Defines template abstract class SSS::GL::Model.
+ *  Defines abstract class SSS::GL::ModelBase.
  */
 
 SSS_GL_BEGIN;
 
-/** Template abstract base class for %Model matrix.
+/** Abstract base class for %Model matrix.
  *  @sa Plane
  */
-class Model {
+class ModelBase {
 public:
-    Model();
+    ModelBase();
     /** Virtual destructor, default.*/
-    virtual ~Model() = 0;
+    virtual ~ModelBase() = 0;
+
+    using Shared = std::shared_ptr<ModelBase>;
+    using Weak = std::weak_ptr<ModelBase>;
 
     /** Sets scaling (default: 1*1*1).*/
     void setScaling(glm::vec3 scaling = glm::vec3(1.f));
@@ -43,7 +46,15 @@ public:
     glm::vec3 getRotation();
     glm::vec3 getTranslation();
 
+    virtual bool isHovered() const noexcept = 0;
+    virtual bool isClicked() const noexcept = 0;
+    virtual bool isHeld() const noexcept = 0;
+
 protected:
+    bool isHovered(std::shared_ptr<Window> window) const noexcept;
+    bool isClicked(std::shared_ptr<Window> window) const noexcept;
+    bool isHeld(std::shared_ptr<Window> window) const noexcept;
+
     /** Scaling part of the %Model matrix.*/
     glm::mat4 _scaling;
     /** Rotation part of the %Model matrix.*/
@@ -55,6 +66,28 @@ protected:
     /** Whether getModelMat4() should compute _model_mat4.*/
     bool _should_compute_mat4{ true };
 };
+
+template<class Derived>
+class Model : public ModelBase, public _internal::InstancedWindowObject<Derived> {
+protected:
+    Model(std::shared_ptr<Window> window)
+        : ModelBase(), _internal::InstancedWindowObject<Derived>(window) {}
+
+public:
+    using _internal::SharedWindowObject<Derived>::Shared;
+    using _internal::SharedWindowObject<Derived>::Weak;
+
+    virtual bool isHovered() const noexcept {
+        return ModelBase::isHovered(_internal::WindowObject::getWindow());
+    };
+    virtual bool isClicked() const noexcept {
+        return ModelBase::isClicked(_internal::WindowObject::getWindow());
+    };
+    virtual bool isHeld() const noexcept {
+        return ModelBase::isHeld(_internal::WindowObject::getWindow());
+    };
+};
+
 
 SSS_GL_END;
 

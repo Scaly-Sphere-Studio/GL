@@ -36,16 +36,4 @@ void Window::removeRenderer(RendererBase::Shared renderer)
         _renderers.erase(it);
 }
 
-Plane::Shared Window::getHoveredPlane() const noexcept
-{
-    auto const window = shared_from_this();
-    for (auto weak : Plane::_instances) {
-        auto plane = weak.lock();
-        if (plane && plane->isHovered() && plane->getWindow() == window) {
-            return plane;
-        }
-    }
-    return Plane::Shared();
-}
-
 SSS_GL_END;

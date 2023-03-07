@@ -130,8 +130,6 @@ CATCH_AND_RETHROW_METHOD_EXC;
 
 bool PlaneRenderer::_findNearestModel(float x, float y)
 {
-    if (!_hovered.expired())
-        _hovered.lock()->_is_hovered = false;
     _hovered.reset();
     _hovered_z = DBL_MAX;
     if (!isActive()) {
@@ -164,8 +162,6 @@ bool PlaneRenderer::_findNearestModel(float x, float y)
             break;
         }
     }
-    if (!_hovered.expired())
-        _hovered.lock()->_is_hovered = true;
     return result;
 }
 

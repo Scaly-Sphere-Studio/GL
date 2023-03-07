@@ -148,10 +148,10 @@ void Window::mouse_button_callback(GLFWwindow* ptr, int button, int action, int 
     // Set focus of Text Area
     if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS) {
         TR::Area::resetFocus();
-        Plane::Shared const plane = window->getHoveredPlane();
+        Plane::Shared const plane = window->getHovered<Plane>();
         if (plane && plane->_texture && plane->_texture->getType() == Texture::Type::Text) {
             TR::Area* area = plane->_texture->getTextArea();
-            if (area) {
+            if (area && area->isFocusable()) {
                 int x, y;
                 plane->getRelativeCoords(x, y);
                 area->cursorPlace(x, y);

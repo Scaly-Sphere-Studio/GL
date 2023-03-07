@@ -53,6 +53,15 @@ bool pollEverything() try
         processInputs(window->_key_queue, window->_key_inputs, window->_input_stack_time);
         processInputs(window->_click_queue, window->_click_inputs, window->_input_stack_time);
 
+        Input left_click = window->getClickInputs()[GLFW_MOUSE_BUTTON_LEFT];
+        window->_clicked_model.reset();
+        if (left_click.is_pressed()) {
+            window->_clicked_model = window->_hovered_model;
+            window->_held_model = window->_hovered_model;
+        }
+        else if (left_click.is_released()) {
+            window->_held_model.reset();
+        }
     }
     
     // Loop over each Texture instance
