@@ -102,6 +102,9 @@
     <ClCompile Include="src\Objects\Texture_APNG.cpp">
       <Filter>src\Objects</Filter>
     </ClCompile>
+    <ClCompile Include="src\Objects\Model.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\SSS\GL\Window.hpp">

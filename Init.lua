@@ -58,8 +58,6 @@ do
     camera.proj_type = GL.Projection.OrthoFixed
     
     plane:scale(300)
-    plane.passive_func_id = 1
-    plane.on_click_func_id = 1
     plane.hitbox = GL.PlaneHitbox.Full
 end
 

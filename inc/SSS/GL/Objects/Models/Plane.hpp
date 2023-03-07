@@ -11,7 +11,7 @@
 SSS_GL_BEGIN;
 
 /** 2D plane derived from Model.*/
-class Plane final : public Model<Plane> {
+class Plane final : public Model, public _internal::InstancedWindowObject<Plane> {
     friend class _internal::SharedWindowObject<Plane>;
     friend class PlaneRenderer;
     friend class Window;
@@ -31,7 +31,7 @@ public:
     /** Destructor, default.*/
     virtual ~Plane();
 
-    using Model::create;
+    using _internal::InstancedWindowObject<Plane>::create;
     static Shared create(Texture::Shared texture);
     Shared duplicate() const;
 

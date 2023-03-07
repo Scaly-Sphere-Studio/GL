@@ -21,19 +21,6 @@ void resize_callback(GLFWwindow* win, int w, int h)
 {
 }
 
-void passive_plane_func1(GL::Window::Shared win, GL::Plane::Shared plane)
-{
-    //if (plane->isHovered())
-    //    plane->rotate(glm::vec3(0, 0, 1));
-}
-
-void on_click_plane_func1(GL::Window::Shared win, GL::Plane::Shared plane,
-    int button, int action, int mod)
-{
-    //if (button == GLFW_MOUSE_BUTTON_1 &&  action == GLFW_PRESS)
-    //    plane->rotate(glm::vec3(0, 0, 45));
-}
-
 int main() try
 {
     // Setup Lua
@@ -54,10 +41,6 @@ int main() try
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     window->setCallback(glfwSetKeyCallback, key_callback);
     window->setCallback(glfwSetWindowSizeCallback, resize_callback);
-
-    // Planes
-    GL::Plane::passive_funcs    = { { 1, passive_plane_func1 } };
-    GL::Plane::on_click_funcs   = { { 1, on_click_plane_func1 } };
 
     // Lines
     using Line = GL::Polyline;

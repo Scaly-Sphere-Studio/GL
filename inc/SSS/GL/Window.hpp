@@ -262,8 +262,6 @@ private:
     } _hovered_type{ HoveredType::None };
     void _updateHoveredModel();
     void _updateHoveredModelIfNeeded(std::chrono::steady_clock::time_point const& now);
-    void _callPassiveFunctions();
-    void _callOnClickFunction(int button, int action, int mods);
 
 public:
     /** Returns the last computed FPS.

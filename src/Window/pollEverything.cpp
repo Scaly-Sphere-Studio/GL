@@ -48,8 +48,6 @@ bool pollEverything() try
             ret = true;
         }
         Context const context(window);
-        // Call all passive functions
-        window->_callPassiveFunctions();
 
         // Process inputs
         processInputs(window->_key_queue, window->_key_inputs, window->_input_stack_time);

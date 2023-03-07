@@ -175,9 +175,6 @@ void Window::mouse_button_callback(GLFWwindow* ptr, int button, int action, int 
         window->_click_queue.push(std::make_pair(button, action));
     }
 
-    // Call button function, if needed
-    window->_callOnClickFunction(button, action, mods);
-
     // Call user defined callback, if needed
     if (!has_focused_area && window->_mouse_button_callback != nullptr) {
         window->_mouse_button_callback(ptr, button, action, mods);

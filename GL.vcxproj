@@ -66,10 +66,11 @@
     <ClCompile Include="src\Objects\Texture.cpp" />
     <ClCompile Include="src\Objects\Texture_APNG.cpp" />
     <ClCompile Include="src\Objects\Camera.cpp" />
-    <ClCompile Include="src\Objects\Models\Line.cpp" />
-    <ClCompile Include="src\Objects\Models\LineRenderer.cpp" />
+    <ClCompile Include="src\Objects\Model.cpp" />
     <ClCompile Include="src\Objects\Models\Plane.cpp" />
     <ClCompile Include="src\Objects\Models\PlaneRenderer.cpp" />
+    <ClCompile Include="src\Objects\Models\Line.cpp" />
+    <ClCompile Include="src\Objects\Models\LineRenderer.cpp" />
     <ClCompile Include="src\Window\Window.cpp" />
     <ClCompile Include="src\Window\callbacks.cpp" />
     <ClCompile Include="src\Window\preset_shaders.cpp" />

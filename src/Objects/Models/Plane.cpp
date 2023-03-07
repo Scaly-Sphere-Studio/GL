@@ -5,7 +5,7 @@ SSS_GL_BEGIN;
 std::vector<Plane::Weak> Plane::_instances{};
 
 Plane::Plane(std::shared_ptr<Window> window) try
-    : Model(window)
+    : Model(), _internal::InstancedWindowObject<Plane>(window)
 {
 }
 CATCH_AND_RETHROW_METHOD_EXC;
