@@ -52,6 +52,17 @@ bool pollEverything() try
         // Process inputs
         processInputs(window->_key_queue, window->_key_inputs, window->_input_stack_time);
         processInputs(window->_click_queue, window->_click_inputs, window->_input_stack_time);
+        // Mouse position (no queue because it's only x & y)
+        if (!window->_block_inputs) {
+            double x, y;
+            glfwGetCursorPos(window->getGLFWwindow(), &x, &y);
+            window->_old_cursor_x = window->_cursor_x;
+            window->_old_cursor_y = window->_cursor_y;
+            window->_cursor_x = static_cast<int>(x);
+            window->_cursor_y = static_cast<int>(y);
+            window->_cursor_diff_x = window->_cursor_x - window->_old_cursor_x;
+            window->_cursor_diff_y = window->_old_cursor_y - window->_cursor_y; // reverse y coords
+        }
 
         Input left_click = window->getClickInputs()[GLFW_MOUSE_BUTTON_LEFT];
         window->_clicked_model.reset();

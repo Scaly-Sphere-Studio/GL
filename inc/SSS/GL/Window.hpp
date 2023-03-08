@@ -201,6 +201,10 @@ public :
 
     inline int clickCount(int button) const noexcept { return _click_inputs[button].count(); }
 
+    inline void getCursorPos(int& x, int& y) const noexcept { x = _cursor_x; y = _cursor_y; };
+    inline auto getCursorPos() const noexcept { return std::make_tuple(_cursor_x, _cursor_y); };
+    inline void getCursorDiff(int& x, int& y) const noexcept { x = _cursor_diff_x; y = _cursor_diff_y; };
+    inline auto getCursorDiff() const noexcept { return std::make_tuple(_cursor_diff_x, _cursor_diff_y); };
 
 private:
     std::map<uint32_t, Shaders::Shared> _preset_shaders;   // Preset shaders
@@ -276,9 +280,10 @@ private:
     
     std::chrono::steady_clock::time_point _last_render_time;
     std::chrono::steady_clock::duration _hover_waiting_time;
+    bool _cursor_is_moving{ false }; // (10ms tolerance)
     
-    bool _cursor_is_moving{ false };
-    double _old_cursor_x{ 0 }, _old_cursor_y{ 0 };
+    int _cursor_x{ 0 }, _old_cursor_x{ 0 }, _cursor_diff_x{ 0 },
+        _cursor_y{ 0 }, _old_cursor_y{ 0 }, _cursor_diff_y{ 0 };
 
     ModelBase::Weak _hovered_model;
     ModelBase::Weak _clicked_model;    // (left click)

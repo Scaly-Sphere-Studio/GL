@@ -172,6 +172,8 @@ inline void lua_setup_GL(sol::state& lua)
     window["getPosition"] = sol::resolve<std::tuple<int, int>() const>(&Window::getPosition);
     window["x"] = sol::property(&Window::getPosX, &Window::setPosX);
     window["y"] = sol::property(&Window::getPosY, &Window::setPosY);
+    window["getCursorPos"] = sol::resolve<std::tuple<int, int>() const>(&Window::getCursorPos);
+    window["getCursorDiff"] = sol::resolve<std::tuple<int, int>() const>(&Window::getCursorDiff);
     window["fullscreen"] = sol::property(&Window::isFullscreen, &Window::setFullscreen);
     window["iconified"] = sol::property(&Window::isIconified, &Window::setIconification);
     window["maximized"] = sol::property(&Window::isMaximized, &Window::setMaximization);

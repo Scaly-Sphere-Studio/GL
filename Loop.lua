@@ -65,4 +65,18 @@ then
     alpha_coeff = 0.01
 end
 
+if(window:keyIsPressed(GL.KEY_C))
+then
+    print(window:getCursorPos())
+end
+
+if (plane:isHeld())
+then
+    local x, y = window:getCursorDiff()
+    if (x ~= 0 or y ~= 0)
+    then
+        plane:translate(vec3.new(x, y, 0))
+    end
+end
+
 plane.alpha = plane.alpha + alpha_coeff

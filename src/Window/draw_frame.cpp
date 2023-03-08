@@ -96,12 +96,8 @@ void Window::_updateHoveredModelIfNeeded(std::chrono::steady_clock::time_point c
     static constexpr std::chrono::milliseconds threshold(50);
 
     // Bypass threshold if cursor just stopped moving
-    double x, y;
-    glfwGetCursorPos(_window.get(), &x, &y);
-    if (x != _old_cursor_x || y != _old_cursor_y) {
+    if (_cursor_diff_x != 0 || _cursor_diff_y != 0) {
         _cursor_is_moving = true;
-        _old_cursor_x = x;
-        _old_cursor_y = y;
     }
     else if (_cursor_is_moving && _hover_waiting_time >= std::chrono::milliseconds(10)) {
         _cursor_is_moving = false;
