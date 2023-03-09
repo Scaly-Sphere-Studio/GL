@@ -14,9 +14,9 @@ SSS_GL_BEGIN;
 /** Abstractization of View and Projection matrices, used in Renderer::Chunk.
  *  @sa create()
  */
-class Camera final : public _internal::InstancedWindowObject<Camera> {
+class Camera final : public Basic::InstancedBase<Camera> {
     friend class Window;
-    friend class _internal::SharedWindowObject<Camera>;
+    friend class Basic::SharedBase<Camera>;
 private:
     Camera(std::shared_ptr<Window> window);           // Constructor
 public:

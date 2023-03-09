@@ -18,9 +18,6 @@ public:
     using Shared = std::shared_ptr<RendererBase>;
     using Vector = std::vector<Shared>;
 
-    /** Optional title for UI purpose only.*/
-    std::string title;
-
     /** Your rendering logic here.*/
     virtual void render() = 0;
 
@@ -42,11 +39,11 @@ public:
 };
 
 template<class Derived>
-class Renderer : public RendererBase, public _internal::SharedWindowObject<Derived> {
+class Renderer : public RendererBase, public Basic::SharedBase<Derived> {
 protected:
     /** Constructor, ensures the renderer is bound to a Window instance.*/
     Renderer(std::shared_ptr<Window> window)
-        : _internal::SharedWindowObject<Derived>(window) {};
+        : Basic::SharedBase<Derived>(window) {};
 public:
     /** Virtual destructor, default.*/
     virtual ~Renderer()                     = default;  // Destructor
@@ -58,7 +55,7 @@ public:
     Renderer& operator=(Renderer&&)         = delete;   // Move assignment
     /** \endcond*/
 
-    using _internal::SharedWindowObject<Derived>::Shared;
+    using Basic::SharedBase<Derived>::Shared;
 };
 SSS_GL_END;
 

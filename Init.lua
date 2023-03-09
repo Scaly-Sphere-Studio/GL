@@ -46,12 +46,10 @@ end
 
 -- Settings
 do
-    plane_renderer.title = "Basic plane renderer"
     local chunk = GL.Chunk.new(camera)
     chunk.planes:add(plane)
     plane_renderer.chunks:add(chunk)
     
-    line_renderer.title = "Basic line renderer"
     line_renderer.shaders = line_shaders
     line_renderer.camera = camera
     

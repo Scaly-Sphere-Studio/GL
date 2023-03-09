@@ -3,7 +3,7 @@
 SSS_GL_BEGIN;
 
 Shaders::Shaders(std::shared_ptr<Window> window) try
-	: _internal::SharedWindowObject<Shaders>(window)
+	: Basic::SharedBase<Shaders>(window)
 {
 	// Log
 	if (Log::GL::Shaders::query(Log::GL::Shaders::get().life_state)) {

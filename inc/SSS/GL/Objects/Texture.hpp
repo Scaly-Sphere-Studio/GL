@@ -36,9 +36,9 @@ INTERNAL_END;
  *  internal Basic::Texture.
  *  @sa Window::createTexture()
  */
-class Texture final : public _internal::InstancedWindowObject<Texture> {
+class Texture final : public Basic::InstancedBase<Texture> {
 
-    friend _internal::SharedWindowObject<Texture>;
+    friend Basic::SharedBase<Texture>;
     friend bool pollEverything();
     friend class Window;
 
@@ -49,7 +49,7 @@ public:
     /** Destructor, can log but otherwise default.*/
     ~Texture();
 
-    using _internal::InstancedWindowObject<Texture>::create;
+    using Basic::InstancedBase<Texture>::create;
     static Shared create(std::string const& filepath);
     static Shared create(TR::Area const& area);
 

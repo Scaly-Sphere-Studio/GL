@@ -117,104 +117,100 @@ private:
     std::chrono::steady_clock::time_point _last_pressed;
 };
 
-
-INTERNAL_BEGIN;
-
-// This class is to be inherited in all classes whose instances are
-// bound to a specific Window instance.
-class WindowObject {
-public:
-    WindowObject() = delete;
-    std::shared_ptr<Window> const getWindow() const;
-    char const* getWindowTitle() const;
-    Context const getContext() const;
-protected:
-    WindowObject(std::shared_ptr<Window> window);
-    void _changeWindow(std::shared_ptr<Window> window);
-    static std::shared_ptr<Window> _getFirstWindow();
-private:
-    std::weak_ptr<Window> _window;
-    GLFWwindow* _glfw_window;
-};
-
-template<class T>
-class SharedWindowObject : public WindowObject, public std::enable_shared_from_this<T> {
-public:
-    SharedWindowObject() = delete;
-    using Shared = std::shared_ptr<T>;
-    using Weak = std::weak_ptr<T>;
-    using Vector = std::vector<Shared>;
-
-protected:
-    SharedWindowObject(std::shared_ptr<Window> window) : WindowObject(window) {};
-
-public:
-    static Shared create(std::shared_ptr<Window> window)
-    {
-        if (!window) {
-            window = _getFirstWindow();
-        }
-        return Shared(new T(window));
-    }
-    static Shared create() { return create(std::shared_ptr<Window>(nullptr)); }
-    static Shared create(GLFWwindow* window) { return create(Window::get(window)); }
-};
-
-template<class T>
-class InstancedWindowObject : public SharedWindowObject<T>
-{
-public:
-    InstancedWindowObject() = delete;
-    ~InstancedWindowObject() { cleanWeakPtrVector(_instances); };
-protected:
-    InstancedWindowObject(std::shared_ptr<Window> window) : SharedWindowObject<T>(window) {};
-    using Weak = std::weak_ptr<T>;
-    static std::vector<Weak> _instances;
-
-public:
-    static auto create(std::shared_ptr<Window> window)
-    {
-        auto shared = SharedWindowObject<T>::create(window);
-        _instances.emplace_back(shared);
-        return shared;
-    }
-    static auto create() { return create(std::shared_ptr<Window>(nullptr)); }
-    static auto create(GLFWwindow* window) { return create(Window::get(window)); }
-
-    static auto getInstances(std::shared_ptr<Window> window) noexcept {
-        SharedWindowObject<T>::template Vector vec;
-        for (Weak const& weak : _instances) {
-            auto const instance = weak.lock();
-            if (instance && (!window || window == instance->getWindow()))
-                vec.emplace_back(instance);
-        }
-        return vec;
-    }
-    static auto getInstances() noexcept { return getInstances(nullptr); }
-
-    static auto get(T* raw_ptr) {
-        for (auto const& weak_ptr : _instances) {
-            auto shared_ptr = weak_ptr.lock();
-            if (shared_ptr && shared_ptr.get() == raw_ptr) {
-                return shared_ptr;
-            }
-        }
-        return SharedWindowObject<T>::template Shared(nullptr);
-    }
-};
-
-template <class T>
-std::vector<std::weak_ptr<T>> _internal::InstancedWindowObject<T>::_instances{};
-
-INTERNAL_END;
-
 /** %Basic abstractisation of \b OpenGL objects.*/
 namespace Basic {
+
+    // This class is to be inherited in all classes whose instances are
+    // bound to a specific Window instance.
+    class Base {
+    public:
+        Base() = delete;
+        std::shared_ptr<Window> const getWindow() const;
+        char const* getWindowTitle() const;
+        Context const getContext() const;
+        std::string name;
+    protected:
+        Base(std::shared_ptr<Window> window);
+        void _changeWindow(std::shared_ptr<Window> window);
+        static std::shared_ptr<Window> _getFirstWindow();
+    private:
+        std::weak_ptr<Window> _window;
+        GLFWwindow* _glfw_window;
+    };
+
+    template<class T>
+    class SharedBase : public Base, public std::enable_shared_from_this<T> {
+    public:
+        SharedBase() = delete;
+        using Shared = std::shared_ptr<T>;
+        using Weak = std::weak_ptr<T>;
+        using Vector = std::vector<Shared>;
+
+    protected:
+        SharedBase(std::shared_ptr<Window> window) : Base(window) {};
+
+    public:
+        static Shared create(std::shared_ptr<Window> window)
+        {
+            if (!window) {
+                window = _getFirstWindow();
+            }
+            return Shared(new T(window));
+        }
+        static Shared create() { return create(std::shared_ptr<Window>(nullptr)); }
+        static Shared create(GLFWwindow* window) { return create(Window::get(window)); }
+    };
+
+    template<class T>
+    class InstancedBase : public SharedBase<T>
+    {
+    public:
+        InstancedBase() = delete;
+        ~InstancedBase() { cleanWeakPtrVector(_instances); };
+    protected:
+        InstancedBase(std::shared_ptr<Window> window) : SharedBase<T>(window) {};
+        using Weak = std::weak_ptr<T>;
+        static std::vector<Weak> _instances;
+
+    public:
+        static auto create(std::shared_ptr<Window> window)
+        {
+            auto shared = SharedBase<T>::create(window);
+            _instances.emplace_back(shared);
+            return shared;
+        }
+        static auto create() { return create(std::shared_ptr<Window>(nullptr)); }
+        static auto create(GLFWwindow* window) { return create(Window::get(window)); }
+
+        static auto getInstances(std::shared_ptr<Window> window) noexcept {
+            SharedBase<T>::template Vector vec;
+            for (Weak const& weak : _instances) {
+                auto const instance = weak.lock();
+                if (instance && (!window || window == instance->getWindow()))
+                    vec.emplace_back(instance);
+            }
+            return vec;
+        }
+        static auto getInstances() noexcept { return getInstances(nullptr); }
+
+        static auto get(T* raw_ptr) {
+            for (auto const& weak_ptr : _instances) {
+                auto shared_ptr = weak_ptr.lock();
+                if (shared_ptr && shared_ptr.get() == raw_ptr) {
+                    return shared_ptr;
+                }
+            }
+            return SharedBase<T>::template Shared(nullptr);
+        }
+    };
+
+    template <class T>
+    std::vector<std::weak_ptr<T>> InstancedBase<T>::_instances{};
 
     /** Abstractisation of OpenGL \b textures and their
      *  creation, deletion, settings and editing.
      */
-    struct Texture final : public _internal::WindowObject {
+    struct Texture final : public Base {
         /** Constructor, creates an \b OpenGL and sets #id accordingly.
          *  Forces to be bound to a Window instance.
          *  @sa ~Texture()
@@ -263,7 +259,7 @@ namespace Basic {
     /** Abstractisation of OpenGL vertex array objects (\b %VAO) and
      *  their creation, deletion, and binding.
      */
-    struct VAO final : public _internal::WindowObject {
+    struct VAO final : public Base {
         /** Constructor, creates an \b OpenGL vertex array and
          *  sets #id accordingly.
          *  Forces to be bound to a Window instance.
@@ -290,7 +286,7 @@ namespace Basic {
     /** Abstractisation of OpenGL vertex buffer objects (\b %VBO) and
      *  their creation, deletion, and editing.
      */
-    struct VBO final : public _internal::WindowObject {
+    struct VBO final : public Base {
         /** Constructor, creates an \b OpenGL buffer object and
          *  sets #id accordingly.
          *  Forces to be bound to a Window instance.
@@ -322,7 +318,7 @@ namespace Basic {
     /** Abstractisation of OpenGL index buffer objects (\b %IBO) and
      *  their creation, deletion, and editing.
      */
-    struct IBO final : public _internal::WindowObject {
+    struct IBO final : public Base {
         /** Constructor, creates an \b OpenGL buffer object and
          *  sets #id accordingly.
          *  Forces to be bound to a Window instance.

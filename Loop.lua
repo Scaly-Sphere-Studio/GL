@@ -4,41 +4,41 @@ if (window:keyIsHeld(GL.KEY_UP))
 then
     camera:move( vec3.new(0, speed, 0) )
 end
-if(window:keyIsHeld(GL.KEY_DOWN))
+if (window:keyIsHeld(GL.KEY_DOWN))
 then
     camera:move( vec3.new(0, -speed, 0) )
 end
-if(window:keyIsHeld(GL.KEY_LEFT))
+if (window:keyIsHeld(GL.KEY_LEFT))
 then
     camera:move( vec3.new(-speed, 0, 0) )
 end
-if(window:keyIsHeld(GL.KEY_RIGHT))
+if (window:keyIsHeld(GL.KEY_RIGHT))
 then
     camera:move( vec3.new(speed, 0, 0) )
 end
 
-if(window:keyIsPressed(GL.KEY_SPACE))
+if (window:keyIsPressed(GL.KEY_SPACE))
 then
     print("SPACE")
 end
-if(window:keyIsPressed(GL.KEY_SPACE, 2))
+if (window:keyIsPressed(GL.KEY_SPACE, 2))
 then
     print("DOUBLE SPACE")
 end
-if(window:keyIsPressed(GL.KEY_SPACE, 3))
+if (window:keyIsPressed(GL.KEY_SPACE, 3))
 then
     print("TRIPLE SPACE")
 end
 
-if(window:clickIsPressed(GL.LEFT_CLICK))
+if (window:clickIsPressed(GL.LEFT_CLICK))
 then
     print("LEFT CLICK")
 end
-if(window:clickIsPressed(GL.LEFT_CLICK, 2))
+if (window:clickIsPressed(GL.LEFT_CLICK, 2))
 then
     print("DOUBLE LEFT CLICK")
 end
-if(window:clickIsPressed(GL.LEFT_CLICK, 3))
+if (window:clickIsPressed(GL.LEFT_CLICK, 3))
 then
     print("TRIPLE LEFT CLICK")
 end
@@ -65,7 +65,7 @@ then
     alpha_coeff = 0.01
 end
 
-if(window:keyIsPressed(GL.KEY_C))
+if (window:keyIsPressed(GL.KEY_C))
 then
     print(window:getCursorPos())
 end

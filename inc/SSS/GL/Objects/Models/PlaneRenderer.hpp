@@ -13,7 +13,7 @@ SSS_GL_BEGIN;
 
 /** Dedicated Renderer for Plane instances.*/
 class PlaneRenderer final : public Renderer<PlaneRenderer> {
-    friend class _internal::SharedWindowObject<PlaneRenderer>;
+    friend class Basic::SharedBase<PlaneRenderer>;
     friend class Window;
 
 private:
@@ -32,8 +32,8 @@ public:
     struct Chunk final {
         Chunk(Camera::Shared cam = nullptr, bool reset_depth = false)
             : camera(cam), reset_depth_before(reset_depth) {};
-        /** Optional title for UI purpose only.*/
-        std::string title;
+        /** Optional title.*/
+        std::string name;
         /** Wether to clear the depth buffer before rendering this chunk,
          *  so that future objects will always be on top of previously
          *  rendered stuff.

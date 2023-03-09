@@ -4,7 +4,7 @@
 SSS_GL_BEGIN;
 
 Camera::Camera(std::shared_ptr<Window> weak_window)
-    : _internal::InstancedWindowObject<Camera>(weak_window)
+    : Basic::InstancedBase<Camera>(weak_window)
 {
     _window_ratio = getWindow()->getRatio();
     _computeView();

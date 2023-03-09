@@ -8,7 +8,7 @@
 SSS_GL_BEGIN;
 
 class LineRenderer : public Renderer<LineRenderer> {
-    friend class _internal::SharedWindowObject<LineRenderer>;
+    friend class Basic::SharedBase<LineRenderer>;
     friend class Window;
 
 private:

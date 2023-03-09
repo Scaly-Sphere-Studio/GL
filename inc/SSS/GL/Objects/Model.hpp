@@ -68,23 +68,23 @@ protected:
 };
 
 template<class Derived>
-class Model : public ModelBase, public _internal::InstancedWindowObject<Derived> {
+class Model : public ModelBase, public Basic::InstancedBase<Derived> {
 protected:
     Model(std::shared_ptr<Window> window)
-        : ModelBase(), _internal::InstancedWindowObject<Derived>(window) {}
+        : ModelBase(), Basic::InstancedBase<Derived>(window) {}
 
 public:
-    using _internal::SharedWindowObject<Derived>::Shared;
-    using _internal::SharedWindowObject<Derived>::Weak;
+    using Basic::SharedBase<Derived>::Shared;
+    using Basic::SharedBase<Derived>::Weak;
 
     virtual bool isHovered() const noexcept {
-        return ModelBase::isHovered(_internal::WindowObject::getWindow());
+        return ModelBase::isHovered(Basic::Base::getWindow());
     };
     virtual bool isClicked() const noexcept {
-        return ModelBase::isClicked(_internal::WindowObject::getWindow());
+        return ModelBase::isClicked(Basic::Base::getWindow());
     };
     virtual bool isHeld() const noexcept {
-        return ModelBase::isHeld(_internal::WindowObject::getWindow());
+        return ModelBase::isHeld(Basic::Base::getWindow());
     };
 };
 
