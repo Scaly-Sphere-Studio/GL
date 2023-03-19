@@ -52,7 +52,7 @@ SSS_GL_BEGIN;
 bool pollEverything();
 
 /** Abstractization of \c GLFWwindow logic.*/
-class Window final : public std::enable_shared_from_this<Window> {
+class Window final : public ::SSS::Base, public std::enable_shared_from_this<Window> {
     
     friend bool pollEverything();
 

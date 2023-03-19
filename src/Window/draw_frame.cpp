@@ -60,18 +60,11 @@ void Window::_updateHoveredModel()
                 _hovered_model = renderer->_hovered;
                 z = renderer->_hovered_z;
             }
-            // If the depth buffer was reset at least once by the renderer, previous
-            // tested models will always be on top of all not-yet-tested models,
-            // which means we must skip further tests.
+            // If the depth buffer was reset by the renderer, previous tested
+            // models will always be on top of all not-yet-tested models, meaning
+            // we must skip further tests.
             // This is why we're testing renderers in their reverse order.
-            bool depth_buffer_was_reset = false;
-            for (auto it = renderer->chunks.cbegin(); it != renderer->chunks.cend(); ++it) {
-                if (it->reset_depth_before) {
-                    depth_buffer_was_reset = true;
-                    break;
-                }
-            }
-            if (depth_buffer_was_reset)
+            if (renderer->clear_depth_buffer)
                 break;
         }
     }

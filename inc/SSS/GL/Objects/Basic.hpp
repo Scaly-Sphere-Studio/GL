@@ -122,13 +122,12 @@ namespace Basic {
 
     // This class is to be inherited in all classes whose instances are
     // bound to a specific Window instance.
-    class Base {
+    class Base : public ::SSS::Base {
     public:
         Base() = delete;
         std::shared_ptr<Window> const getWindow() const;
         char const* getWindowTitle() const;
         Context const getContext() const;
-        std::string name;
     protected:
         Base(std::shared_ptr<Window> window);
         void _changeWindow(std::shared_ptr<Window> window);

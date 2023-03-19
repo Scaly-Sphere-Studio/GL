@@ -11,7 +11,11 @@
 
 SSS_GL_BEGIN;
 
-/** Dedicated Renderer for Plane instances.*/
+/** Dedicated Renderer for Plane instances.
+ *  Specify a chunk of objects to be rendered.
+ *  This is useful to enforce specific orders of chunks without
+ *  having to worry about their depth (Background, Scene, Text, UI...).
+ */
 class PlaneRenderer final : public Renderer<PlaneRenderer> {
     friend class Basic::SharedBase<PlaneRenderer>;
     friend class Window;
@@ -19,34 +23,20 @@ class PlaneRenderer final : public Renderer<PlaneRenderer> {
 private:
     PlaneRenderer(std::shared_ptr<Window> window);
 
-    void _renderPart(Shaders& shader, uint32_t& count, bool reset_depth) const;
+    void _renderPart(Shaders& shader, uint32_t& count) const;
 
 public:
     void render() override;
 
-    /** Specify a chunk of objects to be rendered.
-     *  This is useful to enforce specific orders of chunks without
-     *  having to worry about their depth (Background, Scene, Text, UI...).\n
-     *  Stored in Renderer::chunks.
-     */
-    struct Chunk final {
-        Chunk(Camera::Shared cam = nullptr, bool reset_depth = false)
-            : camera(cam), reset_depth_before(reset_depth) {};
-        /** Optional title.*/
-        std::string name;
-        /** Wether to clear the depth buffer before rendering this chunk,
-         *  so that future objects will always be on top of previously
-         *  rendered stuff.
-         */
-        bool reset_depth_before{ false };
-        /** Specified Camera.*/
-        Camera::Shared camera;
-        /** Specified Planes.*/
-        std::vector<Plane::Shared> planes;
-    };
+    using Renderer::create;
+    static Shared create(Camera::Shared cam, bool clear_depth_buffer = false);
 
-    /** Vector of Chunk instances, which will be rendered one by one.*/
-    std::vector<Chunk> chunks;
+    /** Whether to reset Z-buffer before rendering.*/
+    bool clear_depth_buffer{ false };
+    /** Specified Camera.*/
+    Camera::Shared camera;
+    /** Specified Planes.*/
+    std::vector<Plane::Shared> planes;
 
 private:
     Basic::VAO _vao;

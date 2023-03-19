@@ -14,6 +14,7 @@ do
     window = GL.Window.create(args)
     window.vsync = true
 end
+print("  > Window created")
 
 local context = GL.Context.new(window)
 
@@ -29,35 +30,35 @@ do
     area:setFmt(fmt)
     area.string = "Lorem ipsum dolor sit amet."
 end
+print("  > TR::Area created")
 
 -- Window objects
 do
-    plane_renderer = GL.PlaneRenderer.create()
+    camera = GL.Camera.create()
     texture = GL.Texture.create(area)
+    plane = GL.Plane.create(texture)
+
+    plane_renderer = GL.PlaneRenderer.create(camera)
     window:addRenderer(plane_renderer)
 
     line_shaders = GL.Shaders.create("glsl/line.vert", "glsl/line.frag")
     line_renderer = GL.LineRenderer.create()
     window:addRenderer(line_renderer)
-
-    camera = GL.Camera.create()
-    plane = GL.Plane.create(texture)
 end
+print("  > Window objects created")
 
 -- Settings
 do
-    local chunk = GL.Chunk.new(camera)
-    chunk.planes:add(plane)
-    plane_renderer.chunks:add(chunk)
-    
-    line_renderer.shaders = line_shaders
-    line_renderer.camera = camera
-    
     camera.position = vec3.new(0, 0, 3)
     camera.proj_type = GL.Projection.OrthoFixed
     
     plane:scale(300)
     plane.hitbox = GL.PlaneHitbox.Full
+
+    plane_renderer.planes:add(plane)
+    
+    line_renderer.shaders = line_shaders
+    line_renderer.camera = camera
 end
 
 print("> Init.lua end")

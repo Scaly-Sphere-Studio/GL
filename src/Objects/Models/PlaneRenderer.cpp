@@ -38,7 +38,7 @@ PlaneRenderer::PlaneRenderer(std::shared_ptr<Window> window) try
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
-void PlaneRenderer::_renderPart(Shaders& shader, uint32_t& count, bool reset_depth) const
+void PlaneRenderer::_renderPart(Shaders& shader, uint32_t& count) const
 {
     static constexpr std::array<GLint, 128> texture_IDs = {
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
@@ -62,10 +62,6 @@ void PlaneRenderer::_renderPart(Shaders& shader, uint32_t& count, bool reset_dep
         glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr, count);
         count = 0;
     }
-    // Clear depth buffer if asked to
-    if (reset_depth) {
-        glClear(GL_DEPTH_BUFFER_BIT);
-    }
 }
 
 void PlaneRenderer::render() try
@@ -87,46 +83,49 @@ void PlaneRenderer::render() try
     _Models.resize(window->maxGLSLTextureUnits());
     _TextureOffsets.resize(window->maxGLSLTextureUnits());
     _Alphas.resize(window->maxGLSLTextureUnits());
-    // Loop over each Renderer::Chunk
-    for (Chunk const& chunk : chunks) {
-        // Check if we can't cache more instances and need to make a draw call.
-        // Also check if we need to reset the depth buffer before the next loop,
-        // in which case the cached instances need to be drawn.
-        if (count == window->maxGLSLTextureUnits() || chunk.reset_depth_before) {
-            _renderPart(*shader, count, chunk.reset_depth_before);
-        }
-
-        // Set VP for next loop
-        glm::mat4 VP(1);
-        if (chunk.camera) {
-            VP = chunk.camera->getVP();
-        }
-
-        // Loop over each plane in chunk
-        for (Plane::Shared const& plane : chunk.planes) {
-            // Check if we can't cache more instances and need to make a draw call.
-            if (count == window->maxGLSLTextureUnits()) {
-                _renderPart(*shader, count, false);
-            }
-            if (!plane || !plane->_texture)
-                continue;
-
-            // Store MVP components (set uniforms later)
-            _VPs[count] = VP;
-            _Models[count] = plane->getModelMat4();
-            _TextureOffsets[count] = static_cast<float>(plane->_texture_offset);
-            _Alphas[count] = plane->getAlpha();
-            // Bind another active texture (set uniform IDs later)
-            glActiveTexture(GL_TEXTURE0 + count);
-            plane->_texture->bind();
-
-            ++count;
-        }
+    // Check if we need to reset the depth buffer before rendering
+    if (clear_depth_buffer) {
+        glClear(GL_DEPTH_BUFFER_BIT);
     }
-    _renderPart(*shader, count, false);
+
+    // Set VP
+    glm::mat4 VP(1);
+    if (camera) {
+        VP = camera->getVP();
+    }
+
+    // Loop over each plane
+    for (Plane::Shared const& plane : planes) {
+        // Check if we can't cache more instances and need to make a draw call.
+        if (count == window->maxGLSLTextureUnits()) {
+            _renderPart(*shader, count);
+        }
+        if (!plane || !plane->_texture)
+            continue;
+
+        // Store MVP components (set uniforms later)
+        _VPs[count] = VP;
+        _Models[count] = plane->getModelMat4();
+        _TextureOffsets[count] = static_cast<float>(plane->_texture_offset);
+        _Alphas[count] = plane->getAlpha();
+        // Bind another active texture (set uniform IDs later)
+        glActiveTexture(GL_TEXTURE0 + count);
+        plane->_texture->bind();
+
+        ++count;
+    }
+    _renderPart(*shader, count);
     _vao.unbind();
 }
 CATCH_AND_RETHROW_METHOD_EXC;
+
+PlaneRenderer::Shared PlaneRenderer::create(Camera::Shared cam, bool clear_depth_buffer)
+{
+    Shared shared = Renderer::create();
+    shared->camera = cam;
+    shared->clear_depth_buffer = clear_depth_buffer;
+    return shared;
+}
 
 bool PlaneRenderer::_findNearestModel(float x, float y)
 {
@@ -137,29 +136,24 @@ bool PlaneRenderer::_findNearestModel(float x, float y)
     }
     // Loop over each Renderer::Chunk in reverse order
     bool result = false;
-    for (Chunk const& chunk : chunks | std::views::reverse) {
-        // Retrieve VP for next loop
-        glm::mat4 VP(1);
-        if (chunk.camera) {
-            VP = chunk.camera->getVP();
-        }
-        // Loop over each plane in chunk
-        for (Plane::Shared const& plane : chunk.planes) {
-            if (!plane)
-                continue;
-            // Check if plane is hovered and retrieve its relative depth
-            double z = DBL_MAX;
-            if (plane->_isHovered(VP, x, y, z)) {
-                result = true;
-                // Update hovered stats if plane is nearer
-                if (z < _hovered_z) {
-                    _hovered_z = z;
-                    _hovered = plane;
-                }
+    // Retrieve VP for next loop
+    glm::mat4 VP(1);
+    if (camera) {
+        VP = camera->getVP();
+    }
+    // Loop over each plane in chunk
+    for (Plane::Shared const& plane : planes) {
+        if (!plane)
+            continue;
+        // Check if plane is hovered and retrieve its relative depth
+        double z = DBL_MAX;
+        if (plane->_isHovered(VP, x, y, z)) {
+            result = true;
+            // Update hovered stats if plane is nearer
+            if (z < _hovered_z) {
+                _hovered_z = z;
+                _hovered = plane;
             }
-        }
-        if (result && chunk.reset_depth_before) {
-            break;
         }
     }
     return result;

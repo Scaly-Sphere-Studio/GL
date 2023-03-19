@@ -29,7 +29,7 @@ private:
 
 public:
     /** Destructor, default.*/
-    virtual ~Plane();
+    virtual ~Plane() = default;
 
     using Basic::InstancedBase<Plane>::create;
     static Shared create(Texture::Shared texture);

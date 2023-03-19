@@ -49,7 +49,7 @@ public:
     /** Destructor, can log but otherwise default.*/
     ~Texture();
 
-    using Basic::InstancedBase<Texture>::create;
+    using InstancedBase::create;
     static Shared create(std::string const& filepath);
     static Shared create(TR::Area const& area);
 

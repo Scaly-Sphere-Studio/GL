@@ -8,11 +8,6 @@ Plane::Plane(std::shared_ptr<Window> window) try
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
-Plane::~Plane()
-{
-    cleanWeakPtrVector(_instances);
-}
-
 Plane::Shared Plane::create(Texture::Shared texture)
 {
     Shared ret = create();

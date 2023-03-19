@@ -41,7 +41,7 @@ public:
         Plane
     };
 
-    using Basic::SharedBase<Shaders>::create;
+    using SharedBase::create;
     static Shared create(std::string const& vert_file, std::string const& frag_file);
 
     /** Loads shaders from raw strings (useful for Preset shaders).
