@@ -174,14 +174,6 @@ Polyline::Shared Polyline::Bezier(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::ve
     return line;
 }
 
-    Shared line(new Polyline(path, g_thickness, g_color, jopt, topt));
-    _batch.emplace_back(line);
-    path.clear();
-
-    return line;
-}
-
-
 Polyline::Mesh_info::Mesh_info() :
     top(0), btm(1), aa_top(2), aa_btm(3)
 {
