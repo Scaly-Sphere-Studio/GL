@@ -121,13 +121,13 @@ Polyline::Shared Polyline::Bezier(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::ve
     Vertex::Vec path;
     std::vector<std::pair<float, glm::vec3>> v;
     v.emplace_back(std::make_pair(0.f, a));
-    v.emplace_back(std::make_pair(0.5f, bezier_func(0.5f, a, b, c, d)));
+    v.emplace_back(std::make_pair(0.5f, Math::bezier_func(0.5f, a, b, c, d)));
     v.emplace_back(std::make_pair(1.f, d));
 
-    bezier_recurs(v, v[0], v[1], a, b, c, d);
-    bezier_recurs(v, v[1], v[2], a, b, c, d);
+    Math::bezier_recurs(v, v[0], v[1], a, b, c, d);
+    Math::bezier_recurs(v, v[1], v[2], a, b, c, d);
 
-    std::sort(v.begin(), v.end(), sort_pair_vec);
+    std::sort(v.begin(), v.end(), Math::sort_pair_vec);
     path.reserve(v.size());
 
     for (auto p : v) {
@@ -135,7 +135,7 @@ Polyline::Shared Polyline::Bezier(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::ve
     }
 
     Shared line(new Polyline(path, thickness, color, jopt, topt));
-    LineRenderer::_batch.emplace_back(line);
+    _batch.emplace_back(line);
     path.clear();
 
     return line;
@@ -154,13 +154,13 @@ Polyline::Shared Polyline::Bezier(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::ve
     Vertex::Vec path;
     std::vector<std::pair<float, glm::vec3>> v;
     v.emplace_back(std::make_pair(0.f, a));
-    v.emplace_back(std::make_pair(0.5f, bezier_func(0.5f, a, b, c, d)));
+    v.emplace_back(std::make_pair(0.5f, Math::bezier_func(0.5f, a, b, c, d)));
     v.emplace_back(std::make_pair(1.f, d));
 
-    bezier_recurs(v, v[0], v[1], a, b, c, d);
-    bezier_recurs(v, v[1], v[2], a, b, c, d);
+    Math::bezier_recurs(v, v[0], v[1], a, b, c, d);
+    Math::bezier_recurs(v, v[1], v[2], a, b, c, d);
 
-    std::sort(v.begin(), v.end(), sort_pair_vec);
+    std::sort(v.begin(), v.end(), Math::sort_pair_vec);
     path.reserve(v.size());
 
     for (auto p : v) {
@@ -168,7 +168,7 @@ Polyline::Shared Polyline::Bezier(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::ve
     }
 
     Shared line(new Polyline(path, g_thickness, g_color, jopt, topt));
-    LineRenderer::_batch.emplace_back(line);
+    _batch.emplace_back(line);
     path.clear();
 
     return line;
