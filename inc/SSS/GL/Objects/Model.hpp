@@ -10,10 +10,15 @@
 
 SSS_GL_BEGIN;
 
+// Ignore warning about STL exports as they're private members
+#pragma warning(push, 2)
+#pragma warning(disable: 4251)
+#pragma warning(disable: 4275)
+
 /** Abstract base class for %Model matrix.
  *  @sa Plane
  */
-class ModelBase {
+class SSS_GL_API ModelBase {
 public:
     ModelBase();
     /** Virtual destructor, default.*/
@@ -66,6 +71,8 @@ protected:
     /** Whether getModelMat4() should compute _model_mat4.*/
     bool _should_compute_mat4{ true };
 };
+
+#pragma warning(pop)
 
 template<class Derived>
 class Model : public ModelBase, public Basic::InstancedBase<Derived> {

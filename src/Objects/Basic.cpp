@@ -21,6 +21,11 @@ namespace Basic {
         return Window::getFirst();
     }
 
+    std::shared_ptr<Window> Base::_getCorrespondingWindow(GLFWwindow* ptr)
+    {
+        return Window::get(ptr);
+    }
+
     std::shared_ptr<Window> const Base::getWindow() const
     {
         Window::Shared const window = _window.lock();

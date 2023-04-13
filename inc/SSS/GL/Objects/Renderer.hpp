@@ -9,11 +9,16 @@
 
 SSS_GL_BEGIN;
 
+// Ignore warning about STL exports as they're private members
+#pragma warning(push, 2)
+#pragma warning(disable: 4251)
+#pragma warning(disable: 4275)
+
 /** Abstract class for specialized rendering logic.
  *  Don't inherit from this, only used to be stored in Window instances
  *  @sa Window::createRenderer(), Plane::Renderer
  */
-class RendererBase {
+class SSS_GL_API RendererBase {
 public:
     using Shared = std::shared_ptr<RendererBase>;
     using Vector = std::vector<Shared>;
@@ -38,6 +43,8 @@ public:
     inline bool isActive() const noexcept { return _is_active; };
 };
 
+#pragma warning(pop)
+
 template<class Derived>
 class Renderer : public RendererBase, public Basic::SharedBase<Derived> {
 protected:
@@ -57,6 +64,7 @@ public:
 
     using Basic::SharedBase<Derived>::Shared;
 };
+
 SSS_GL_END;
 
 #endif // SSS_GL_RENDERER_HPP

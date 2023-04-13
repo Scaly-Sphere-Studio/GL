@@ -7,7 +7,12 @@
 
 SSS_GL_BEGIN;
 
-class LineRenderer : public Renderer<LineRenderer> {
+// Ignore warning about STL exports as they're private members
+#pragma warning(push, 2)
+#pragma warning(disable: 4251)
+#pragma warning(disable: 4275)
+
+class SSS_GL_API LineRenderer : public Renderer<LineRenderer> {
     friend class Basic::SharedBase<LineRenderer>;
     friend class Window;
 
@@ -25,6 +30,8 @@ private:
 
     void gen_batch(Polyline::Vertex::Vec& mesh, Polyline::Indices::Vec& indices);
 };
+
+#pragma warning(pop)
 
 SSS_GL_END;
 

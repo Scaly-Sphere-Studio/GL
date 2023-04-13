@@ -18,10 +18,15 @@ namespace SSS::Log::GL {
 
 SSS_GL_BEGIN;
 
+// Ignore warning about STL exports as they're private members
+#pragma warning(push, 2)
+#pragma warning(disable: 4251)
+#pragma warning(disable: 4275)
+
 /** Non-exhaustive abstractization of \b OpenGL shaders.
  *  @sa Window::createShaders(), Renderer::setShadersID()
  */
-class Shaders final : public Basic::SharedBase<Shaders> {
+class SSS_GL_API Shaders final : public Basic::SharedBase<Shaders> {
     friend class Basic::SharedBase<Shaders>;
     friend class Window;
 
@@ -89,6 +94,8 @@ private:
     // Shaders data
     std::string _vertex_data, _fragment_data;
 };
+
+#pragma warning(pop)
 
 SSS_GL_END;
 

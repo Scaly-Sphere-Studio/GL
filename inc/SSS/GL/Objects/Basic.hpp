@@ -1,7 +1,18 @@
 #ifndef SSS_GL_BASIC_HPP
 #define SSS_GL_BASIC_HPP
 
+#ifdef SSS_GL_EXPORTS
+  #define SSS_GL_API __declspec(dllexport)
+#else
+  #ifdef SSS_GL_DEMO
+    #define SSS_GL_API
+  #else
+    #define SSS_GL_API __declspec(dllimport)
+  #endif // SSS_GL_DEMO
+#endif // SSS_GL_EXPORTS
+
 #include <SSS/Commons.hpp>
+#define GLFW_DLL
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -37,7 +48,17 @@ namespace SSS::Log::GL {
 
 SSS_GL_BEGIN;
 
-class Window; // Pre-declaration of Window class.
+class SSS_GL_API Window; // Pre-declaration of Window class.
+
+/** Global function which polls everything in the library.
+ *  Process is as follow:
+ * - Calls glfwPollEvents().
+ * - Calls all TR::Area::update().
+ * - Calls all Model's passive function.
+ * - Edits every Texture with a pending thread (file load / text area).
+ * - \b Returns \c true if at least one Window is visible, and \c false otherwise.
+ */
+SSS_GL_API bool pollEverything();
 
 /** Abstractization of glfw contexts, inspired by std::lock.
  *  Make given context current in scope.
@@ -57,7 +78,7 @@ class Window; // Pre-declaration of Window class.
  *  @endcode
  */
 
-class Context final {
+class SSS_GL_API Context final {
 private:
     void _init(GLFWwindow* ptr);
 public:
@@ -120,9 +141,14 @@ private:
 /** %Basic abstractisation of \b OpenGL objects.*/
 namespace Basic {
 
+    // Ignore warning about STL exports as they're private members
+#pragma warning(push, 2)
+#pragma warning(disable: 4251)
+#pragma warning(disable: 4275)
+
     // This class is to be inherited in all classes whose instances are
     // bound to a specific Window instance.
-    class Base : public ::SSS::Base {
+    class SSS_GL_API Base : public ::SSS::Base {
     public:
         Base() = delete;
         std::shared_ptr<Window> const getWindow() const;
@@ -132,6 +158,7 @@ namespace Basic {
         Base(std::shared_ptr<Window> window);
         void _changeWindow(std::shared_ptr<Window> window);
         static std::shared_ptr<Window> _getFirstWindow();
+        static std::shared_ptr<Window> _getCorrespondingWindow(GLFWwindow* ptr);
     private:
         std::weak_ptr<Window> _window;
         GLFWwindow* _glfw_window;
@@ -157,8 +184,11 @@ namespace Basic {
             return Shared(new T(window));
         }
         static Shared create() { return create(std::shared_ptr<Window>(nullptr)); }
-        static Shared create(GLFWwindow* window) { return create(Window::get(window)); }
+        static Shared create(GLFWwindow* window) { return create(Base::_getCorrespondingWindow(window));
+        }
     };
+
+#pragma warning(pop)
 
     template<class T>
     class InstancedBase : public SharedBase<T>
@@ -179,7 +209,7 @@ namespace Basic {
             return shared;
         }
         static auto create() { return create(std::shared_ptr<Window>(nullptr)); }
-        static auto create(GLFWwindow* window) { return create(Window::get(window)); }
+        static auto create(GLFWwindow* window) { return create(Base::_getCorrespondingWindow(window)); }
 
         static auto getInstances(std::shared_ptr<Window> window) noexcept {
             SharedBase<T>::template Vector vec;
@@ -209,7 +239,7 @@ namespace Basic {
     /** Abstractisation of OpenGL \b textures and their
      *  creation, deletion, settings and editing.
      */
-    struct Texture final : public Base {
+    struct SSS_GL_API Texture final : public Base {
         /** Constructor, creates an \b OpenGL and sets #id accordingly.
          *  Forces to be bound to a Window instance.
          *  @sa ~Texture()
@@ -258,7 +288,7 @@ namespace Basic {
     /** Abstractisation of OpenGL vertex array objects (\b %VAO) and
      *  their creation, deletion, and binding.
      */
-    struct VAO final : public Base {
+    struct SSS_GL_API VAO final : public Base {
         /** Constructor, creates an \b OpenGL vertex array and
          *  sets #id accordingly.
          *  Forces to be bound to a Window instance.
@@ -285,7 +315,7 @@ namespace Basic {
     /** Abstractisation of OpenGL vertex buffer objects (\b %VBO) and
      *  their creation, deletion, and editing.
      */
-    struct VBO final : public Base {
+    struct SSS_GL_API VBO final : public Base {
         /** Constructor, creates an \b OpenGL buffer object and
          *  sets #id accordingly.
          *  Forces to be bound to a Window instance.
@@ -317,7 +347,7 @@ namespace Basic {
     /** Abstractisation of OpenGL index buffer objects (\b %IBO) and
      *  their creation, deletion, and editing.
      */
-    struct IBO final : public Base {
+    struct SSS_GL_API IBO final : public Base {
         /** Constructor, creates an \b OpenGL buffer object and
          *  sets #id accordingly.
          *  Forces to be bound to a Window instance.

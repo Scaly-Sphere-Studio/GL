@@ -11,10 +11,15 @@
 
 SSS_GL_BEGIN;
 
+// Ignore warning about STL exports as they're private members
+#pragma warning(push, 2)
+#pragma warning(disable: 4251)
+#pragma warning(disable: 4275)
+
 /** Abstractization of View and Projection matrices, used in Renderer::Chunk.
  *  @sa create()
  */
-class Camera final : public Basic::InstancedBase<Camera> {
+class SSS_GL_API Camera final : public Basic::InstancedBase<Camera> {
     friend class Window;
     friend class Basic::SharedBase<Camera>;
 private:
@@ -158,6 +163,8 @@ private:
     glm::mat4 _vp{ 1 };
     void _computeVP();
 };
+
+#pragma warning(pop)
 
 SSS_GL_END;
 

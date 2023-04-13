@@ -16,8 +16,6 @@ do
 end
 print("  > Window created")
 
-local context = GL.Context.new(window)
-
 -- Text area
 do
     area = TR.Area.create()
