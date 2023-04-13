@@ -40,21 +40,16 @@ namespace SSS::Log::GL {
 }
 
 SSS_GL_BEGIN;
-    
-/** Global function which polls everything in the library.
- *  Process is as follow:
- * - Calls glfwPollEvents().
- * - Calls all TR::Area::update().
- * - Calls all Model's passive function.
- * - Edits every Texture with a pending thread (file load / text area).
- * - \b Returns \c true if at least one Window is visible, and \c false otherwise.
- */
-bool pollEverything();
+
+// Ignore warning about STL exports as they're private members
+#pragma warning(push, 2)
+#pragma warning(disable: 4251)
+#pragma warning(disable: 4275)
 
 /** Abstractization of \c GLFWwindow logic.*/
-class Window final : public ::SSS::Base, public std::enable_shared_from_this<Window> {
+class SSS_GL_API Window final : public ::SSS::Base, public std::enable_shared_from_this<Window> {
     
-    friend bool pollEverything();
+    friend SSS_GL_API bool pollEverything();
 
 private:
     static void window_iconify_callback(GLFWwindow* ptr, int state);
@@ -460,6 +455,8 @@ private:
     // Sets the window's main monitor
     void _setMainMonitor(int id);
 };
+
+#pragma warning(pop)
 
 template<typename Callback>
 inline void Window::setCallback(Callback(*set)(GLFWwindow*, Callback), Callback callback)

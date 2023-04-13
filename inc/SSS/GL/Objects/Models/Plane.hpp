@@ -10,13 +10,18 @@
 
 SSS_GL_BEGIN;
 
+// Ignore warning about STL exports as they're private members
+#pragma warning(push, 2)
+#pragma warning(disable: 4251)
+#pragma warning(disable: 4275)
+
 /** 2D plane derived from Model.*/
-class Plane final : public Model<Plane> {
+class SSS_GL_API Plane final : public Model<Plane> {
     friend class Basic::SharedBase<Plane>;
     friend class PlaneRenderer;
     friend class Window;
     friend class Texture;
-    friend bool pollEverything();
+    friend SSS_GL_API bool pollEverything();
 
 private:
     Plane(std::shared_ptr<Window> window);
@@ -107,6 +112,8 @@ private:
     // Returns true and updates z if Plane is hovered
     bool _isHovered(glm::mat4 const& VP, float x, float y, double &z);
 };
+
+#pragma warning(pop)
 
 SSS_GL_END;
 

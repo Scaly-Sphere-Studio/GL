@@ -11,12 +11,17 @@
 
 SSS_GL_BEGIN;
 
+// Ignore warning about STL exports as they're private members
+#pragma warning(push, 2)
+#pragma warning(disable: 4251)
+#pragma warning(disable: 4275)
+
 /** Dedicated Renderer for Plane instances.
  *  Specify a chunk of objects to be rendered.
  *  This is useful to enforce specific orders of chunks without
  *  having to worry about their depth (Background, Scene, Text, UI...).
  */
-class PlaneRenderer final : public Renderer<PlaneRenderer> {
+class SSS_GL_API PlaneRenderer final : public Renderer<PlaneRenderer> {
     friend class Basic::SharedBase<PlaneRenderer>;
     friend class Window;
 
@@ -52,6 +57,8 @@ private:
     double _hovered_z{ DBL_MAX };
     bool _findNearestModel(float x, float y);
 };
+
+#pragma warning(pop)
 
 SSS_GL_END;
 

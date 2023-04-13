@@ -1,3 +1,7 @@
 Source: sss-gl
 Description: OpenGL abstraction in C++, using GLFW, Glad, and GLM
 Build-Depends: glfw3, glad, glm, stb, libpng[apng], sss-math, sss-commons, sss-text-rendering
+
+Feature: lua
+Description: Lib features integrated in lua.
+Build-Depends: sss-text-rendering[lua]

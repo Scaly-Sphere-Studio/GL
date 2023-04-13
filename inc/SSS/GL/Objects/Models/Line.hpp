@@ -7,7 +7,12 @@
 
 SSS_GL_BEGIN;
 
-class Polyline {
+// Ignore warning about STL exports as they're private members
+#pragma warning(push, 2)
+#pragma warning(disable: 4251)
+#pragma warning(disable: 4275)
+
+class SSS_GL_API Polyline {
     friend class LineRenderer;
 
 public:
@@ -158,6 +163,8 @@ private:
     //termination / joint function ptr
     using FuncPtr = uint8_t(Polyline::*)(uint32_t index, Mesh_info&, glm::vec3& pos, float thickness, glm::vec4 color);
 };
+
+#pragma warning(pop)
 
 SSS_GL_END;
 

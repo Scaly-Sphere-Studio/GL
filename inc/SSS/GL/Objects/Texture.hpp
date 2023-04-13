@@ -32,14 +32,19 @@ int load_apng(char const* filepath, std::vector<APNGFrame>& frames);
 INTERNAL_END;
 
 
+// Ignore warning about STL exports as they're private members
+#pragma warning(push, 2)
+#pragma warning(disable: 4251)
+#pragma warning(disable: 4275)
+
 /** Handles raw edits, image loading, and text rendering in an
  *  internal Basic::Texture.
  *  @sa Window::createTexture()
  */
-class Texture final : public Basic::InstancedBase<Texture> {
+class SSS_GL_API Texture final : public Basic::InstancedBase<Texture> {
 
     friend Basic::SharedBase<Texture>;
-    friend bool pollEverything();
+    friend SSS_GL_API bool pollEverything();
     friend class Window;
 
 private:
@@ -151,7 +156,7 @@ private:
 
     // Async class which fills _raw_pixels using stb_image
     class _AsyncLoading : public AsyncBase <std::string> {
-        friend bool pollEverything();
+        friend SSS_GL_API bool pollEverything();
     protected:
         virtual void _asyncFunction(std::string filepath);
     private:
@@ -166,6 +171,8 @@ private:
     // Simple internal edit based on set type
     void _internalEdit(void const* pixels, int w, int h);
 };
+
+#pragma warning(pop)
 
 SSS_GL_END;
 
