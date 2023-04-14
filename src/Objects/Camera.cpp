@@ -1,5 +1,5 @@
-#include "SSS/GL/Objects/Camera.hpp"
-#include "SSS/GL/Window.hpp"
+#include "GL/Objects/Camera.hpp"
+#include "GL/Window.hpp"
 
 SSS_GL_BEGIN;
 

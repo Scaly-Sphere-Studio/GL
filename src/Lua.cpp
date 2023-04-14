@@ -1,4 +1,5 @@
-#include "SSS/GL/Lua.hpp"
+#include "GL/Lua.hpp"
+#include "GL/Window.hpp"
 
 static std::ostream& operator<<(std::ostream& out, glm::vec3 const& vec)
 {

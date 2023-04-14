@@ -1,7 +1,7 @@
 #ifndef SSS_GL_RENDERER_HPP
 #define SSS_GL_RENDERER_HPP
 
-#include "SSS/GL/Objects/Shaders.hpp"
+#include "Shaders.hpp"
 
 /** @file
  *  Defines abstract class SSS::GL::Renderer.

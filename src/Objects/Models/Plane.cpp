@@ -1,4 +1,4 @@
-#include "SSS/GL/Objects/Models/Plane.hpp"
+#include "GL/Objects/Models/Plane.hpp"
 
 SSS_GL_BEGIN;
 

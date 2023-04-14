@@ -1,4 +1,4 @@
-#include "SSS/GL/Window.hpp"
+#include "GL/Window.hpp"
 #include <filesystem>
 #include <ranges>
 

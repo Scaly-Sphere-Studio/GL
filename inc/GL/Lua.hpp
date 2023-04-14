@@ -2,7 +2,7 @@
 #define SSS_GL_LUA_HPP
 
 #include <sol/sol.hpp>
-#include "SSS/GL/Window.hpp"
+#include "Objects/Basic.hpp"
 
 SSS_GL_BEGIN;
 

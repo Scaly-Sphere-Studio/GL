@@ -32,7 +32,7 @@
 
 #include <png.h>     /* original (unpatched) libpng is ok */
 
-#include "SSS/GL/Objects/Texture.hpp"
+#include "GL/Objects/Texture.hpp"
 
 #define notabc(c) ((c) < 65 || (c) > 122 || ((c) > 90 && (c) < 97))
 

@@ -1,9 +1,9 @@
 #ifndef SSS_GL_WINDOW_HPP
 #define SSS_GL_WINDOW_HPP
 
-#include "SSS/GL/Objects/Texture.hpp"
-#include "SSS/GL/Objects/Models/PlaneRenderer.hpp"
-#include "SSS/GL/Objects/Models/LineRenderer.hpp"
+#include "Objects/Texture.hpp"
+#include "Objects/Models/PlaneRenderer.hpp"
+#include "Objects/Models/LineRenderer.hpp"
 #include <map>
 #include <array>
 #include <queue>

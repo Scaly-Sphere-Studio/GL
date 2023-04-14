@@ -110,43 +110,43 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="inc\SSS\GL\Window.hpp">
+    <ClInclude Include="inc\GL\Window.hpp">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL.hpp">
+    <ClInclude Include="inc\GL.hpp">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL\Objects\Camera.hpp">
+    <ClInclude Include="inc\GL\Objects\Camera.hpp">
       <Filter>inc\Objects</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL\Objects\Model.hpp">
+    <ClInclude Include="inc\GL\Objects\Model.hpp">
       <Filter>inc\Objects</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL\Objects\Shaders.hpp">
+    <ClInclude Include="inc\GL\Objects\Shaders.hpp">
       <Filter>inc\Objects</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL\Objects\Texture.hpp">
+    <ClInclude Include="inc\GL\Objects\Texture.hpp">
       <Filter>inc\Objects</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL\Objects\Renderer.hpp">
+    <ClInclude Include="inc\GL\Objects\Renderer.hpp">
       <Filter>inc\Objects</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL\Objects\Models\Plane.hpp">
+    <ClInclude Include="inc\GL\Objects\Models\Plane.hpp">
       <Filter>inc\Objects\Models</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL\Objects\Models\PlaneRenderer.hpp">
+    <ClInclude Include="inc\GL\Objects\Models\PlaneRenderer.hpp">
       <Filter>inc\Objects\Models</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL\Objects\Basic.hpp">
+    <ClInclude Include="inc\GL\Objects\Basic.hpp">
       <Filter>inc\Objects</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL\Objects\Models\LineRenderer.hpp">
+    <ClInclude Include="inc\GL\Objects\Models\LineRenderer.hpp">
       <Filter>inc\Objects\Models</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL\Objects\Models\Line.hpp">
+    <ClInclude Include="inc\GL\Objects\Models\Line.hpp">
       <Filter>inc\Objects\Models</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SSS\GL\Lua.hpp">
+    <ClInclude Include="inc\GL\Lua.hpp">
       <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>

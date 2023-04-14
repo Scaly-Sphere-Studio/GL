@@ -1,4 +1,4 @@
-#include "SSS/GL/Objects/Models/Line.hpp"
+#include "GL/Objects/Models/Line.hpp"
 
 SSS_GL_BEGIN;
 

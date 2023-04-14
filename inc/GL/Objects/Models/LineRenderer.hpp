@@ -1,9 +1,9 @@
 #ifndef SSS_GL_LINERENDERER_HPP
 #define SSS_GL_LINERENDERER_HPP
 
-#include "SSS/GL/Objects/Models/Line.hpp"
-#include "SSS/GL/Objects/Renderer.hpp"
-#include "SSS/GL/Objects/Camera.hpp"
+#include "Line.hpp"
+#include "../Renderer.hpp"
+#include "../Camera.hpp"
 
 SSS_GL_BEGIN;
 

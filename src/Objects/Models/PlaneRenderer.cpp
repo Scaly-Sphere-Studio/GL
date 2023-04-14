@@ -1,5 +1,5 @@
-#include "SSS/GL/Objects/Models/PlaneRenderer.hpp"
-#include "SSS/GL/Window.hpp"
+#include "GL/Objects/Models/PlaneRenderer.hpp"
+#include "GL/Window.hpp"
 #include <ranges>
 
 SSS_GL_BEGIN;

@@ -1,7 +1,7 @@
 #ifndef SSS_GL_CAMERA_HPP
 #define SSS_GL_CAMERA_HPP
 
-#include "SSS/GL/Objects/Basic.hpp"
+#include "Basic.hpp"
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 

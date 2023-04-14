@@ -1,5 +1,5 @@
 #define SSS_LUA
-#include "SSS/GL.hpp"
+#include "GL.hpp"
 
 using namespace SSS;
 

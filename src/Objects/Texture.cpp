@@ -1,5 +1,5 @@
-#include "SSS/GL/Objects/Texture.hpp"
-#include "SSS/GL/Objects/Models/Plane.hpp"
+#include "GL/Objects/Texture.hpp"
+#include "GL/Objects/Models/Plane.hpp"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #pragma warning(suppress : 4996)

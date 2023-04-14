@@ -33,10 +33,10 @@
 
 /** \cond INTERNAL*/
 
-/** Logs the given message with "SSS/GL: " prepended to it.*/
-#define LOG_GL_MSG(X) LOG_CTX_MSG("SSS/GL", X)
+/** Logs the given message with "GL: " prepended to it.*/
+#define LOG_GL_MSG(X) LOG_CTX_MSG("GL", X)
 
-/** Logs the given message with "SSS/GL: %window_name%: " prepended to it.*/
+/** Logs the given message with "GL: %window_name%: " prepended to it.*/
 #define LOG_WNDW_MSG(win, X) LOG_GL_MSG(win->getTitle(), X)
 
 /** \endcond*/

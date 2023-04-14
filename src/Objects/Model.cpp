@@ -1,5 +1,5 @@
-#include "SSS/GL/Objects/Model.hpp"
-#include "SSS/GL/Window.hpp"
+#include "GL/Objects/Model.hpp"
+#include "GL/Window.hpp"
 
 SSS_GL_BEGIN;
 

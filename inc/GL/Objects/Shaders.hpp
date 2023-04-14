@@ -1,7 +1,7 @@
 #ifndef SSS_GL_SHADERS_HPP
 #define SSS_GL_SHADERS_HPP
 
-#include "SSS/GL/Objects/Basic.hpp"
+#include "Basic.hpp"
 
 /** @file
  *  Defines class SSS::GL::Shaders.

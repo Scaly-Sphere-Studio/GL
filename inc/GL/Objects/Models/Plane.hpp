@@ -1,8 +1,8 @@
 #ifndef SSS_GL_PLANE_HPP
 #define SSS_GL_PLANE_HPP
 
-#include "SSS/GL/Objects/Model.hpp"
-#include "SSS/GL/Objects/Texture.hpp"
+#include "../Model.hpp"
+#include "../Texture.hpp"
 
 /** @file
  *  Defines class SSS::GL::Plane.

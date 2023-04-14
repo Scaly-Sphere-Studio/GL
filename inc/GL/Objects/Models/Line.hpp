@@ -2,7 +2,7 @@
 #define SSS_GL_LINE_HPP
 
 #include <SSS/Math.hpp>
-#include "SSS/GL/Objects/Basic.hpp"
+#include "../Basic.hpp"
 #include <unordered_map>
 
 SSS_GL_BEGIN;

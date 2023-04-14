@@ -1,4 +1,4 @@
-#include "SSS/GL/Window.hpp"
+#include "GL/Window.hpp"
 
 SSS_GL_BEGIN;
 

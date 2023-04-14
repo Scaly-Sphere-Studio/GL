@@ -46,19 +46,19 @@
     <None Include="vcpkg_scripts\Remove.ps1" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="inc\SSS\GL.hpp" />
-    <ClInclude Include="inc\SSS\GL\Lua.hpp" />
-    <ClInclude Include="inc\SSS\GL\Objects\Models\Line.hpp" />
-    <ClInclude Include="inc\SSS\GL\Objects\Renderer.hpp" />
-    <ClInclude Include="inc\SSS\GL\Objects\Camera.hpp" />
-    <ClInclude Include="inc\SSS\GL\Objects\Model.hpp" />
-    <ClInclude Include="inc\SSS\GL\Objects\Shaders.hpp" />
-    <ClInclude Include="inc\SSS\GL\Objects\Models\Plane.hpp" />
-    <ClInclude Include="inc\SSS\GL\Objects\Texture.hpp" />
-    <ClInclude Include="inc\SSS\GL\Window.hpp" />
-    <ClInclude Include="inc\SSS\GL\Objects\Models\PlaneRenderer.hpp" />
-    <ClInclude Include="inc\SSS\GL\Objects\Basic.hpp" />
-    <ClInclude Include="inc\SSS\GL\Objects\Models\LineRenderer.hpp" />
+    <ClInclude Include="inc\GL.hpp" />
+    <ClInclude Include="inc\GL\Lua.hpp" />
+    <ClInclude Include="inc\GL\Objects\Models\Line.hpp" />
+    <ClInclude Include="inc\GL\Objects\Renderer.hpp" />
+    <ClInclude Include="inc\GL\Objects\Camera.hpp" />
+    <ClInclude Include="inc\GL\Objects\Model.hpp" />
+    <ClInclude Include="inc\GL\Objects\Shaders.hpp" />
+    <ClInclude Include="inc\GL\Objects\Models\Plane.hpp" />
+    <ClInclude Include="inc\GL\Objects\Texture.hpp" />
+    <ClInclude Include="inc\GL\Window.hpp" />
+    <ClInclude Include="inc\GL\Objects\Models\PlaneRenderer.hpp" />
+    <ClInclude Include="inc\GL\Objects\Basic.hpp" />
+    <ClInclude Include="inc\GL\Objects\Models\LineRenderer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Objects\Basic.cpp" />

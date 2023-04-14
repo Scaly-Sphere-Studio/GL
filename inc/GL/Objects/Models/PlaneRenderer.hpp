@@ -1,9 +1,9 @@
 #ifndef SSS_GL_PLANERENDERER_HPP
 #define SSS_GL_PLANERENDERER_HPP
 
-#include "SSS/GL/Objects/Models/Plane.hpp"
-#include "SSS/GL/Objects/Renderer.hpp"
-#include "SSS/GL/Objects/Camera.hpp"
+#include "Plane.hpp"
+#include "../Renderer.hpp"
+#include "../Camera.hpp"
 
 /** @file
  *  Defines internal class behind SSS::GL::Plane::Renderer alias.
