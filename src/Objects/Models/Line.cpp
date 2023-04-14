@@ -119,17 +119,19 @@ Polyline::Shared Polyline::Bezier(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::ve
     JointType jopt, TermType topt)
 {
     Vertex::Vec path;
+    std::vector<std::pair<float, glm::vec3>> v;
+    v.emplace_back(std::make_pair(0.f, a));
+    v.emplace_back(std::make_pair(0.5f, Math::bezier_func(0.5f, a, b, c, d)));
+    v.emplace_back(std::make_pair(1.f, d));
 
-    uint32_t imax = 150;
-    for (uint32_t i = 0; i < imax + 1; i++) {
+    Math::bezier_recurs(v, v[0], v[1], a, b, c, d);
+    Math::bezier_recurs(v, v[1], v[2], a, b, c, d);
 
-        float t = Math::smoothstep(0.0f, 1.0f, static_cast<float>(i) / static_cast<float>(imax));
-        glm::vec3 pos =
-            glm::vec3(std::powf((1.f - t), 3.f)) * a +
-            glm::vec3(3.f * std::powf((1.f - t), 2.f) * t) * b +
-            glm::vec3(3.f * (1.f - t) * std::powf(t, 2.f)) * c +
-            glm::vec3(std::powf(t, 3.f)) * d;
-        path.emplace_back(pos);
+    std::sort(v.begin(), v.end(), Math::sort_pair_vec);
+    path.reserve(v.size());
+
+    for (auto p : v) {
+        path.emplace_back(p.second);
     }
 
     Shared line(new Polyline(path, thickness, color, jopt, topt));
@@ -149,19 +151,20 @@ Polyline::Shared Polyline::Bezier(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::ve
     Math::Gradient<glm::vec4> g_color;
     g_color.push(std::make_pair(0.0f, color));
 
-
     Vertex::Vec path;
+    std::vector<std::pair<float, glm::vec3>> v;
+    v.emplace_back(std::make_pair(0.f, a));
+    v.emplace_back(std::make_pair(0.5f, Math::bezier_func(0.5f, a, b, c, d)));
+    v.emplace_back(std::make_pair(1.f, d));
 
-    uint32_t imax = 150;
-    for (uint32_t i = 0; i < imax + 1; i++) {
+    Math::bezier_recurs(v, v[0], v[1], a, b, c, d);
+    Math::bezier_recurs(v, v[1], v[2], a, b, c, d);
 
-        float t = Math::smoothstep(0.0f, 1.0f, static_cast<float>(i) / static_cast<float>(imax));
-        glm::vec3 pos =
-            glm::vec3(std::powf((1.f - t), 3.f)) * a +
-            glm::vec3(3.f * std::powf((1.f - t), 2.f) * t) * b +
-            glm::vec3(3.f * (1.f - t) * std::powf(t, 2.f)) * c +
-            glm::vec3(std::powf(t, 3.f)) * d;
-        path.emplace_back(pos);
+    std::sort(v.begin(), v.end(), Math::sort_pair_vec);
+    path.reserve(v.size());
+
+    for (auto p : v) {
+        path.emplace_back(p.second);
     }
 
     Shared line(new Polyline(path, g_thickness, g_color, jopt, topt));
@@ -170,7 +173,6 @@ Polyline::Shared Polyline::Bezier(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::ve
 
     return line;
 }
-
 
 Polyline::Mesh_info::Mesh_info() :
     top(0), btm(1), aa_top(2), aa_btm(3)
