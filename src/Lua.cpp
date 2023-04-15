@@ -184,10 +184,6 @@ void lua_setup_GL(sol::state& lua)
     args["iconified"] = &Window::CreateArgs::iconified;
     args["hidden"] = &Window::CreateArgs::hidden;
     
-    // Context
-    auto context = gl.new_usertype<Context>("Context",
-        sol::constructors<Context(Window::Shared)>());
-
     auto vec3 = lua.new_usertype<glm::vec3>("vec3", sol::constructors<
         glm::vec3(),
         glm::vec3(float),
