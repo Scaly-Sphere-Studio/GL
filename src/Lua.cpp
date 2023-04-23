@@ -150,10 +150,16 @@ void lua_setup_GL(sol::state& lua)
     window["clickCount"] = &Window::clickCount;
 
     window["addRenderer"] = sol::overload(
-        sol::resolve<void(RendererBase::Shared, size_t)>(&Window::addRenderer),
-        sol::resolve<void(RendererBase::Shared)>(&Window::addRenderer)
+        [](Window& win, RendererBase* ptr) {
+            win.addRenderer(ptr->getShared());
+        },
+        [](Window& win, RendererBase* ptr, size_t offset) {
+            win.addRenderer(ptr->getShared(), offset);
+        }
     );
-    window["removeRenderer"] = &Window::removeRenderer;
+    window["removeRenderer"] = [](Window& win, RendererBase* ptr) {
+        win.removeRenderer(ptr->getShared());
+    },
 
     window["fps_limit"] = sol::property(&Window::getFPSLimit, &Window::setFPSLimit);
     window["vsync"] = sol::property(&Window::getVSYNC, &Window::setVSYNC);

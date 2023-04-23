@@ -23,6 +23,7 @@ public:
     using Shared = std::shared_ptr<RendererBase>;
     using Vector = std::vector<Shared>;
 
+    virtual Shared getShared() noexcept = 0;
     /** Your rendering logic here.*/
     virtual void render() = 0;
 
@@ -63,6 +64,10 @@ public:
     /** \endcond*/
 
     using Basic::SharedBase<Derived>::Shared;
+    virtual RendererBase::Shared getShared() noexcept override {
+        Shared shared = Basic::SharedBase<Derived>::shared_from_this();
+        return shared;
+    };
 };
 
 SSS_GL_END;

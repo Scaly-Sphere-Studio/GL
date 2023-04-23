@@ -31,7 +31,7 @@ int main() try
     GL::lua_setup_GL(lua);
 
     // Create Window & set context
-    lua.unsafe_script_file("Init.lua");
+    lua.safe_script_file("Init.lua");
     GL::Window::Shared window = lua["window"];
     GL::Context const context(window);
 
@@ -55,7 +55,7 @@ int main() try
         // Poll events, threads, etc
         GL::pollEverything();
         // Script
-        lua.unsafe_script_file("Loop.lua");
+        lua.safe_script_file("Loop.lua");
         // Draw renderers
         window->drawObjects();
         // Swap buffers
