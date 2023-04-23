@@ -105,9 +105,6 @@
     <ClCompile Include="src\Objects\Model.cpp">
       <Filter>src\Objects</Filter>
     </ClCompile>
-    <ClCompile Include="src\Lua.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\GL\Window.hpp">

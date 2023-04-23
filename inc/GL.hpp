@@ -1,8 +1,10 @@
 #ifndef SSS_GL_HPP
 #define SSS_GL_HPP
 
-#include "GL/Lua.hpp"
 #include "GL/Window.hpp"
+#ifdef SSS_LUA
+#include "GL/Lua.hpp"
+#endif // SSS_LUA
 
 /** @file
  *  Header of the

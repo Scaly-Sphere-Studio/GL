@@ -78,9 +78,6 @@
     <ClCompile Include="src\Window\draw_frame.cpp" />
     <ClCompile Include="src\Window\pollEverything.cpp" />
     <ClCompile Include="src\Window\Context.cpp" />
-    <ClCompile Include="src\Lua.cpp">
-      <ExcludedFromBuild Condition="'$(SSS_LUA)'=='' and '$(Configuration)'!='Demo' and '$(Configuration)'!='Demo (Debug)'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="src\DemoMain.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)'!='Demo' and '$(Configuration)'!='Demo (Debug)'">true</ExcludedFromBuild>
     </ClCompile>
