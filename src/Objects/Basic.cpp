@@ -114,37 +114,6 @@ namespace Basic {
     CATCH_AND_RETHROW_METHOD_EXC;
 
 
-    VAO::VAO() try
-        :   id([&]()->GLuint {
-                GLuint id;
-                glGenVertexArrays(1, &id);
-                return id;
-            }())
-    {
-    }
-    CATCH_AND_RETHROW_METHOD_EXC;
-
-    VAO::~VAO()
-    {
-        try {
-            glDeleteVertexArrays(1, &id);
-        }
-        catch (...) {
-            LOG_CTX_WRN(THIS_NAME, "Could not delete properly: no valid Window bound.");
-            return;
-        };
-    }
-
-    void VAO::bind() const
-    {
-        glBindVertexArray(id);
-    }
-
-    void VAO::unbind() const
-    {
-        glBindVertexArray(0);
-    }
-
     VBO::VBO() try
         :   id([&]()->GLuint {
                 GLuint id;
@@ -169,7 +138,12 @@ namespace Basic {
 
     void VBO::bind() const
     {
-        glBindBuffer(GL_ARRAY_BUFFER, id);
+        bind(id);
+    }
+
+    void VBO::bind(GLuint vbo_id)
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, vbo_id);
     }
 
     void VBO::edit(GLsizeiptr size, const void* data, GLenum usage)
@@ -202,13 +176,100 @@ namespace Basic {
 
     void IBO::bind() const
     {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
+        bind(id);
+    }
+
+    void IBO::bind(GLuint ibo_id)
+    {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_id);
     }
 
     void IBO::edit(GLsizeiptr size, const void* data, GLenum usage)
     {
         bind();
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, usage);
+    }
+
+
+    VAO::VAO() try
+    {
+        GLFWwindow* current = glfwGetCurrentContext();
+        if (current == nullptr)
+            throw_exc("No OpenGL context bound.");
+        _ids[current] = _create();
+    }
+    CATCH_AND_RETHROW_METHOD_EXC;
+
+    VAO::~VAO()
+    {
+        GLFWwindow* current = glfwGetCurrentContext();
+        for (auto [context, id] : _ids) {
+            if (context != current)
+                continue;
+            try {
+                glDeleteVertexArrays(1, &id);
+            }
+            catch (...) {
+                LOG_CTX_WRN(THIS_NAME, "Could not delete properly: no valid Window bound.");
+                return;
+            };
+        }
+    }
+
+    void VAO::bind_vbo(VBO const& vbo)
+    {
+        bind();
+        vbo.bind();
+        _vbo = vbo.id;
+    }
+
+    void VAO::bind_ibo(IBO const& ibo)
+    {
+        bind();
+        ibo.bind();
+        _ibo = ibo.id;
+    }
+
+    void VAO::setup(std::function<void()> f)
+    {
+        bind();
+        f();
+        _setup_func = f;
+    }
+
+    void VAO::bind()
+    {
+        GLFWwindow* current = glfwGetCurrentContext();
+        if (_ids.count(current) == 0) {
+            _ids[current] = _create();
+            bind(_ids[current]);
+            if (_vbo != 0)
+                VBO::bind(_vbo);
+            if (_ibo != 0)
+                IBO::bind(_ibo);
+            if (_setup_func)
+                _setup_func();
+        }
+        else {
+            bind(_ids[current]);
+        }
+    }
+
+    void VAO::bind(GLuint vao_id)
+    {
+        glBindVertexArray(vao_id);
+    }
+
+    void VAO::unbind() const
+    {
+        glBindVertexArray(0);
+    }
+
+    GLuint VAO::_create()
+    {
+        GLuint id;
+        glGenVertexArrays(1, &id);
+        return id;
     }
 }
 SSS_GL_END;

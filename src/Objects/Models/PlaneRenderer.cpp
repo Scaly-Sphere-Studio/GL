@@ -8,10 +8,6 @@ PlaneRenderer::PlaneRenderer() try
 {
     setShaders(getPresetShaders(static_cast<uint32_t>(Shaders::Preset::Plane)));
 
-    _vao.bind();
-    _vbo.bind();
-    _ibo.bind();
-
     // Edit VBO
     constexpr float vertices[] = {
         // positions          // texture coords (1 - y)
@@ -21,10 +17,6 @@ PlaneRenderer::PlaneRenderer() try
          0.5f,  0.5f, 0.0f,   1.f, 1.f - 1.f    // top right
     };
     _vbo.edit(sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
 
     // Edit IBO
     constexpr unsigned int indices[] = {
@@ -32,6 +24,17 @@ PlaneRenderer::PlaneRenderer() try
         2, 3, 0   // second triangle
     };
     _ibo.edit(sizeof(indices), indices, GL_STATIC_DRAW);
+    
+    // Setup VAO
+    _vao.bind_vbo(_vbo);
+    _vao.bind_ibo(_ibo);
+    _vao.setup([]() {
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
+    });
+    _vao.bind();
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
