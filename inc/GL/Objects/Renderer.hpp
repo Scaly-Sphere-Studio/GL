@@ -49,14 +49,11 @@ public:
 template<class Derived>
 class Renderer : public RendererBase, public Basic::SharedBase<Derived> {
 protected:
-    /** Constructor, ensures the renderer is bound to a Window instance.*/
-    Renderer(std::shared_ptr<Window> window)
-        : Basic::SharedBase<Derived>(window) {};
+    Renderer()                              = default;  // Constructor
 public:
     /** Virtual destructor, default.*/
     virtual ~Renderer()                     = default;  // Destructor
     /** \cond INTERNAL*/
-    Renderer()                              = delete;   // Constructor (default)
     Renderer(const Renderer&)               = delete;   // Copy constructor
     Renderer(Renderer&&)                    = delete;   // Move constructor
     Renderer& operator=(const Renderer&)    = delete;   // Copy assignment

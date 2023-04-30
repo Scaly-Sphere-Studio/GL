@@ -11,10 +11,9 @@
 
 SSS_GL_BEGIN;
 
-Texture::Texture(std::shared_ptr<Window> window) try
-    : Basic::InstancedBase<Texture>(window), _raw_texture(window, GL_TEXTURE_2D_ARRAY)
+Texture::Texture() try
+    : _raw_texture(GL_TEXTURE_2D_ARRAY)
 {
-    Context const context = getContext();
     _raw_texture.bind();
     _raw_texture.parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     _raw_texture.parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -23,9 +22,7 @@ Texture::Texture(std::shared_ptr<Window> window) try
     
     // Log
     if (Log::GL::Texture::query(Log::GL::Texture::get().life_state)) {
-        char buff[256];
-        sprintf_s(buff, "'%s' -> Texture -> created", getWindowTitle());
-        LOG_GL_MSG(buff);
+        LOG_GL_MSG("Texture -> created");
     }
 }
 CATCH_AND_RETHROW_METHOD_EXC;
@@ -34,9 +31,7 @@ Texture::~Texture()
 {
     // Log
     if (Log::GL::Texture::query(Log::GL::Texture::get().life_state)) {
-        char buff[256];
-        sprintf_s(buff, "'%s' -> Texture -> deleted", getWindowTitle());
-        LOG_GL_MSG(buff);
+        LOG_GL_MSG("Texture -> deleted");
     }
 }
 
@@ -112,9 +107,7 @@ void Texture::editRawPixels(void const* pixels, int width, int height) try
 
     // Log
     if (Log::GL::Texture::query(Log::GL::Texture::get().edit)) {
-        char buff[256];
-        sprintf_s(buff, "'%s' -> Texture -> edit", getWindowTitle());
-        LOG_GL_MSG(buff);
+        LOG_GL_MSG("Texture -> edit");
     }
 }
 CATCH_AND_RETHROW_METHOD_EXC;
@@ -155,7 +148,6 @@ void Texture::savePNG() const
     int w, h;
     getCurrentDimensions(w, h);
     std::vector<uint8_t> pixels(4 * w * h);
-    Context const context = getContext();
     
     glGetTextureImage(_raw_texture.id, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels.size(), &pixels[0]);
 
@@ -269,9 +261,7 @@ void Texture::_internalEdit(void const* pixels, int w, int h)
     _raw_texture.editPixels(pixels);
     // Log
     if (Log::GL::Texture::query(Log::GL::Texture::get().edit)) {
-        char buff[256];
-        sprintf_s(buff, "'%s' -> Texture -> edit", getWindowTitle());
-        LOG_GL_MSG(buff);
+        LOG_GL_MSG("Texture -> edit");
     }
 }
 

@@ -4,7 +4,7 @@
 #define SOL_ALL_SAFETIES_ON 1
 #define SOL_STRINGS_ARE_NUMBERS 1
 #include <sol/sol.hpp>
-#include "Window.hpp"
+#include "Globals.hpp"
 
 inline std::ostream& operator<<(std::ostream& out, glm::vec3 const& vec)
 {
@@ -18,73 +18,63 @@ inline void lua_setup_GL(sol::state& lua)
 {
     auto gl = lua["GL"].get_or_create<sol::table>();
 
-    auto shaders = gl.new_usertype<Shaders>("Shaders", sol::no_constructor,
-        sol::base_classes, sol::bases<::SSS::Base, Basic::Base>());
-    shaders["loadFromFiles"] = &Shaders::loadFromFiles;
-    shaders["loadFromStrings"] = &Shaders::loadFromStrings;
-    shaders["create"] = sol::overload(
-        sol::resolve<Shaders::Shared(GLFWwindow*)>(Shaders::create),
+    auto shaders = gl.new_usertype<Shaders>("Shaders", sol::factories(
         sol::resolve<Shaders::Shared()>(Shaders::create),
         sol::resolve<Shaders::Shared(std::string const&, std::string const&)>(Shaders::create)
-    );
+    ),  sol::base_classes, sol::bases<::SSS::Base>());
+    shaders["loadFromFiles"] = &Shaders::loadFromFiles;
+    shaders["loadFromStrings"] = &Shaders::loadFromStrings;
 
     auto renderer = gl.new_usertype<RendererBase>("RendererBase", sol::no_constructor);
     renderer["shaders"] = sol::property(&RendererBase::getShaders, &RendererBase::setShaders);
     renderer["active"] = sol::property(&RendererBase::isActive, &RendererBase::setActivity);
 
-    auto plane_renderer = gl.new_usertype<PlaneRenderer>("PlaneRenderer", sol::no_constructor,
-        sol::base_classes, sol::bases<RendererBase, ::SSS::Base, Basic::Base>());
-    plane_renderer["clear_depth_buffer"] = &PlaneRenderer::clear_depth_buffer;
-    plane_renderer["camera"] = &PlaneRenderer::camera;
-    plane_renderer["planes"] = &PlaneRenderer::planes;
-    plane_renderer["create"] = sol::overload(
-        sol::resolve<PlaneRenderer::Shared(GLFWwindow*)>(PlaneRenderer::create),
+    auto plane_renderer = gl.new_usertype<PlaneRenderer>("PlaneRenderer", sol::factories(
         sol::resolve<PlaneRenderer::Shared()>(PlaneRenderer::create),
         [](Camera* cam) { return PlaneRenderer::create(Camera::get(cam)); },
         [](Camera* cam, bool clear) { return PlaneRenderer::create(Camera::get(cam), clear); }
-    );
+    ),  sol::base_classes, sol::bases<RendererBase, ::SSS::Base>());
+    plane_renderer["clear_depth_buffer"] = &PlaneRenderer::clear_depth_buffer;
+    plane_renderer["camera"] = &PlaneRenderer::camera;
+    plane_renderer["planes"] = &PlaneRenderer::planes;
 
-    auto line_renderer = gl.new_usertype<LineRenderer>("LineRenderer", sol::no_constructor,
-        sol::base_classes, sol::bases<RendererBase, ::SSS::Base, Basic::Base>());
+    auto line_renderer = gl.new_usertype<LineRenderer>("LineRenderer",
+        sol::factories(sol::resolve<LineRenderer::Shared()>(LineRenderer::create)),
+        sol::base_classes, sol::bases<RendererBase, ::SSS::Base>());
     line_renderer["camera"] = &LineRenderer::camera;
-    line_renderer["create"] = sol::overload(
-        sol::resolve<LineRenderer::Shared(GLFWwindow*)>(LineRenderer::create),
-        sol::resolve<LineRenderer::Shared()>(LineRenderer::create)
-    );
 
-    auto texture = gl.new_usertype<Texture>("Texture", sol::no_constructor,
-        sol::base_classes, sol::bases<::SSS::Base, Basic::Base>());
+    auto texture = gl.new_usertype<Texture>("Texture", sol::factories(
+        sol::resolve<Texture::Shared()>(Texture::create),
+        sol::resolve<Texture::Shared(std::string const&)>(Texture::create),
+        sol::resolve<Texture::Shared(TR::Area const&)>(Texture::create)
+    ),  sol::base_classes, sol::bases<::SSS::Base>());
     texture["type"] = sol::property(&Texture::getType, &Texture::setType);
     texture["loadImage"] = &Texture::loadImage;
     texture["edit"] = &Texture::editRawPixels;
     texture["text_area"] = sol::property(&Texture::getTextArea, &Texture::setTextArea);
     texture["getDimensions"] = sol::resolve<std::tuple<int, int>() const>(&Texture::getCurrentDimensions);
-    texture["create"] = sol::overload(
-        sol::resolve<Texture::Shared(GLFWwindow*)>(Texture::create),
-        sol::resolve<Texture::Shared()>(Texture::create),
-        sol::resolve<Texture::Shared(std::string const&)>(Texture::create),
-        sol::resolve<Texture::Shared(TR::Area const&)>(Texture::create)
-    );
+    
     gl.new_enum<Texture::Type>("TextureType", {
         { "Raw", Texture::Type::Raw },
         { "Text", Texture::Type::Text }
     });
 
     // Camera (glm required)
-    auto camera = gl.new_usertype<Camera>("Camera", sol::no_constructor,
-        sol::base_classes, sol::bases<::SSS::Base, Basic::Base>());
+    auto camera = gl.new_usertype<Camera>("Camera",
+        sol::factories(&Camera::create),
+        sol::base_classes, sol::bases<::SSS::Base>());
     camera["position"] = sol::property(&Camera::getPosition, &Camera::setPosition);
-    camera["move"] = &Camera::move;
+    camera["move"] = sol::overload(
+        sol::resolve<void(glm::vec3)>(&Camera::move),
+        sol::resolve<void(glm::vec3, bool)>(&Camera::move)
+    );
     camera["rotation"] = sol::property(&Camera::getPosition, &Camera::setPosition);
     camera["rotate"] = &Camera::rotate;
     camera["proj_type"] = sol::property(&Camera::getProjectionType, &Camera::setProjectionType);
     camera["fov"] = sol::property(&Camera::getFOV, &Camera::setFOV);
     camera["z_near"] = sol::property(&Camera::getZNear, &Camera::setZNear);
     camera["z_far"] = sol::property(&Camera::getZFar, &Camera::setZFar);
-    camera["create"] = sol::overload(
-        sol::resolve<Camera::Shared(GLFWwindow*)>(Camera::create),
-        sol::resolve<Camera::Shared()>(Camera::create)
-    );
+    
     gl.new_enum<Camera::Projection>("Projection", {
         { "Ortho", Camera::Projection::Ortho },
         { "OrthoFixed", Camera::Projection::OrthoFixed },
@@ -102,8 +92,13 @@ inline void lua_setup_GL(sol::state& lua)
     model["isClicked"] = sol::resolve<bool() const>(&ModelBase::isClicked);
     model["isHeld"] = sol::resolve<bool() const>(&ModelBase::isHeld);
 
-    auto plane = gl.new_usertype<Plane>("Plane", sol::no_constructor,
-        sol::base_classes, sol::bases<ModelBase, ::SSS::Base, Basic::Base>());
+    auto plane = gl.new_usertype<Plane>("Plane", sol::factories(
+        sol::resolve<Plane::Shared()>(Plane::create),
+        [](Texture* texture) { return Plane::create(Texture::get(texture)); },
+        [](TR::Area& area) { return Plane::create(Texture::create(area)); },
+        [](char const* filepath) { return Plane::create(Texture::create(filepath)); },
+        [](Plane& plane) { return plane.duplicate(); }
+    ),  sol::base_classes, sol::bases<ModelBase, ::SSS::Base>());
     plane["texture"] = sol::property(&Plane::getTexture, &Plane::setTexture);
     plane["play"] = &Plane::play;
     plane["pause"] = &Plane::pause;
@@ -114,11 +109,6 @@ inline void lua_setup_GL(sol::state& lua)
     plane["loop"] = sol::property(&Plane::isLooping, &Plane::setLooping);
     plane["alpha"] = sol::property(&Plane::getAlpha, &Plane::setAlpha);
     plane["hitbox"] = sol::property(&Plane::getHitbox, &Plane::setHitbox);
-    plane["create"] = sol::overload(
-        sol::resolve<Plane::Shared(GLFWwindow*)>(Plane::create),
-        sol::resolve<Plane::Shared()>(Plane::create),
-        [](Texture* texture) { return Plane::create(Texture::get(texture)); }
-    );
     plane["duplicate"] = &Plane::duplicate;
     gl.new_enum<Plane::Hitbox>("PlaneHitbox", {
         { "None", Plane::Hitbox::None },
@@ -126,74 +116,79 @@ inline void lua_setup_GL(sol::state& lua)
         { "Full", Plane::Hitbox::Full }
     });
 
-    auto window = gl.new_usertype<Window>("Window", sol::no_constructor,
-        sol::base_classes, sol::bases<::SSS::Base>());
-    window["blockInputs"] = &Window::blockInputs;
-    window["unblockInputs"] = &Window::unblockInputs;
-    window["input_stack_time"] = sol::property(&Window::getInputStackTime, &Window::setInputStackTime);
+    // Window args
+    auto args = gl.new_usertype<CreateArgs>("CreateArgs");
+    args["w"] = &CreateArgs::w;
+    args["h"] = &CreateArgs::h;
+    args["title"] = &CreateArgs::title;
+    args["monitor_id"] = &CreateArgs::monitor_id;
+    args["fullscreen"] = &CreateArgs::fullscreen;
+    args["maximized"] = &CreateArgs::maximized;
+    args["iconified"] = &CreateArgs::iconified;
+    args["hidden"] = &CreateArgs::hidden;
 
-    window["keyIsHeld"] = sol::overload(
-        sol::resolve<bool(int) const>(&Window::keyIsHeld),
-        sol::resolve<bool(int, int) const>(&Window::keyIsHeld)
-    );
-    window["keyIsPressed"] = sol::overload(
-        sol::resolve<bool(int) const>(&Window::keyIsPressed),
-        sol::resolve<bool(int, int) const > (&Window::keyIsPressed)
-    );
-    window["keyIsReleased"] = &Window::keyIsReleased;
-    window["keyCount"] = &Window::keyCount;
+    gl["createWindow"] = &createWindow;
+    gl["closeWindow"] = &closeWindow;
 
-    window["clickIsHeld"] = sol::overload(
-        sol::resolve<bool(int) const>(&Window::clickIsHeld),
-        sol::resolve<bool(int, int) const>(&Window::clickIsHeld)
-    );
-    window["clickIsPressed"] = sol::overload(
-        sol::resolve<bool(int) const>(&Window::clickIsPressed),
-        sol::resolve<bool(int, int) const > (&Window::clickIsPressed)
-    );
-    window["clickIsReleased"] = &Window::clickIsReleased;
-    window["clickCount"] = &Window::clickCount;
-
-    window["addRenderer"] = sol::overload(
-        [](Window& win, RendererBase* ptr) {
-            win.addRenderer(ptr->getShared());
+    gl["addRenderer"] = sol::overload(
+        [](RendererBase* ptr) {
+            addRenderer(ptr->getShared());
         },
-        [](Window& win, RendererBase* ptr, size_t offset) {
-            win.addRenderer(ptr->getShared(), offset);
+        [](RendererBase* ptr, size_t offset) {
+            addRenderer(ptr->getShared(), offset);
         }
     );
-    window["removeRenderer"] = [](Window& win, RendererBase* ptr) {
-        win.removeRenderer(ptr->getShared());
-    },
+    gl["removeRenderer"] = [](RendererBase* ptr) {
+        removeRenderer(ptr->getShared());
+    };
 
-    window["fps_limit"] = sol::property(&Window::getFPSLimit, &Window::setFPSLimit);
-    window["vsync"] = sol::property(&Window::getVSYNC, &Window::setVSYNC);
-    window["title"] = sol::property(&Window::getTitle, &Window::setTitle);
-    window["setDimensions"] = &Window::setDimensions;
-    window["getDimensions"] = sol::resolve<std::tuple<int, int>() const>(&Window::getDimensions);
-    window["w"] = sol::property(&Window::getWidth, &Window::setWidth);
-    window["h"] = sol::property(&Window::getHeight, &Window::setHeight);
-    window["setPosition"] = &Window::setPosition;
-    window["getPosition"] = sol::resolve<std::tuple<int, int>() const>(&Window::getPosition);
-    window["x"] = sol::property(&Window::getPosX, &Window::setPosX);
-    window["y"] = sol::property(&Window::getPosY, &Window::setPosY);
-    window["getCursorPos"] = sol::resolve<std::tuple<int, int>() const>(&Window::getCursorPos);
-    window["getCursorDiff"] = sol::resolve<std::tuple<int, int>() const>(&Window::getCursorDiff);
-    window["fullscreen"] = sol::property(&Window::isFullscreen, &Window::setFullscreen);
-    window["iconified"] = sol::property(&Window::isIconified, &Window::setIconification);
-    window["maximized"] = sol::property(&Window::isMaximized, &Window::setMaximization);
-    window["visible"] = sol::property(&Window::isVisible, &Window::setVisibility);
-    window["create"] = &Window::create;
-    // Window args
-    auto args = gl.new_usertype<Window::CreateArgs>("WindowArgs");
-    args["w"] = &Window::CreateArgs::w;
-    args["h"] = &Window::CreateArgs::h;
-    args["title"] = &Window::CreateArgs::title;
-    args["monitor_id"] = &Window::CreateArgs::monitor_id;
-    args["fullscreen"] = &Window::CreateArgs::fullscreen;
-    args["maximized"] = &Window::CreateArgs::maximized;
-    args["iconified"] = &Window::CreateArgs::iconified;
-    args["hidden"] = &Window::CreateArgs::hidden;
+    gl["blockInputs"] = &blockInputs;
+    gl["unblockInputs"] = &unblockInputs;
+    gl["getInputStackTime"] = &getInputStackTime;
+    gl["setInputStackTime"] = &setInputStackTime;
+
+    gl["keyIsHeld"] = sol::overload(
+        sol::resolve<bool(int)>(&keyIsHeld),
+        sol::resolve<bool(int, int)>(&keyIsHeld)
+    );
+    gl["keyIsPressed"] = sol::overload(
+        sol::resolve<bool(int)>(&keyIsPressed),
+        sol::resolve<bool(int, int) > (&keyIsPressed)
+    );
+    gl["keyIsReleased"] = &keyIsReleased;
+    gl["keyCount"] = &keyCount;
+
+    gl["clickIsHeld"] = sol::overload(
+        sol::resolve<bool(int)>(&clickIsHeld),
+        sol::resolve<bool(int, int)>(&clickIsHeld)
+    );
+    gl["clickIsPressed"] = sol::overload(
+        sol::resolve<bool(int)>(&clickIsPressed),
+        sol::resolve<bool(int, int) > (&clickIsPressed)
+    );
+    gl["clickIsReleased"] = &clickIsReleased;
+    gl["clickCount"] = &clickCount;
+
+    gl["getVSYNC"] = &getVSYNC;
+    gl["setVSYNC"] = &setVSYNC;
+    gl["getFPSLimit"] = &getFPSLimit;
+    gl["setFPSLimit"] = &setFPSLimit;
+    gl["getTitle"] = &getTitle;
+    gl["setTitle"] = &setTitle;
+    gl["setSize"] = &setSize;
+    gl["getSize"] = []() { int w, h; getSize(w, h); return std::make_tuple(w, h); };
+    gl["setPosition"] = &setPosition;
+    gl["getPosition"] = []() { int x, y; getPosition(x, y); return std::make_tuple(x, y); };
+    gl["getCursorPos"] = []() { int x, y; getCursorPos(x, y); return std::make_tuple(x, y); };
+    gl["getCursorDiff"] = []() { int x, y; getCursorDiff(x, y); return std::make_tuple(x, y); };
+    gl["isFullscreen"] = &isFullscreen;
+    gl["setFullscreen"] = &setFullscreen;
+    gl["isIconified"] = &isIconified;
+    gl["setIconification"] = &setIconification;
+    gl["isMaximized"] = &isMaximized;
+    gl["setMaximization"] = &setMaximization;
+    gl["isVisible"] = &isVisible;
+    gl["setVisibility"] = &setVisibility;
     
     auto vec3 = lua.new_usertype<glm::vec3>("vec3", sol::constructors<
         glm::vec3(),

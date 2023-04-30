@@ -21,10 +21,10 @@ class SSS_GL_API Plane final : public Model<Plane> {
     friend class PlaneRenderer;
     friend class Window;
     friend class Texture;
-    friend SSS_GL_API bool pollEverything();
+    friend SSS_GL_API void pollEverything();
 
 private:
-    Plane(std::shared_ptr<Window> window);
+    Plane();
 
     // Make copy & move operations private
     Plane(const Plane&)             = default;   // Copy constructor

@@ -2,14 +2,11 @@
 
 SSS_GL_BEGIN;
 
-Shaders::Shaders(std::shared_ptr<Window> window) try
-	: Basic::SharedBase<Shaders>(window)
+Shaders::Shaders() try
 {
 	// Log
 	if (Log::GL::Shaders::query(Log::GL::Shaders::get().life_state)) {
-		char buff[256];
-		sprintf_s(buff, "'%s' -> Shaders -> created", getWindowTitle());
-		LOG_GL_MSG(buff);
+		LOG_GL_MSG("Shaders -> created");
 	}
 }
 CATCH_AND_RETHROW_METHOD_EXC;
@@ -19,26 +16,15 @@ Shaders::~Shaders()
 	if (!_loaded) {
 		// Log
 		if (Log::GL::Shaders::query(Log::GL::Shaders::get().life_state)) {
-			char buff[256];
-			sprintf_s(buff, "'%s' -> Shaders -> deleted (was never loaded)", getWindowTitle());
-			LOG_GL_MSG(buff);
+			LOG_GL_MSG("Shaders -> deleted (wasn't loaded)");
 		}
 		return;
 	}
-	try {
-		Context const context = getContext();
-		glDeleteProgram(_program_id);
-	}
-	catch (...) {
-		LOG_CTX_WRN(THIS_NAME, "Could not delete properly: no valid Window bound.");
-		return;
-	};
+	glDeleteProgram(_program_id);
 
 	// Log
 	if (Log::GL::Shaders::query(Log::GL::Shaders::get().life_state)) {
-		char buff[256];
-		sprintf_s(buff, "'%s' -> Shaders -> deleted", getWindowTitle());
-		LOG_GL_MSG(buff);
+		LOG_GL_MSG("Shaders -> deleted (wasn't loaded)");
 	}
 }
 
@@ -117,7 +103,6 @@ Shaders::Shared Shaders::create(std::string const& vertex_fp, std::string const&
 
 void Shaders::loadFromStrings(std::string const& vertex_data, std::string const& fragment_data) try
 {
-	Context const context = getContext();
 	_program_id = loadShaders(vertex_data, fragment_data);
 	_vertex_data = vertex_data;
 	_fragment_data = fragment_data;
@@ -125,9 +110,7 @@ void Shaders::loadFromStrings(std::string const& vertex_data, std::string const&
 
 	// Log
 	if (Log::GL::Shaders::query(Log::GL::Shaders::get().loading)) {
-		char buff[256];
-		sprintf_s(buff, "'%s' -> Shaders -> loaded", getWindowTitle());
-		LOG_GL_MSG(buff);
+		LOG_GL_MSG("Shaders -> loaded");
 	}
 }
 CATCH_AND_RETHROW_METHOD_EXC;
@@ -141,19 +124,15 @@ CATCH_AND_RETHROW_METHOD_EXC;
 void Shaders::use() const
 {
 	if (!_loaded) {
-		char buff[256];
-		sprintf_s(buff, "Shaders were not loaded!");
-		LOG_METHOD_WRN(buff);
+		LOG_METHOD_WRN("Shaders were not loaded!");
 		return;
 	}
-	Context const context = getContext();
 	glUseProgram(_program_id);
 }
 
 // Return the location of a uniform variable for this program
 GLint Shaders::getUniformLocation(std::string const& name)
 {
-	Context const context = getContext();
 	return glGetUniformLocation(_program_id, name.c_str());
 }
 

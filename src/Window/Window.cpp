@@ -1,27 +1,21 @@
-#include "GL/Window.hpp"
+#include "Window.hpp"
 
 SSS_GL_BEGIN;
 
-// Window ptr
-std::vector<std::weak_ptr<Window>> Window::_instances{};
-// Connected monitors
-std::vector<GLFWmonitor*> Window::_monitors{};
+Window::Ptr window;
 
 // Constructor, creates a window
 Window::Window(CreateArgs const& args) try
 {
     // Init GLFW
-    if (_instances.empty()) {
-        // Init GLFW
-        glfwInit();
-        // Log
-        if (Log::GL::Window::query(Log::GL::Window::get().glfw_init)) {
-            LOG_GL_MSG("GLFW initialized");
-        }
-        // Retrive monitors
-        monitor_callback(nullptr, 0);
-        glfwSetMonitorCallback(monitor_callback);
+    glfwInit();
+    // Log
+    if (Log::GL::Window::query(Log::GL::Window::get().glfw_init)) {
+        LOG_GL_MSG("GLFW initialized");
     }
+
+    _retrieveMonitors();
+    glfwSetMonitorCallback(monitor_callback);
 
     // Set main monitor
     _setMainMonitor(args.monitor_id);
@@ -79,8 +73,7 @@ Window::Window(CreateArgs const& args) try
         setIconification(args.iconified);
     }
 
-    // Make context current for this scope
-    Context const context(_window.get());
+    glfwMakeContextCurrent(_window.get());
 
     // Init glad
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -114,6 +107,8 @@ Window::Window(CreateArgs const& args) try
     glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_units);
     _max_glsl_tex_units = static_cast<uint32_t>(max_units);
 
+    _loadPresetShaders();
+
     // Log
     if (Log::GL::Window::query(Log::GL::Window::get().life_state)) {
         char buff[256];
@@ -129,15 +124,11 @@ Window::~Window()
     // Free all bound objects
     _preset_shaders.clear();
     _renderers.clear();
-    // Remove weak ptr from instance vector
-    cleanWeakPtrVector(_instances);
     // Terminate GLFW
-    if (_instances.empty()) {
-        glfwTerminate();
-        // Log
-        if (Log::GL::Window::query(Log::GL::Window::get().glfw_init)) {
-            LOG_GL_MSG("GLFW terminated");
-        }
+    glfwTerminate();
+    // Log
+    if (Log::GL::Window::query(Log::GL::Window::get().glfw_init)) {
+        LOG_GL_MSG("GLFW terminated");
     }
     // Log
     if (Log::GL::Window::query(Log::GL::Window::get().life_state)) {
@@ -145,35 +136,6 @@ Window::~Window()
         sprintf_s(buff, "'%s' -> deleted", _title.c_str());
         LOG_GL_MSG(buff);
     }
-}
-
-Window::Shared Window::create(CreateArgs const& args) try
-{
-    Shared ptr(new Window(args));
-    _instances.emplace_back(ptr);
-    ptr->_loadPresetShaders();
-    return ptr;
-}
-CATCH_AND_RETHROW_FUNC_EXC;
-
-Window::Shared Window::get(GLFWwindow* ptr) try
-{
-    for (Weak const& weak : _instances) {
-        Shared window = weak.lock();
-        if (window && window->_window.get() == ptr) {
-            return window;
-        }
-    }
-    throw_exc("Found no window for given pointer.");
-}
-CATCH_AND_RETHROW_FUNC_EXC;
-
-Window::Shared Window::getFirst()
-{
-    if (_instances.empty()) {
-        return Shared(nullptr);
-    }
-    return _instances[0].lock();
 }
 
 // Wether the user requested to close the window.
@@ -211,8 +173,6 @@ void Window::setFPSLimit(int fps_limit)
 // Enables or disables the VSYNC of the window
 void Window::setVSYNC(bool state)
 {
-    // Make context current for this scope
-    Context const context(_window.get());
     // Set VSYNC
     _vsync = state;
     glfwSwapInterval(_vsync);

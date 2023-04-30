@@ -60,9 +60,6 @@
     <ClCompile Include="src\Window\draw_frame.cpp">
       <Filter>src\Window</Filter>
     </ClCompile>
-    <ClCompile Include="src\Window\Context.cpp">
-      <Filter>src\Window</Filter>
-    </ClCompile>
     <ClCompile Include="src\Objects\Camera.cpp">
       <Filter>src\Objects</Filter>
     </ClCompile>
@@ -105,9 +102,12 @@
     <ClCompile Include="src\Objects\Model.cpp">
       <Filter>src\Objects</Filter>
     </ClCompile>
+    <ClCompile Include="src\Globals.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="inc\GL\Window.hpp">
+    <ClInclude Include="src\Window\Window.hpp">
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="inc\GL.hpp">
@@ -144,6 +144,9 @@
       <Filter>inc\Objects\Models</Filter>
     </ClInclude>
     <ClInclude Include="inc\GL\Lua.hpp">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\GL\Globals.hpp">
       <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>

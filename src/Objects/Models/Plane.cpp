@@ -2,8 +2,7 @@
 
 SSS_GL_BEGIN;
 
-Plane::Plane(std::shared_ptr<Window> window) try
-    : Model<Plane>(window)
+Plane::Plane() try
 {
 }
 CATCH_AND_RETHROW_METHOD_EXC;
@@ -17,7 +16,7 @@ Plane::Shared Plane::create(Texture::Shared texture)
 
 Plane::Shared Plane::duplicate() const
 {
-    Shared plane = create(getWindow());
+    Shared plane = create();
     *plane = *this;
     return plane;
 }

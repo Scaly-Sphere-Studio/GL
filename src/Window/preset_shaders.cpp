@@ -1,4 +1,4 @@
-#include "GL/Window.hpp"
+#include "Window.hpp"
 #include "GL/Objects/Shaders.hpp"
 
 SSS_GL_BEGIN;
@@ -48,8 +48,6 @@ void main()
 
 void Window::_loadPresetShaders() try
 {
-    Context const context(_window.get());
-
     std::string vertex_data, fragment_data;
     
     // Plane shader
@@ -58,7 +56,7 @@ void Window::_loadPresetShaders() try
         // Retrieve shader pointer
         auto& shader = _preset_shaders[id];
         // Allocate new shader
-        shader.reset(new Shaders(shared_from_this()));
+        shader.reset(new Shaders());
         // Retrieve shader data
         _planeShadersData(vertex_data, fragment_data);
         // Load shader

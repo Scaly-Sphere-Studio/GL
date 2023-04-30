@@ -1,4 +1,4 @@
-#include "GL/Window.hpp"
+#include "Window.hpp"
 #include <filesystem>
 #include <ranges>
 
@@ -11,8 +11,6 @@ SSS_GL_BEGIN;
 void Window::drawObjects()
 {
     if (!isIconified() && isVisible()) {
-        // Make context current for this scope
-        Context const context(_window.get());
         // Render all active renderers
         for (auto const& renderer : _renderers) {
             if (!renderer || !renderer->isActive())
@@ -186,9 +184,6 @@ void Window::printFrame() try
     using clock = std::chrono::steady_clock;
     // Render if visible
     if (!_is_iconified && isVisible()) {
-        // Make context current for this scope
-        Context const context(_window.get());
-
         // Limit fps if needed
         sleepUntil(_last_render_time + _min_frame_time);
         clock::time_point const now = clock::now();

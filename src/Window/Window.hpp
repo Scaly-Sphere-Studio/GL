@@ -1,9 +1,7 @@
 #ifndef SSS_GL_WINDOW_HPP
 #define SSS_GL_WINDOW_HPP
 
-#include "Objects/Texture.hpp"
-#include "Objects/Models/PlaneRenderer.hpp"
-#include "Objects/Models/LineRenderer.hpp"
+#include "GL/Globals.hpp"
 #include <map>
 #include <array>
 #include <queue>
@@ -41,15 +39,11 @@ namespace SSS::Log::GL {
 
 SSS_GL_BEGIN;
 
-// Ignore warning about STL exports as they're private members
-#pragma warning(push, 2)
-#pragma warning(disable: 4251)
-#pragma warning(disable: 4275)
-
 /** Abstractization of \c GLFWwindow logic.*/
-class SSS_GL_API Window final : public ::SSS::Base, public std::enable_shared_from_this<Window> {
+class Window final : public ::SSS::Base, public std::enable_shared_from_this<Window> {
     
-    friend SSS_GL_API bool pollEverything();
+    friend SSS_GL_API void pollEverything();
+    friend SSS_GL_API void createWindow(CreateArgs const&);
 
 private:
     static void window_iconify_callback(GLFWwindow* ptr, int state);
@@ -61,39 +55,28 @@ private:
     static void char_callback(GLFWwindow* ptr, unsigned int codepoint);
     static void monitor_callback(GLFWmonitor* ptr, int event);
 
+    void _retrieveMonitors();
+    std::vector<GLFWmonitor*> _monitors; // All connected monitors
+
 public:
-    /** Window::create() parameters.*/
-    struct CreateArgs final {
-        /** Width of the window (auto-shrinks to fit monitor).*/
-        int w{ 720 };
-        /** Height of the window (auto-shrinks to fit monitor).*/
-        int h{ 720 };
-        /** Title of the window.*/
-        std::string title{ "Untitled" };
-        /** Monitor ID of the window (auto-shrinks to closest valid value).*/
-        int monitor_id{ 0 };
-        /** Whether to put the window in fullscreen.*/
-        bool fullscreen{ false };
-        /** Whether to maximize the window.*/
-        bool maximized{ false };
-        /** Whether to iconify the window.*/
-        bool iconified{ false };
-        /** Whether to hide the window.*/
-        bool hidden{ false };
+    Window() = delete;
+
+    class Ptr : public std::unique_ptr<Window> {
+    public:
+        _NODISCARD pointer operator->() const noexcept {
+            pointer ret = get();
+            if (ret == nullptr) {
+                LOG_CTX_ERR("SSS/GL", "Trying to use the library when it hasn't been initialised or has since been closed.");
+                abort();
+            }
+            return ret;
+        }
     };
 
-    /** %Shared instance, retrivable with Window::get().*/
-    using Shared = std::shared_ptr<Window>;
-
 private:
-    using Weak = std::weak_ptr<Window>;         // Weak ptr to Window instance
-    static std::vector<Weak> _instances;        // All Window instances
-    static std::vector<GLFWmonitor*> _monitors; // All connected monitors
-
     // Constructor, creates a window
     // Private, to be called via Window::create();
     Window(CreateArgs const& args);
-
     // To be called in create(), as weak_from_this() is needed
     void _loadPresetShaders();
 
@@ -103,26 +86,6 @@ public :
      *  @sa create(), shouldClose()
      */
     ~Window();
-
-    /** \cond INTERNAL*/
-    // Rule of 5
-    Window(const Window&)               = delete;   // Copy constructor
-    Window(Window&&)                    = delete;   // Move constructor
-    Window& operator=(const Window&)    = delete;   // Copy assignment
-    Window& operator=(Window&&)         = delete;   // Move assignment
-    /** \endcond*/
-
-    /** Inits glfw if no Window exists yet, and creates a Shared
-     *  instance with given parameters.
-     *  @sa Window::get(), shouldClose(), ~Window()
-     */
-    static Shared create(CreateArgs const& args);
-    /** Retrieves the Shared instance matching given GLFWwindow pointer.
-     *  @sa Window::create()
-     */
-    static Shared get(GLFWwindow* ptr);
-
-    static Shared getFirst();
 
     /** Returns \c true if the user requested to close the window,
      *  and \c false otherwiser.
@@ -215,9 +178,9 @@ public:
     void addRenderer(RendererBase::Shared renderer);
     void removeRenderer(RendererBase::Shared renderer);
 
-    ModelBase::Shared getHovered() const { return _hovered_model.lock(); };
+    ModelBase::Shared getHovered() const noexcept { return _hovered_model.lock(); };
     template<class Derived>
-    std::shared_ptr<Derived> getHovered() const {
+    std::shared_ptr<Derived> getHovered() const noexcept {
         ModelBase::Shared model = getHovered();
         if (model == nullptr)
             return nullptr;
@@ -414,7 +377,6 @@ private:
     int _windowed_x{ 0 };   // Old x (left) pos
     int _windowed_y{ 0 };   // Old y (up) pos
 
-
     // FPS Limit (0 = disabled)
     int _fps_limit{ 0 };
     std::chrono::nanoseconds _min_frame_time{ 0 };
@@ -431,14 +393,6 @@ private:
     GLFWmonitor* _main_monitor;
     int _main_monitor_id{ 0 };
 
-    // Internal callbacks that are called before calling within themselves user callbacks
-    GLFWwindowiconifyfun _iconify_callback{ nullptr };          // Window iconify
-    GLFWwindowsizefun    _resize_callback{ nullptr };           // Window resize
-    GLFWwindowposfun     _pos_callback{ nullptr };              // Window position
-    GLFWkeyfun           _key_callback{ nullptr };              // Window keyboard key
-    GLFWcharfun          _char_callback{ nullptr };             // Window character input
-    GLFWcursorposfun     _mouse_position_callback{ nullptr };   // Window mouse position
-    GLFWmousebuttonfun   _mouse_button_callback{ nullptr };     // Window mouse button
     // Whether to block inputs or not
     bool _block_inputs{ false };
     // Key to unblock inputs
@@ -450,43 +404,13 @@ private:
     std::array<Input, GLFW_KEY_LAST + 1> _key_inputs;
     
     std::queue<std::pair<int, bool>> _click_queue;
-    std::array<Input, GLFW_KEY_LAST + 1> _click_inputs;
+    std::array<Input, GLFW_MOUSE_BUTTON_LAST + 1> _click_inputs;
 
     // Sets the window's main monitor
     void _setMainMonitor(int id);
 };
 
-#pragma warning(pop)
-
-template<typename Callback>
-inline void Window::setCallback(Callback(*set)(GLFWwindow*, Callback), Callback callback)
-{
-    void const* ptr(set);
-    if (ptr == (void*)(&glfwSetWindowIconifyCallback)) {
-        _iconify_callback = GLFWwindowiconifyfun(callback);
-    }
-    else if (ptr == (void*)(&glfwSetWindowSizeCallback)) {
-        _resize_callback = GLFWwindowsizefun(callback);
-    }
-    else if (ptr == (void*)(&glfwSetWindowPosCallback)) {
-        _pos_callback = GLFWwindowposfun(callback);
-    }
-    else if (ptr == (void*)(&glfwSetKeyCallback)) {
-        _key_callback = GLFWkeyfun(callback);
-    }
-    else if (ptr == (void*)(&glfwSetCharCallback)) {
-        _char_callback = GLFWcharfun(callback);
-    }
-    else if (ptr == (void*)(&glfwSetCursorPosCallback)) {
-        _mouse_position_callback = GLFWcursorposfun(callback);
-    }
-    else if (ptr == (void*)(&glfwSetMouseButtonCallback)) {
-        _mouse_button_callback = GLFWmousebuttonfun(callback);
-    }
-    else {
-        set(_window.get(), callback);
-    }
-};
+extern Window::Ptr window;
 
 SSS_GL_END;
 

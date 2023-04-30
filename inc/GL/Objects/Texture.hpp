@@ -44,11 +44,11 @@ INTERNAL_END;
 class SSS_GL_API Texture final : public Basic::InstancedBase<Texture> {
 
     friend Basic::SharedBase<Texture>;
-    friend SSS_GL_API bool pollEverything();
+    friend SSS_GL_API void pollEverything();
     friend class Window;
 
 private:
-    Texture(std::shared_ptr<Window> window);
+    Texture();
 
 public:
     /** Destructor, can log but otherwise default.*/
@@ -156,7 +156,7 @@ private:
 
     // Async class which fills _raw_pixels using stb_image
     class _AsyncLoading : public AsyncBase <std::string> {
-        friend SSS_GL_API bool pollEverything();
+        friend SSS_GL_API void pollEverything();
     protected:
         virtual void _asyncFunction(std::string filepath);
     private:

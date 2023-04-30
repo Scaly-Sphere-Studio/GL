@@ -51,15 +51,11 @@ public:
     glm::vec3 getRotation();
     glm::vec3 getTranslation();
 
-    virtual bool isHovered() const noexcept = 0;
-    virtual bool isClicked() const noexcept = 0;
-    virtual bool isHeld() const noexcept = 0;
+    bool isHovered() const noexcept;
+    bool isClicked() const noexcept;
+    bool isHeld() const noexcept;
 
 protected:
-    bool isHovered(std::shared_ptr<Window> window) const noexcept;
-    bool isClicked(std::shared_ptr<Window> window) const noexcept;
-    bool isHeld(std::shared_ptr<Window> window) const noexcept;
-
     /** Scaling part of the %Model matrix.*/
     glm::mat4 _scaling;
     /** Rotation part of the %Model matrix.*/
@@ -77,22 +73,11 @@ protected:
 template<class Derived>
 class Model : public ModelBase, public Basic::InstancedBase<Derived> {
 protected:
-    Model(std::shared_ptr<Window> window)
-        : ModelBase(), Basic::InstancedBase<Derived>(window) {}
+    Model() {};
 
 public:
     using Basic::SharedBase<Derived>::Shared;
     using Basic::SharedBase<Derived>::Weak;
-
-    virtual bool isHovered() const noexcept {
-        return ModelBase::isHovered(Basic::Base::getWindow());
-    };
-    virtual bool isClicked() const noexcept {
-        return ModelBase::isClicked(Basic::Base::getWindow());
-    };
-    virtual bool isHeld() const noexcept {
-        return ModelBase::isHeld(Basic::Base::getWindow());
-    };
 };
 
 

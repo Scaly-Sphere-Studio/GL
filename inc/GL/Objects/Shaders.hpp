@@ -32,7 +32,7 @@ class SSS_GL_API Shaders final : public Basic::SharedBase<Shaders> {
 
 private:
     // Constructor 
-    Shaders(std::shared_ptr<Window> window);
+    Shaders();
 
 public:
     /** Destructor, unloads internal glProgram if needed.

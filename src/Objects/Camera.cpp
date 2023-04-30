@@ -1,12 +1,10 @@
 #include "GL/Objects/Camera.hpp"
-#include "GL/Window.hpp"
+#include "GL/Globals.hpp"
 
 SSS_GL_BEGIN;
 
-Camera::Camera(std::shared_ptr<Window> weak_window)
-    : Basic::InstancedBase<Camera>(weak_window)
+Camera::Camera()
 {
-    _window_ratio = getWindow()->getRatio();
     _computeView();
     _computeProjection();
 }
@@ -128,23 +126,25 @@ void Camera::_computeView()
 
 void Camera::_computeProjection()
 {
+    float const ratio = getSizeRatio();
+
     switch (_projection_type) {
     case Projection::Ortho: {
-        float const x = _window_ratio > 1.f ? _window_ratio : 1.f;
-        float const y = _window_ratio > 1.f ? 1.f : 1.f / _window_ratio;
+        float const x = ratio > 1.f ? ratio : 1.f;
+        float const y = ratio > 1.f ? 1.f : 1.f / ratio;
         _projection = glm::ortho(-x, x, -y, y, _z_near, _z_far);
     }
         break;
     case Projection::OrthoFixed: {
         int w, h;
-        getWindow()->getDimensions(w, h);
+        getSize(w, h);
         float const x = static_cast<float>(w) / 2.f;
         float const y = static_cast<float>(h) / 2.f;
         _projection = glm::ortho(-x, x, -y, y, _z_near, _z_far);
     }
         break;
     case Projection::Perspective:
-        _projection = glm::perspective(glm::radians(_fov), _window_ratio, _z_near, _z_far);
+        _projection = glm::perspective(glm::radians(_fov), ratio, _z_near, _z_far);
         break;
     }
     _computeVP();

@@ -26,7 +26,7 @@ class SSS_GL_API PlaneRenderer final : public Renderer<PlaneRenderer> {
     friend class Window;
 
 private:
-    PlaneRenderer(std::shared_ptr<Window> window);
+    PlaneRenderer();
 
     void _renderPart(Shaders& shader, uint32_t& count) const;
 

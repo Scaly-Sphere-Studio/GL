@@ -48,17 +48,14 @@ namespace SSS::Log::GL {
 
 SSS_GL_BEGIN;
 
-class SSS_GL_API Window; // Pre-declaration of Window class.
-
 /** Global function which polls everything in the library.
  *  Process is as follow:
  * - Calls glfwPollEvents().
  * - Calls all TR::Area::update().
  * - Calls all Model's passive function.
  * - Edits every Texture with a pending thread (file load / text area).
- * - \b Returns \c true if at least one Window is visible, and \c false otherwise.
  */
-SSS_GL_API bool pollEverything();
+SSS_GL_API void pollEverything();
 
 /** Abstractization of glfw contexts, inspired by std::lock.
  *  Make given context current in scope.
@@ -77,29 +74,6 @@ SSS_GL_API bool pollEverything();
  *  // Context is back to previous
  *  @endcode
  */
-
-class SSS_GL_API Context final {
-private:
-    void _init(GLFWwindow* ptr);
-public:
-    /** Make given context current if needed.*/
-    Context(std::weak_ptr<Window> ptr);
-    /** Make given context current if needed.*/
-    Context(GLFWwindow* ptr);
-    /** Swap to previous context if it was changed in constructor.*/
-    ~Context();
-    /** @cond INTERNAL*/
-    Context()                           = delete;   // Default constructor
-    Context(const Context&)             = delete;   // Copy constructor
-    Context(Context&&)                  = delete;   // Move constructor
-    Context& operator=(const Context&)  = delete;   // Copy assignment
-    Context& operator=(Context&&)       = delete;   // Move assignment
-    /** @endcond*/
-private:
-    GLFWwindow* _given{ nullptr };
-    GLFWwindow* _previous{ nullptr };
-    bool _equal{ true };
-};
 
 class Input {
 public:
@@ -146,45 +120,18 @@ namespace Basic {
 #pragma warning(disable: 4251)
 #pragma warning(disable: 4275)
 
-    // This class is to be inherited in all classes whose instances are
-    // bound to a specific Window instance.
-    class SSS_GL_API Base : public ::SSS::Base {
-    public:
-        Base() = delete;
-        std::shared_ptr<Window> const getWindow() const;
-        char const* getWindowTitle() const;
-        Context const getContext() const;
-    protected:
-        Base(std::shared_ptr<Window> window);
-        void _changeWindow(std::shared_ptr<Window> window);
-        static std::shared_ptr<Window> _getFirstWindow();
-        static std::shared_ptr<Window> _getCorrespondingWindow(GLFWwindow* ptr);
-    private:
-        std::weak_ptr<Window> _window;
-        GLFWwindow* _glfw_window;
-    };
-
     template<class T>
-    class SharedBase : public Base, public std::enable_shared_from_this<T> {
+    class SharedBase : public ::SSS::Base, public std::enable_shared_from_this<T> {
+    protected:
+        SharedBase() {};
     public:
-        SharedBase() = delete;
         using Shared = std::shared_ptr<T>;
         using Weak = std::weak_ptr<T>;
         using Vector = std::vector<Shared>;
-
-    protected:
-        SharedBase(std::shared_ptr<Window> window) : Base(window) {};
-
-    public:
-        static Shared create(std::shared_ptr<Window> window)
+        
+        static Shared create()
         {
-            if (!window) {
-                window = _getFirstWindow();
-            }
-            return Shared(new T(window));
-        }
-        static Shared create() { return create(std::shared_ptr<Window>(nullptr)); }
-        static Shared create(GLFWwindow* window) { return create(Base::_getCorrespondingWindow(window));
+            return Shared(new T());
         }
     };
 
@@ -194,33 +141,28 @@ namespace Basic {
     class InstancedBase : public SharedBase<T>
     {
     public:
-        InstancedBase() = delete;
         ~InstancedBase() { cleanWeakPtrVector(_instances); };
     protected:
-        InstancedBase(std::shared_ptr<Window> window) : SharedBase<T>(window) {};
+        InstancedBase() {};
         using Weak = std::weak_ptr<T>;
         static std::vector<Weak> _instances;
 
     public:
-        static auto create(std::shared_ptr<Window> window)
+        static auto create()
         {
-            auto shared = SharedBase<T>::create(window);
+            auto shared = SharedBase<T>::create();
             _instances.emplace_back(shared);
             return shared;
         }
-        static auto create() { return create(std::shared_ptr<Window>(nullptr)); }
-        static auto create(GLFWwindow* window) { return create(Base::_getCorrespondingWindow(window)); }
 
-        static auto getInstances(std::shared_ptr<Window> window) noexcept {
+        static auto getInstances() noexcept {
             SharedBase<T>::template Vector vec;
+            vec.reserve(_instances.size());
             for (Weak const& weak : _instances) {
-                auto const instance = weak.lock();
-                if (instance && (!window || window == instance->getWindow()))
-                    vec.emplace_back(instance);
+                vec.emplace_back(weak.lock());
             }
             return vec;
         }
-        static auto getInstances() noexcept { return getInstances(nullptr); }
 
         static auto get(T* raw_ptr) {
             for (auto const& weak_ptr : _instances) {
@@ -239,12 +181,12 @@ namespace Basic {
     /** Abstractisation of OpenGL \b textures and their
      *  creation, deletion, settings and editing.
      */
-    struct SSS_GL_API Texture final : public Base {
+    struct SSS_GL_API Texture final {
         /** Constructor, creates an \b OpenGL and sets #id accordingly.
          *  Forces to be bound to a Window instance.
          *  @sa ~Texture()
          */
-        Texture(std::shared_ptr<Window> window, GLenum given_target);
+        Texture(GLenum given_target);
         /** Destructor, deletes the \b OpenGL texture of corresponding #id.
          *  @sa Texture()
          */
@@ -288,13 +230,13 @@ namespace Basic {
     /** Abstractisation of OpenGL vertex array objects (\b %VAO) and
      *  their creation, deletion, and binding.
      */
-    struct SSS_GL_API VAO final : public Base {
+    struct SSS_GL_API VAO final {
         /** Constructor, creates an \b OpenGL vertex array and
          *  sets #id accordingly.
          *  Forces to be bound to a Window instance.
          *  @sa ~VAO()
          */
-        VAO(std::shared_ptr<Window> window);
+        VAO();
         /** Destructor, deletes the \b OpenGL vertex array
          *  of corresponding #id.
          *  @sa VAO()
@@ -315,13 +257,13 @@ namespace Basic {
     /** Abstractisation of OpenGL vertex buffer objects (\b %VBO) and
      *  their creation, deletion, and editing.
      */
-    struct SSS_GL_API VBO final : public Base {
+    struct SSS_GL_API VBO final {
         /** Constructor, creates an \b OpenGL buffer object and
          *  sets #id accordingly.
          *  Forces to be bound to a Window instance.
          *  @sa ~VBO()
          */
-        VBO(std::shared_ptr<Window> window);
+        VBO();
         /** Destructor, deletes the \b OpenGL buffer object
          *  of corresponding #id.
          *  @sa VBO()
@@ -347,13 +289,13 @@ namespace Basic {
     /** Abstractisation of OpenGL index buffer objects (\b %IBO) and
      *  their creation, deletion, and editing.
      */
-    struct SSS_GL_API IBO final : public Base {
+    struct SSS_GL_API IBO final {
         /** Constructor, creates an \b OpenGL buffer object and
          *  sets #id accordingly.
          *  Forces to be bound to a Window instance.
          *  @sa ~IBO()
          */
-        IBO(std::shared_ptr<Window> window);
+        IBO();
          /** Destructor, deletes the \b OpenGL buffer object
           *  of corresponding #id.
           *  @sa VBO()

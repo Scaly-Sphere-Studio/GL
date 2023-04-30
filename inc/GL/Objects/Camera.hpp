@@ -23,15 +23,14 @@ class SSS_GL_API Camera final : public Basic::InstancedBase<Camera> {
     friend class Window;
     friend class Basic::SharedBase<Camera>;
 private:
-    Camera(std::shared_ptr<Window> window);           // Constructor
+    Camera();
 public:
     /** Destructor, default
      *  @sa Window::removeCamera()
      */
-    ~Camera();                                      // Destructor
+    ~Camera();
     /** \cond INTERNAL*/
     // Rule of 5
-    Camera()                            = delete;   // Constructor (deleted)
     Camera(const Camera&)               = delete;   // Copy constructor
     Camera(Camera&&)                    = delete;   // Move constructor
     Camera& operator=(const Camera&)    = delete;   // Copy assignment
@@ -53,7 +52,8 @@ public:
      *
      *  @sa setPosition(), getPosition()
      */
-    void move(glm::vec3 translation, bool use_rotation_axis = true);
+    void move(glm::vec3 translation, bool use_rotation_axis);
+    inline void move(glm::vec3 translation) { move(translation, true); };
     /** Returns the position coordinates of the camera.
      *  @sa setPosition(), move()
      */
@@ -153,7 +153,6 @@ private:
     glm::mat4 _view{ 1 };
     void _computeView();
 
-    float _window_ratio{ 1.f };
     float _fov{ 70.f };
     float _z_near{ 0.1f }, _z_far{ 100.f };
     Projection _projection_type{ Projection::Ortho };

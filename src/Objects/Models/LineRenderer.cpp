@@ -2,8 +2,7 @@
 
 SSS_GL_BEGIN;
 
-LineRenderer::LineRenderer(std::shared_ptr<Window> win)
-    : Renderer(win), _vao(win), _vbo(win), _ibo(win)
+LineRenderer::LineRenderer()
 {
     _vao.bind();
 
@@ -78,8 +77,6 @@ void LineRenderer::gen_batch(Polyline::Vertex::Vec& mesh, Polyline::Indices::Vec
 void LineRenderer::render()
 {
     static size_t size;
-
-    Context const context = getContext();
 
     _vao.bind();
 

@@ -1,4 +1,4 @@
-#include "GL/Window.hpp"
+#include "Window.hpp"
 
 SSS_GL_BEGIN;
 
@@ -24,55 +24,41 @@ static void processInputs(  std::queue<std::pair<int, bool>>& queue,
     }
 }
 
-bool pollEverything() try
+void pollEverything() try
 {
     using namespace std::chrono;
     static steady_clock::time_point last_poll = steady_clock::now();
     steady_clock::time_point const now = steady_clock::now();
     nanoseconds const time_since_last_poll = now - last_poll;
 
-    bool ret = false;
-    
     // Poll events
     glfwPollEvents();
     // Update every Text Area (this won't do anything if nothing is needed)
     TR::Area::updateAll();
 
-    // Loop over each Window instance
-    for (Window::Weak const& weak : Window::_instances) {
-        Window::Shared window = weak.lock();
-        if (!window) {
-            continue;
-        }
-        if (window->isVisible()) {
-            ret = true;
-        }
-        Context const context(window);
+    // Process inputs
+    processInputs(window->_key_queue, window->_key_inputs, window->_input_stack_time);
+    processInputs(window->_click_queue, window->_click_inputs, window->_input_stack_time);
+    // Mouse position (no queue because it's only x & y)
+    if (!window->_block_inputs) {
+        double x, y;
+        glfwGetCursorPos(window->getGLFWwindow(), &x, &y);
+        window->_old_cursor_x = window->_cursor_x;
+        window->_old_cursor_y = window->_cursor_y;
+        window->_cursor_x = static_cast<int>(x);
+        window->_cursor_y = static_cast<int>(y);
+        window->_cursor_diff_x = window->_cursor_x - window->_old_cursor_x;
+        window->_cursor_diff_y = window->_old_cursor_y - window->_cursor_y; // reverse y coords
+    }
 
-        // Process inputs
-        processInputs(window->_key_queue, window->_key_inputs, window->_input_stack_time);
-        processInputs(window->_click_queue, window->_click_inputs, window->_input_stack_time);
-        // Mouse position (no queue because it's only x & y)
-        if (!window->_block_inputs) {
-            double x, y;
-            glfwGetCursorPos(window->getGLFWwindow(), &x, &y);
-            window->_old_cursor_x = window->_cursor_x;
-            window->_old_cursor_y = window->_cursor_y;
-            window->_cursor_x = static_cast<int>(x);
-            window->_cursor_y = static_cast<int>(y);
-            window->_cursor_diff_x = window->_cursor_x - window->_old_cursor_x;
-            window->_cursor_diff_y = window->_old_cursor_y - window->_cursor_y; // reverse y coords
-        }
-
-        Input left_click = window->getClickInputs()[GLFW_MOUSE_BUTTON_LEFT];
-        window->_clicked_model.reset();
-        if (left_click.is_pressed()) {
-            window->_clicked_model = window->_hovered_model;
-            window->_held_model = window->_hovered_model;
-        }
-        else if (left_click.is_released()) {
-            window->_held_model.reset();
-        }
+    Input const left_click = window->getClickInputs()[GLFW_MOUSE_BUTTON_LEFT];
+    window->_clicked_model.reset();
+    if (left_click.is_pressed()) {
+        window->_clicked_model = window->_hovered_model;
+        window->_held_model = window->_hovered_model;
+    }
+    else if (left_click.is_released()) {
+        window->_held_model.reset();
     }
     
     // Loop over each Texture instance
@@ -132,7 +118,6 @@ bool pollEverything() try
     TR::Area::notifyAll();
 
     last_poll = now;
-    return ret;
 }
 CATCH_AND_RETHROW_FUNC_EXC;
 

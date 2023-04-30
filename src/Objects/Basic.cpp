@@ -1,58 +1,12 @@
 #include "GL/Objects/Basic.hpp"
-#include "GL/Window.hpp"
+#include "GL/Globals.hpp"
 
 SSS_GL_BEGIN;
 
 namespace Basic {
 
-    Base::Base(std::shared_ptr<Window> window)
-    {
-        _changeWindow(window);
-    }
-
-    void Base::_changeWindow(std::shared_ptr<Window> window)
-    {
-        _window = window;
-        _glfw_window = getWindow()->getGLFWwindow();
-    }
-
-    std::shared_ptr<Window> Base::_getFirstWindow()
-    {
-        return Window::getFirst();
-    }
-
-    std::shared_ptr<Window> Base::_getCorrespondingWindow(GLFWwindow* ptr)
-    {
-        return Window::get(ptr);
-    }
-
-    std::shared_ptr<Window> const Base::getWindow() const
-    {
-        Window::Shared const window = _window.lock();
-        if (!window) {
-            throw_exc("Trying to use window-dependent object without bounding a valid Window.");
-        }
-        return window;
-    }
-
-    char const* Base::getWindowTitle() const
-    {
-        Window::Shared const window = _window.lock();
-        if (!window) {
-            throw_exc("Trying to use window-dependent object without bounding a valid Window.");
-        }
-        return window->getTitle().c_str();
-    }
-
-    Context const Base::getContext() const
-    {
-        return Context(_glfw_window);
-    }
-
-    Texture::Texture(std::shared_ptr<Window> window, GLenum given_target) try
-        :   Base(window),
-            id([&]()->GLuint {
-                Context const context(window);
+    Texture::Texture(GLenum given_target) try
+        :   id([&]()->GLuint {
                 GLuint id;
                 glGenTextures(1, &id);
                 return id;
@@ -64,24 +18,15 @@ namespace Basic {
 
     Texture::~Texture()
     {
-        try {
-            Context const context = getContext();
-            glDeleteTextures(1, &id);
-        }
-        catch (...) {
-            LOG_CTX_WRN(THIS_NAME, "Could not delete properly: no valid Window bound.");
-            return;
-        };
+        glDeleteTextures(1, &id);
     }
 
     void Texture::bind() const
     {
-        Context const context = getContext();
         glBindTexture(_target, id);
     }
 
     void Texture::setTarget(GLenum new_target) {
-        Context const context = getContext();
         _target = new_target;
         bind();
         switch (_target)
@@ -105,7 +50,6 @@ namespace Basic {
 
     void Texture::parameteri(GLenum pname, GLint param)
     {
-        Context const context = getContext();
         bind();
         glTexParameteri(_target, pname, param);
     }
@@ -116,7 +60,6 @@ namespace Basic {
             return;
         }
 
-        Context const context = getContext();
         bind();
 
         _width = width;
@@ -148,7 +91,6 @@ namespace Basic {
         if (pixels == nullptr) {
             return;
         }
-        Context const context = getContext();
         bind();
 
         switch (_target)
@@ -172,10 +114,8 @@ namespace Basic {
     CATCH_AND_RETHROW_METHOD_EXC;
 
 
-    VAO::VAO(std::shared_ptr<Window> window) try
-        :   Base(window),
-            id([&]()->GLuint {
-                Context const context(window);
+    VAO::VAO() try
+        :   id([&]()->GLuint {
                 GLuint id;
                 glGenVertexArrays(1, &id);
                 return id;
@@ -187,7 +127,6 @@ namespace Basic {
     VAO::~VAO()
     {
         try {
-            Context const context = getContext();
             glDeleteVertexArrays(1, &id);
         }
         catch (...) {
@@ -198,20 +137,16 @@ namespace Basic {
 
     void VAO::bind() const
     {
-        Context const context = getContext();
         glBindVertexArray(id);
     }
 
     void VAO::unbind() const
     {
-        Context const context = getContext();
         glBindVertexArray(0);
     }
 
-    VBO::VBO(std::shared_ptr<Window> window) try
-        :   Base(window),
-            id([&]()->GLuint {
-                Context const context(window);
+    VBO::VBO() try
+        :   id([&]()->GLuint {
                 GLuint id;
                 glGenBuffers(1, &id);
                 return id;
@@ -224,7 +159,6 @@ namespace Basic {
     VBO::~VBO()
     {
         try {
-            Context const context = getContext();
             glDeleteBuffers(1, &id);
         }
         catch (...) {
@@ -235,22 +169,18 @@ namespace Basic {
 
     void VBO::bind() const
     {
-        Context const context = getContext();
         glBindBuffer(GL_ARRAY_BUFFER, id);
     }
 
     void VBO::edit(GLsizeiptr size, const void* data, GLenum usage)
     {
-        Context const context = getContext();
         bind();
         glBufferData(GL_ARRAY_BUFFER, size, data, usage);
     }
 
 
-    IBO::IBO(std::shared_ptr<Window> window) try
-        :   Base(window),
-            id([&]()->GLuint {
-                Context const context(window);
+    IBO::IBO() try
+        :   id([&]()->GLuint {
                 GLuint id;
                 glGenBuffers(1, &id);
                 return id;
@@ -262,7 +192,6 @@ namespace Basic {
     IBO::~IBO()
     {
         try {
-            Context const context = getContext();
             glDeleteBuffers(1, &id);
         }
         catch (...) {
@@ -273,13 +202,11 @@ namespace Basic {
 
     void IBO::bind() const
     {
-        Context const context = getContext();
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
     }
 
     void IBO::edit(GLsizeiptr size, const void* data, GLenum usage)
     {
-        Context const context = getContext();
         bind();
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, usage);
     }

@@ -17,7 +17,7 @@ class SSS_GL_API LineRenderer : public Renderer<LineRenderer> {
     friend class Window;
 
 private:
-    LineRenderer(std::shared_ptr<Window> win);
+    LineRenderer();
 
 public:
     Camera::Shared camera;
