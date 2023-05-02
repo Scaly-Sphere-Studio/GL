@@ -281,6 +281,11 @@ namespace Basic {
         GLuint const id;
     };
 
+    // Ignore warning about STL exports as they're private members
+#pragma warning(push, 2)
+#pragma warning(disable: 4251)
+#pragma warning(disable: 4275)
+
     /** Abstractisation of OpenGL vertex array objects (\b %VAO) and
      *  their creation, deletion, and binding.
      */
@@ -319,6 +324,8 @@ namespace Basic {
         GLuint _vbo{ 0 }, _ibo{ 0 };
         std::function<void()> _setup_func;
     };
+
+#pragma warning(pop)
 }
 
 SSS_GL_END;

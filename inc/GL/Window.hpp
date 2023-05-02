@@ -61,8 +61,13 @@ private:
     bool _equal{ true };
 };
 
+// Ignore warning about STL exports as they're private members
+#pragma warning(push, 2)
+#pragma warning(disable: 4251)
+#pragma warning(disable: 4275)
+
 /** Abstractization of \c GLFWwindow logic.*/
-class Window final : public Base, public std::enable_shared_from_this<Window> {
+class SSS_GL_API Window final : public Base, public std::enable_shared_from_this<Window> {
     
     friend SSS_GL_API void pollEverything();
 
@@ -481,6 +486,8 @@ private:
     // Sets the window's main monitor
     void _setMainMonitor(int id);
 };
+
+#pragma warning(pop)
 
 template<typename Callback>
 inline void Window::setCallback(Callback(*set)(GLFWwindow*, Callback), Callback callback)
