@@ -1,5 +1,5 @@
 #include "GL/Objects/Basic.hpp"
-#include "GL/Globals.hpp"
+#include "GL/Window.hpp"
 
 SSS_GL_BEGIN;
 

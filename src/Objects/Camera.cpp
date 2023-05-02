@@ -1,12 +1,12 @@
 #include "GL/Objects/Camera.hpp"
-#include "GL/Globals.hpp"
+#include "GL/Window.hpp"
 
 SSS_GL_BEGIN;
 
 Camera::Camera()
 {
     _computeView();
-    _computeProjection();
+    _computeProjections();
 }
 
 Camera::~Camera()
@@ -86,32 +86,32 @@ void Camera::rotate(glm::vec2 angles)
 void Camera::setProjectionType(Projection type)
 {
     _projection_type = type;
-    _computeProjection();
+    _computeProjections();
 }
 
 void Camera::setFOV(float degrees)
 {
     _fov = degrees;
-    _computeProjection();
+    _computeProjections();
 }
 
 void Camera::setRange(float z_near, float z_far)
 {
     _z_near = z_near;
     _z_far = z_far;
-    _computeProjection();
+    _computeProjections();
 }
 
 void Camera::setZNear(float z_near)
 {
     _z_near = z_near;
-    _computeProjection();
+    _computeProjections();
 }
 
 void Camera::setZFar(float z_far)
 {
     _z_far = z_far;
-    _computeProjection();
+    _computeProjections();
 }
 
 void Camera::_computeView()
@@ -124,35 +124,47 @@ void Camera::_computeView()
     _computeVP();
 }
 
-void Camera::_computeProjection()
+glm::mat4 Camera::_computeProjection(Window const& window)
 {
-    float const ratio = getSizeRatio();
+    glm::mat4 projection;
+
+    float const ratio = window.getRatio();
 
     switch (_projection_type) {
     case Projection::Ortho: {
         float const x = ratio > 1.f ? ratio : 1.f;
         float const y = ratio > 1.f ? 1.f : 1.f / ratio;
-        _projection = glm::ortho(-x, x, -y, y, _z_near, _z_far);
+        projection = glm::ortho(-x, x, -y, y, _z_near, _z_far);
     }
         break;
     case Projection::OrthoFixed: {
         int w, h;
-        getSize(w, h);
+        window.getDimensions(w, h);
         float const x = static_cast<float>(w) / 2.f;
         float const y = static_cast<float>(h) / 2.f;
-        _projection = glm::ortho(-x, x, -y, y, _z_near, _z_far);
+        projection = glm::ortho(-x, x, -y, y, _z_near, _z_far);
     }
         break;
     case Projection::Perspective:
-        _projection = glm::perspective(glm::radians(_fov), ratio, _z_near, _z_far);
+        projection = glm::perspective(glm::radians(_fov), ratio, _z_near, _z_far);
         break;
     }
+
+    return projection;
+}
+
+void Camera::_computeProjections()
+{
+    std::vector<Window*> all_windows = Window::getAll();
+    for (Window const* window : all_windows)
+        _projections[window->getGLFWwindow()] = _computeProjection(*window);
     _computeVP();
 }
 
 void Camera::_computeVP()
 {
-    _vp = _projection * _view;
+    for (auto const& [ptr, projection] : _projections)
+        _vps[ptr] = projection * _view;
 }
 
 SSS_GL_END;

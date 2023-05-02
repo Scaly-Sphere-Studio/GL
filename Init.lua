@@ -2,7 +2,7 @@ print("> Init.lua start")
 
 -- Window
 do
-    local args = GL.CreateArgs.new()
+    local args = GL.WindowArgs.new()
     args.w = 1280
     args.h = 720
     args.title = "SSS/GL - Demo Window"
@@ -11,8 +11,8 @@ do
     args.iconified = false
     args.hidden = false
 
-    GL.createWindow(args)
-    GL.setVSYNC(true)
+    window = GL.Window.new(args)
+    window.vsync = true
 end
 print("  > Window created")
 
@@ -36,11 +36,11 @@ do
     plane = GL.Plane.new(area)
 
     plane_renderer = GL.PlaneRenderer.new(camera)
-    GL.addRenderer(plane_renderer)
+    window:addRenderer(plane_renderer)
 
     line_shaders = GL.Shaders.new("glsl/line.vert", "glsl/line.frag")
     line_renderer = GL.LineRenderer.new()
-    GL.addRenderer(line_renderer)
+    window:addRenderer(line_renderer)
 end
 print("  > Window objects created")
 

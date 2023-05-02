@@ -24,7 +24,7 @@ Shaders::~Shaders()
 
 	// Log
 	if (Log::GL::Shaders::query(Log::GL::Shaders::get().life_state)) {
-		LOG_GL_MSG("Shaders -> deleted (wasn't loaded)");
+		LOG_GL_MSG("Shaders -> deleted (id: " + toString(_program_id) + ")");
 	}
 }
 

@@ -15,8 +15,14 @@ void key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods)
     }
 }
 
-void resize_callback(GLFWwindow* win, int w, int h)
+void close_callback(GLFWwindow* win)
 {
+    GL::Window* window = GL::Window::get(win);
+    if (!window)
+        return;
+
+    window->setVisibility(false);
+    glfwSetWindowShouldClose(win, false);
 }
 
 int main() try
@@ -30,13 +36,17 @@ int main() try
 
     // Create Window & set context
     lua.safe_script_file("Init.lua");
+    GL::Window& window = lua["window"];
+
+    GL::Window& win2 = GL::Window::create();
+    win2.setRenderers(window.getRenderers());
 
     // Finish setting up window
     glClearColor(0.3f, 0.3f, 0.3f, 0.f);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    GL::setCallback(glfwSetKeyCallback, key_callback);
-    GL::setCallback(glfwSetWindowSizeCallback, resize_callback);
+    window.setCallback(glfwSetKeyCallback, key_callback);
+    win2.setCallback(glfwSetWindowCloseCallback, close_callback);
 
     // Lines
     using Line = GL::Polyline;
@@ -47,18 +57,23 @@ int main() try
     line[3] = Line::Segment(glm::vec3(-200, -200, 0), glm::vec3(-200,  200, 0), 10.f, glm::vec4(1, 1, 1, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);
 
     // Main loop
-    while (!GL::windowShouldClose()) {
+    while (!window.shouldClose()) {
         // Poll events, threads, etc
         GL::pollEverything();
         // Script
         lua.safe_script_file("Loop.lua");
         // Draw renderers
-        GL::drawRenderers();
+        window.drawObjects();
         // Swap buffers
-        GL::printBuffer();
+        window.printFrame();
+
+        if (window.keyIsPressed(GLFW_KEY_F1))
+            win2.setVisibility(true);
+
+        win2.drawObjects();
+        win2.printFrame();
     }
 
-    // Close window & free resources
-    GL::closeWindow();
+    window.close();
 }
 CATCH_AND_LOG_FUNC_EXC;

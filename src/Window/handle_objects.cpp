@@ -1,14 +1,14 @@
-#include "Window.hpp"
+#include "GL/Window.hpp"
 
 SSS_GL_BEGIN;
 
 
-Shaders::Shared Window::getPresetShaders(uint32_t id) const noexcept
+Shaders::Shared Window::getPresetShaders(uint32_t id) noexcept
 {
-    if (_preset_shaders.count(id) == 0) {
+    if (_main._preset_shaders.count(id) == 0) {
         return nullptr;
     }
-    return _preset_shaders.at(id);
+    return _main._preset_shaders.at(id);
 }
 
 void Window::addRenderer(RendererBase::Shared renderer, size_t index)

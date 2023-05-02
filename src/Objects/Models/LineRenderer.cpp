@@ -4,23 +4,22 @@ SSS_GL_BEGIN;
 
 LineRenderer::LineRenderer()
 {
-    _vao.bind();
+    _vao.bind_vbo(_vbo);
+    _vao.bind_ibo(_ibo);
+    _vao.setup([]() {
+        //Coordinates
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 2,
+            GL_FLOAT, GL_FALSE,
+            sizeof(Polyline::Vertex), (void*)0);
+        //Colors
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 4,
+            GL_FLOAT, GL_FALSE,
+            sizeof(Polyline::Vertex),
+            (void*)(sizeof(glm::vec3)));
+    });
 
-    _vbo.bind();
-    //Coordinates
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2,
-        GL_FLOAT, GL_FALSE,
-        sizeof(Polyline::Vertex), (void*)0);
-    //Colors
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 4,
-        GL_FLOAT, GL_FALSE,
-        sizeof(Polyline::Vertex),
-        (void*)(sizeof(glm::vec3)));
-
-    _ibo.bind();
-    
     _vao.unbind();
 }
 

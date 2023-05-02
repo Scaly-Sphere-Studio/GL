@@ -1,7 +1,9 @@
 #ifndef SSS_GL_WINDOW_HPP
 #define SSS_GL_WINDOW_HPP
 
-#include "GL/Globals.hpp"
+#include "Objects/Texture.hpp"
+#include "Objects/Models/PlaneRenderer.hpp"
+#include "Objects/Models/LineRenderer.hpp"
 #include <map>
 #include <array>
 #include <queue>
@@ -39,11 +41,30 @@ namespace SSS::Log::GL {
 
 SSS_GL_BEGIN;
 
+class SSS_GL_API Context final {
+    friend class Window;
+public:
+    /** Swap to previous context if it was changed in constructor.*/
+    ~Context();
+    /** @cond INTERNAL*/
+    Context()                           = delete;   // Default constructor
+    Context(const Context&)             = delete;   // Copy constructor
+    Context(Context&&)                  = delete;   // Move constructor
+    Context& operator=(const Context&)  = delete;   // Copy assignment
+    Context& operator=(Context&&)       = delete;   // Move assignment
+    /** @endcond*/
+private:
+    /** Make given context current if needed.*/
+    Context(GLFWwindow* ptr);
+    GLFWwindow* _given{ nullptr };
+    GLFWwindow* _previous{ nullptr };
+    bool _equal{ true };
+};
+
 /** Abstractization of \c GLFWwindow logic.*/
-class Window final : public ::SSS::Base, public std::enable_shared_from_this<Window> {
+class Window final : public Base, public std::enable_shared_from_this<Window> {
     
     friend SSS_GL_API void pollEverything();
-    friend SSS_GL_API void createWindow(CreateArgs const&);
 
 private:
     static void window_iconify_callback(GLFWwindow* ptr, int state);
@@ -55,37 +76,77 @@ private:
     static void char_callback(GLFWwindow* ptr, unsigned int codepoint);
     static void monitor_callback(GLFWmonitor* ptr, int event);
 
-    void _retrieveMonitors();
-    std::vector<GLFWmonitor*> _monitors; // All connected monitors
-
-public:
-    Window() = delete;
+    static void _loadPresetShaders();
+    static void _retrieveMonitors();
 
     class Ptr : public std::unique_ptr<Window> {
     public:
         _NODISCARD pointer operator->() const noexcept {
             pointer ret = get();
             if (ret == nullptr) {
-                LOG_CTX_ERR("SSS/GL", "Trying to use the library when it hasn't been initialised or has since been closed.");
+                LOG_ERR("Trying to dereference Window when it hasn't been created or has since been closed.");
                 abort();
             }
             return ret;
         }
     };
 
-private:
-    // Constructor, creates a window
-    // Private, to be called via Window::create();
-    Window(CreateArgs const& args);
-    // To be called in create(), as weak_from_this() is needed
-    void _loadPresetShaders();
+    // Additional static data
+    class MainPtr : public Ptr {
+    public:
+        ~MainPtr() { reset(); };
+        std::map<GLFWwindow*, Ptr> _subs;
+        std::map<uint32_t, Shaders::Shared> _preset_shaders;
+        std::vector<GLFWmonitor*> _monitors;
+        uint32_t _max_glsl_tex_units{ 0 };
+    };
 
-public :
+    bool _is_main;
+    static MainPtr _main;
+
+public:
+    struct CreateArgs final {
+        /** Width of the window (auto-shrinks to fit monitor).*/
+        int w{ 720 };
+        /** Height of the window (auto-shrinks to fit monitor).*/
+        int h{ 720 };
+        /** Title of the window.*/
+        std::string title{ "Untitled" };
+        /** Monitor ID of the window (auto-shrinks to closest valid value).*/
+        int monitor_id{ 0 };
+        /** Whether to put the window in fullscreen.*/
+        bool fullscreen{ false };
+        /** Whether to maximize the window.*/
+        bool maximized{ false };
+        /** Whether to iconify the window.*/
+        bool iconified{ false };
+        /** Whether to hide the window.*/
+        bool hidden{ false };
+    };
+
+    Window() = delete;
     /** Destructor, clears stored objects, removes instance from internal
      *  vector, and terminates glfw if no Window exists anymore.
      *  @sa create(), shouldClose()
      */
     ~Window();
+
+private:
+    // Constructor, creates a window
+    // Private, to be called via Window::create();
+    Window(CreateArgs const& args);
+
+public:
+
+    static Window& create(CreateArgs const& args = CreateArgs());
+
+    static Window* get(GLFWwindow* ptr) noexcept;
+    static Window* getCurrent() noexcept;
+    static std::vector<Window*> getAll() noexcept;
+
+    void close();
+
+    Context const setContext();
 
     /** Returns \c true if the user requested to close the window,
      *  and \c false otherwiser.
@@ -112,6 +173,18 @@ public :
      */
     template<typename Callback>
     void setCallback(Callback(*set)(GLFWwindow*, Callback), Callback callback);
+
+private:
+    // Internal callbacks that are called before calling within themselves user callbacks
+    GLFWwindowiconifyfun _iconify_callback{ nullptr };          // Window iconify
+    GLFWwindowsizefun    _resize_callback{ nullptr };           // Window resize
+    GLFWwindowposfun     _pos_callback{ nullptr };              // Window position
+    GLFWkeyfun           _key_callback{ nullptr };              // Window keyboard key
+    GLFWcharfun          _char_callback{ nullptr };             // Window character input
+    GLFWcursorposfun     _mouse_position_callback{ nullptr };   // Window mouse position
+    GLFWmousebuttonfun   _mouse_button_callback{ nullptr };     // Window mouse button
+
+public:
 
     /** Blocks all mouse & key inputs, with optional unblocking key.
      *  @sa unblockInputs(), areInputsBlocked()
@@ -165,12 +238,11 @@ public :
     inline auto getCursorDiff() const noexcept { return std::make_tuple(_cursor_diff_x, _cursor_diff_y); };
 
 private:
-    std::map<uint32_t, Shaders::Shared> _preset_shaders;   // Preset shaders
     RendererBase::Vector _renderers; // Renderers
 
 public:
 
-    Shaders::Shared getPresetShaders(uint32_t id) const noexcept;
+    static Shaders::Shared getPresetShaders(uint32_t id) noexcept;
 
     inline void setRenderers(RendererBase::Vector const& renderers) noexcept { _renderers = renderers; };
     inline auto const& getRenderers() const noexcept { return _renderers; };
@@ -360,7 +432,7 @@ public:
     /** Returns the maximum number of texture units a GLSL fragment shader can hold.
      *  Basically just calls glGet() with GL_MAX_TEXTURE_IMAGE_UNITS.
      */
-    inline uint32_t maxGLSLTextureUnits() const noexcept { return _max_glsl_tex_units; };
+    static inline uint32_t maxGLSLTextureUnits() noexcept { return _main._max_glsl_tex_units; };
 
 private:
 // --- Private variables ---
@@ -387,8 +459,6 @@ private:
 
     // GLFWwindow ptr
     C_Ptr <GLFWwindow, void(*)(GLFWwindow*), glfwDestroyWindow> _window;
-    // Max GLSL texture units
-    uint32_t _max_glsl_tex_units;
     // Main monitor the window is on
     GLFWmonitor* _main_monitor;
     int _main_monitor_id{ 0 };
@@ -406,11 +476,41 @@ private:
     std::queue<std::pair<int, bool>> _click_queue;
     std::array<Input, GLFW_MOUSE_BUTTON_LAST + 1> _click_inputs;
 
+    void _poll();
+
     // Sets the window's main monitor
     void _setMainMonitor(int id);
 };
 
-extern Window::Ptr window;
+template<typename Callback>
+inline void Window::setCallback(Callback(*set)(GLFWwindow*, Callback), Callback callback)
+{
+    void const* ptr(set);
+    if (ptr == (void*)(&glfwSetWindowIconifyCallback)) {
+        _iconify_callback = GLFWwindowiconifyfun(callback);
+    }
+    else if (ptr == (void*)(&glfwSetWindowSizeCallback)) {
+        _resize_callback = GLFWwindowsizefun(callback);
+    }
+    else if (ptr == (void*)(&glfwSetWindowPosCallback)) {
+        _pos_callback = GLFWwindowposfun(callback);
+    }
+    else if (ptr == (void*)(&glfwSetKeyCallback)) {
+        _key_callback = GLFWkeyfun(callback);
+    }
+    else if (ptr == (void*)(&glfwSetCharCallback)) {
+        _char_callback = GLFWcharfun(callback);
+    }
+    else if (ptr == (void*)(&glfwSetCursorPosCallback)) {
+        _mouse_position_callback = GLFWcursorposfun(callback);
+    }
+    else if (ptr == (void*)(&glfwSetMouseButtonCallback)) {
+        _mouse_button_callback = GLFWmousebuttonfun(callback);
+    }
+    else {
+        set(_window.get(), callback);
+    }
+};
 
 SSS_GL_END;
 

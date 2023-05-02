@@ -1,5 +1,5 @@
 #include "GL/Objects/Model.hpp"
-#include "GL/Globals.hpp"
+#include "GL/Window.hpp"
 
 SSS_GL_BEGIN;
 
@@ -99,17 +99,26 @@ glm::vec3 ModelBase::getTranslation()
 
 bool ModelBase::isHovered() const noexcept
 {
-    return getHoveredModel().get() == this;
+    Window const* window = Window::getCurrent();
+    if (!window)
+        return false;
+    return window->getHovered().get() == this;
 }
 
 bool ModelBase::isClicked() const noexcept
 {
-    return getClickedModel().get() == this;
+    Window const* window = Window::getCurrent();
+    if (!window)
+        return false;
+    return window->getClicked().get() == this;
 }
 
 bool ModelBase::isHeld() const noexcept
 {
-    return getHeldModel().get() == this;
+    Window const* window = Window::getCurrent();
+    if (!window)
+        return false;
+    return window->getHeld().get() == this;
 }
 
 SSS_GL_END;

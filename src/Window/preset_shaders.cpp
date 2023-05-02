@@ -1,4 +1,4 @@
-#include "Window.hpp"
+#include "GL/Window.hpp"
 #include "GL/Objects/Shaders.hpp"
 
 SSS_GL_BEGIN;
@@ -54,7 +54,7 @@ void Window::_loadPresetShaders() try
     {
         uint32_t const id = static_cast<uint32_t>(Shaders::Preset::Plane);
         // Retrieve shader pointer
-        auto& shader = _preset_shaders[id];
+        auto& shader = _main._preset_shaders[id];
         // Allocate new shader
         shader.reset(new Shaders());
         // Retrieve shader data
@@ -64,6 +64,6 @@ void Window::_loadPresetShaders() try
     }
 
 }
-CATCH_AND_RETHROW_METHOD_EXC;
+CATCH_AND_RETHROW_FUNC_EXC;
 
 SSS_GL_END;

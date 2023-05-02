@@ -58,24 +58,6 @@ SSS_GL_BEGIN;
  */
 SSS_GL_API void pollEverything();
 
-/** Abstractization of glfw contexts, inspired by std::lock.
- *  Make given context current in scope.
- *  @usage
- *  @code
- *  // Context is set to something
- *  
- *  void func(Window::Shared window)
- *  {
- *      // Set context to given window
- *      Context const context(window);
- *      
- *      // OpenGL operations ...
- *  }
- * 
- *  // Context is back to previous
- *  @endcode
- */
-
 class Input {
 public:
     inline int count() const noexcept { return _count; }

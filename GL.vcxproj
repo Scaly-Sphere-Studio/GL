@@ -47,7 +47,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\GL.hpp" />
-    <ClInclude Include="inc\GL\Globals.hpp" />
     <ClInclude Include="inc\GL\Lua.hpp" />
     <ClInclude Include="inc\GL\Objects\Models\Line.hpp" />
     <ClInclude Include="inc\GL\Objects\Renderer.hpp" />
@@ -56,7 +55,7 @@
     <ClInclude Include="inc\GL\Objects\Shaders.hpp" />
     <ClInclude Include="inc\GL\Objects\Models\Plane.hpp" />
     <ClInclude Include="inc\GL\Objects\Texture.hpp" />
-    <ClInclude Include="src\Window\Window.hpp" />
+    <ClInclude Include="inc\GL\Window.hpp" />
     <ClInclude Include="inc\GL\Objects\Models\PlaneRenderer.hpp" />
     <ClInclude Include="inc\GL\Objects\Basic.hpp" />
     <ClInclude Include="inc\GL\Objects\Models\LineRenderer.hpp" />
@@ -72,13 +71,13 @@
     <ClCompile Include="src\Objects\Models\PlaneRenderer.cpp" />
     <ClCompile Include="src\Objects\Models\Line.cpp" />
     <ClCompile Include="src\Objects\Models\LineRenderer.cpp" />
+    <ClCompile Include="src\Window\Context.cpp" />
     <ClCompile Include="src\Window\Window.cpp" />
     <ClCompile Include="src\Window\callbacks.cpp" />
     <ClCompile Include="src\Window\preset_shaders.cpp" />
     <ClCompile Include="src\Window\handle_objects.cpp" />
     <ClCompile Include="src\Window\draw_frame.cpp" />
     <ClCompile Include="src\Window\pollEverything.cpp" />
-    <ClCompile Include="src\Globals.cpp" />
     <ClCompile Include="src\DemoMain.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)'!='Demo' and '$(Configuration)'!='Demo (Debug)'">true</ExcludedFromBuild>
     </ClCompile>

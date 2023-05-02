@@ -1,21 +1,24 @@
-#include "Window.hpp"
+#include "GL/Window.hpp"
 
 SSS_GL_BEGIN;
 
-Window::Ptr window;
+Window::MainPtr Window::_main;
 
 // Constructor, creates a window
 Window::Window(CreateArgs const& args) try
+    : _is_main(!_main)
 {
-    // Init GLFW
-    glfwInit();
-    // Log
-    if (Log::GL::Window::query(Log::GL::Window::get().glfw_init)) {
-        LOG_GL_MSG("GLFW initialized");
-    }
+    if (_is_main) {
+        // Init GLFW
+        glfwInit();
+        // Log
+        if (Log::GL::Window::query(Log::GL::Window::get().glfw_init)) {
+            LOG_GL_MSG("GLFW initialized");
+        }
 
-    _retrieveMonitors();
-    glfwSetMonitorCallback(monitor_callback);
+        _retrieveMonitors();
+        glfwSetMonitorCallback(monitor_callback);
+    }
 
     // Set main monitor
     _setMainMonitor(args.monitor_id);
@@ -43,7 +46,7 @@ Window::Window(CreateArgs const& args) try
         _h,
         _title.c_str(),
         (args.fullscreen && !args.hidden) ? _main_monitor : nullptr,
-        nullptr
+        _is_main ? nullptr : _main->getGLFWwindow()
     ));
     // Throw if an error occured
     if (!_window.get()) {
@@ -102,12 +105,17 @@ Window::Window(CreateArgs const& args) try
     glfwSetKeyCallback(_window.get(), key_callback);
     glfwSetCharCallback(_window.get(), char_callback);
     
-    // Retrieve max number of GLSL texture units
-    int max_units;
-    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_units);
-    _max_glsl_tex_units = static_cast<uint32_t>(max_units);
+    if (_is_main) {
+        // Retrieve max number of GLSL texture units
+        int max_units;
+        glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_units);
+        _main._max_glsl_tex_units = static_cast<uint32_t>(max_units);
 
-    _loadPresetShaders();
+        _loadPresetShaders();
+    }
+    else {
+        glfwMakeContextCurrent(_main->getGLFWwindow());
+    }
 
     // Log
     if (Log::GL::Window::query(Log::GL::Window::get().life_state)) {
@@ -121,14 +129,23 @@ CATCH_AND_RETHROW_METHOD_EXC;
 // Destructor
 Window::~Window()
 {
-    // Free all bound objects
-    _preset_shaders.clear();
     _renderers.clear();
-    // Terminate GLFW
-    glfwTerminate();
-    // Log
-    if (Log::GL::Window::query(Log::GL::Window::get().glfw_init)) {
-        LOG_GL_MSG("GLFW terminated");
+    if (!_is_main) {
+        if (_main._subs.count(_window.get()) != 0 && !_main._subs[_window.get()]) {
+            _main._subs.erase(_window.get());
+        }
+        _window.reset();
+    }
+    else {
+        _main._preset_shaders.clear();
+        _main._subs.clear();
+        _window.reset();
+        // Terminate GLFW
+        glfwTerminate();
+        // Log
+        if (Log::GL::Window::query(Log::GL::Window::get().glfw_init)) {
+            LOG_GL_MSG("GLFW terminated");
+        }
     }
     // Log
     if (Log::GL::Window::query(Log::GL::Window::get().life_state)) {
@@ -136,6 +153,62 @@ Window::~Window()
         sprintf_s(buff, "'%s' -> deleted", _title.c_str());
         LOG_GL_MSG(buff);
     }
+}
+
+Window& Window::create(CreateArgs const& args)
+{
+    if (!_main) {
+        _main.reset(new Window(args));
+        return *_main;
+    }
+    Ptr win;
+    win.reset(new Window(args));
+    GLFWwindow* ptr = win->getGLFWwindow();
+    _main._subs[ptr] = std::move(win);
+    for (auto& weak_camera : Camera::_instances) {
+        auto camera = weak_camera.lock();
+        if (camera)
+            camera->_computeProjections();
+    }
+    return *_main._subs[ptr];
+}
+
+Window* Window::get(GLFWwindow* ptr) noexcept
+{
+    if (_main->getGLFWwindow() == ptr)
+        return _main.get();
+    for (auto& [key, win] : _main._subs) {
+        if (key == ptr)
+            return win.get();
+    }
+    return nullptr;
+}
+
+Window* Window::getCurrent() noexcept
+{
+    return get(glfwGetCurrentContext());
+}
+
+std::vector<Window*> Window::getAll() noexcept
+{
+    std::vector<Window*> ret;
+    ret.emplace_back(_main.get());
+    for (auto& [ptr, win] : _main._subs)
+        ret.emplace_back(win.get());
+    return ret;
+}
+
+void Window::close()
+{
+    if (_is_main)
+        _main.reset();
+    else
+        _main._subs.erase(_window.get());
+}
+
+Context const Window::setContext()
+{
+    return Context(_window.get());
 }
 
 // Wether the user requested to close the window.
@@ -173,7 +246,7 @@ void Window::setFPSLimit(int fps_limit)
 // Enables or disables the VSYNC of the window
 void Window::setVSYNC(bool state)
 {
-    // Set VSYNC
+    Context const context = setContext();
     _vsync = state;
     glfwSwapInterval(_vsync);
 }
@@ -187,12 +260,12 @@ void Window::setFullscreen(bool state, int monitor_id)
 
     if (state) {
         // Ensure given ID is in range
-        if (monitor_id >= static_cast<int>(_monitors.size())) {
+        if (monitor_id >= static_cast<int>(_main._monitors.size())) {
             LOG_METHOD_WRN("monitor_id out of range.");
             return;
         }
         // Select monitor
-        GLFWmonitor* monitor = monitor_id < 0 ? _main_monitor : _monitors[monitor_id];
+        GLFWmonitor* monitor = monitor_id < 0 ? _main_monitor : _main._monitors[monitor_id];
         // Ensure window isn't already fullscreen on given ID
         if (fullscreenMonitor == monitor) {
             LOG_METHOD_WRN("window is already fullscreen on given screen");
@@ -268,11 +341,11 @@ void Window::_setMainMonitor(int id)
     if (id < 0) {
         id = 0;
     }
-    if (id >= _monitors.size()) {
-        id = static_cast<int>(_monitors.size() - 1);
+    if (id >= _main._monitors.size()) {
+        id = static_cast<int>(_main._monitors.size() - 1);
     }
     _main_monitor_id = id;
-    _main_monitor = _monitors[id];
+    _main_monitor = _main._monitors[id];
 }
 
 SSS_GL_END;

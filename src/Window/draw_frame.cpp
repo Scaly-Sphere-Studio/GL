@@ -1,4 +1,4 @@
-#include "Window.hpp"
+#include "GL/Window.hpp"
 #include <filesystem>
 #include <ranges>
 
@@ -10,6 +10,8 @@ SSS_GL_BEGIN;
 // Draws objects inside renderers on the back buffer.
 void Window::drawObjects()
 {
+    Context const context = setContext();
+
     if (!isIconified() && isVisible()) {
         // Render all active renderers
         for (auto const& renderer : _renderers) {
@@ -181,6 +183,8 @@ void Window::_saveScreenshot()
 // Logs fps and/or longest_frame if specified in LOG structure.
 void Window::printFrame() try
 {
+    Context const context = setContext();
+
     using clock = std::chrono::steady_clock;
     // Render if visible
     if (!_is_iconified && isVisible()) {

@@ -4,7 +4,7 @@
 #define SOL_ALL_SAFETIES_ON 1
 #define SOL_STRINGS_ARE_NUMBERS 1
 #include <sol/sol.hpp>
-#include "Globals.hpp"
+#include "Window.hpp"
 
 inline std::ostream& operator<<(std::ostream& out, glm::vec3 const& vec)
 {
@@ -116,79 +116,74 @@ inline void lua_setup_GL(sol::state& lua)
         { "Full", Plane::Hitbox::Full }
     });
 
-    // Window args
-    auto args = gl.new_usertype<CreateArgs>("CreateArgs");
-    args["w"] = &CreateArgs::w;
-    args["h"] = &CreateArgs::h;
-    args["title"] = &CreateArgs::title;
-    args["monitor_id"] = &CreateArgs::monitor_id;
-    args["fullscreen"] = &CreateArgs::fullscreen;
-    args["maximized"] = &CreateArgs::maximized;
-    args["iconified"] = &CreateArgs::iconified;
-    args["hidden"] = &CreateArgs::hidden;
+    auto window = gl.new_usertype<Window>("Window", sol::factories(&Window::create),
+        sol::base_classes, sol::bases<Base>());
+    window["blockInputs"] = &Window::blockInputs;
+    window["unblockInputs"] = &Window::unblockInputs;
+    window["input_stack_time"] = sol::property(&Window::getInputStackTime, &Window::setInputStackTime);
 
-    gl["createWindow"] = &createWindow;
-    gl["closeWindow"] = &closeWindow;
+    window["keyIsHeld"] = sol::overload(
+        sol::resolve<bool(int) const>(&Window::keyIsHeld),
+        sol::resolve<bool(int, int) const>(&Window::keyIsHeld)
+    );
+    window["keyIsPressed"] = sol::overload(
+        sol::resolve<bool(int) const>(&Window::keyIsPressed),
+        sol::resolve<bool(int, int) const > (&Window::keyIsPressed)
+    );
+    window["keyIsReleased"] = &Window::keyIsReleased;
+    window["keyCount"] = &Window::keyCount;
 
-    gl["addRenderer"] = sol::overload(
-        [](RendererBase* ptr) {
-            addRenderer(ptr->getShared());
+    window["clickIsHeld"] = sol::overload(
+        sol::resolve<bool(int) const>(&Window::clickIsHeld),
+        sol::resolve<bool(int, int) const>(&Window::clickIsHeld)
+    );
+    window["clickIsPressed"] = sol::overload(
+        sol::resolve<bool(int) const>(&Window::clickIsPressed),
+        sol::resolve<bool(int, int) const > (&Window::clickIsPressed)
+    );
+    window["clickIsReleased"] = &Window::clickIsReleased;
+    window["clickCount"] = &Window::clickCount;
+
+    window["addRenderer"] = sol::overload(
+        [](Window& win, RendererBase* ptr) {
+            win.addRenderer(ptr->getShared());
         },
-        [](RendererBase* ptr, size_t offset) {
-            addRenderer(ptr->getShared(), offset);
+        [](Window& win, RendererBase* ptr, size_t offset) {
+            win.addRenderer(ptr->getShared(), offset);
         }
     );
-    gl["removeRenderer"] = [](RendererBase* ptr) {
-        removeRenderer(ptr->getShared());
-    };
+    window["removeRenderer"] = [](Window& win, RendererBase* ptr) {
+        win.removeRenderer(ptr->getShared());
+    },
 
-    gl["blockInputs"] = &blockInputs;
-    gl["unblockInputs"] = &unblockInputs;
-    gl["getInputStackTime"] = &getInputStackTime;
-    gl["setInputStackTime"] = &setInputStackTime;
-
-    gl["keyIsHeld"] = sol::overload(
-        sol::resolve<bool(int)>(&keyIsHeld),
-        sol::resolve<bool(int, int)>(&keyIsHeld)
-    );
-    gl["keyIsPressed"] = sol::overload(
-        sol::resolve<bool(int)>(&keyIsPressed),
-        sol::resolve<bool(int, int) > (&keyIsPressed)
-    );
-    gl["keyIsReleased"] = &keyIsReleased;
-    gl["keyCount"] = &keyCount;
-
-    gl["clickIsHeld"] = sol::overload(
-        sol::resolve<bool(int)>(&clickIsHeld),
-        sol::resolve<bool(int, int)>(&clickIsHeld)
-    );
-    gl["clickIsPressed"] = sol::overload(
-        sol::resolve<bool(int)>(&clickIsPressed),
-        sol::resolve<bool(int, int) > (&clickIsPressed)
-    );
-    gl["clickIsReleased"] = &clickIsReleased;
-    gl["clickCount"] = &clickCount;
-
-    gl["getVSYNC"] = &getVSYNC;
-    gl["setVSYNC"] = &setVSYNC;
-    gl["getFPSLimit"] = &getFPSLimit;
-    gl["setFPSLimit"] = &setFPSLimit;
-    gl["getTitle"] = &getTitle;
-    gl["setTitle"] = &setTitle;
-    gl["setSize"] = &setSize;
-    gl["getSize"] = []() { int w, h; getSize(w, h); return std::make_tuple(w, h); };
-    gl["setPosition"] = &setPosition;
-    gl["getPosition"] = []() { int x, y; getPosition(x, y); return std::make_tuple(x, y); };
-    gl["getCursorPos"] = []() { int x, y; getCursorPos(x, y); return std::make_tuple(x, y); };
-    gl["getCursorDiff"] = []() { int x, y; getCursorDiff(x, y); return std::make_tuple(x, y); };
-    gl["isFullscreen"] = &isFullscreen;
-    gl["setFullscreen"] = &setFullscreen;
-    gl["isIconified"] = &isIconified;
-    gl["setIconification"] = &setIconification;
-    gl["isMaximized"] = &isMaximized;
-    gl["setMaximization"] = &setMaximization;
-    gl["isVisible"] = &isVisible;
-    gl["setVisibility"] = &setVisibility;
+    window["fps_limit"] = sol::property(&Window::getFPSLimit, &Window::setFPSLimit);
+    window["vsync"] = sol::property(&Window::getVSYNC, &Window::setVSYNC);
+    window["title"] = sol::property(&Window::getTitle, &Window::setTitle);
+    window["setDimensions"] = &Window::setDimensions;
+    window["getDimensions"] = sol::resolve<std::tuple<int, int>() const>(&Window::getDimensions);
+    window["w"] = sol::property(&Window::getWidth, &Window::setWidth);
+    window["h"] = sol::property(&Window::getHeight, &Window::setHeight);
+    window["setPosition"] = &Window::setPosition;
+    window["getPosition"] = sol::resolve<std::tuple<int, int>() const>(&Window::getPosition);
+    window["x"] = sol::property(&Window::getPosX, &Window::setPosX);
+    window["y"] = sol::property(&Window::getPosY, &Window::setPosY);
+    window["getCursorPos"] = sol::resolve<std::tuple<int, int>() const>(&Window::getCursorPos);
+    window["getCursorDiff"] = sol::resolve<std::tuple<int, int>() const>(&Window::getCursorDiff);
+    window["fullscreen"] = sol::property(&Window::isFullscreen, &Window::setFullscreen);
+    window["iconified"] = sol::property(&Window::isIconified, &Window::setIconification);
+    window["maximized"] = sol::property(&Window::isMaximized, &Window::setMaximization);
+    window["visible"] = sol::property(&Window::isVisible, &Window::setVisibility);
+    window["create"] = &Window::create;
+    // Window args
+    auto args = gl.new_usertype<Window::CreateArgs>("WindowArgs");
+    args["w"] = &Window::CreateArgs::w;
+    args["h"] = &Window::CreateArgs::h;
+    args["title"] = &Window::CreateArgs::title;
+    args["monitor_id"] = &Window::CreateArgs::monitor_id;
+    args["fullscreen"] = &Window::CreateArgs::fullscreen;
+    args["maximized"] = &Window::CreateArgs::maximized;
+    args["iconified"] = &Window::CreateArgs::iconified;
+    args["hidden"] = &Window::CreateArgs::hidden;
     
     auto vec3 = lua.new_usertype<glm::vec3>("vec3", sol::constructors<
         glm::vec3(),

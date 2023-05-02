@@ -1,16 +1,19 @@
-#include "Window.hpp"
-#include "GL/Globals.hpp"
+#include "GL/Window.hpp"
 
 SSS_GL_BEGIN;
-
-_internal::UserCallbacks _internal::user_callbacks;
 
 // Resizes the internal width and height of correspondig Window instance
 void Window::window_resize_callback(GLFWwindow* ptr, int w, int h) try
 {
+    Window* window = get(ptr);
+    if (!window)
+        return;
+    Context const context = window->setContext();
+
     if (Log::GL::Callbacks::query(Log::GL::Callbacks::get().window_resize)) {
         LOG_GL_MSG("Resize (" + toString(w) + "; " + toString(h) + ")");
     }
+
 
     // Update internal sizes related values if not iconified (0, 0)
     if (!window->_is_iconified) {
@@ -22,14 +25,14 @@ void Window::window_resize_callback(GLFWwindow* ptr, int w, int h) try
         for (Camera::Weak weak : Camera::_instances) {
             Camera::Shared camera = weak.lock();
             if (camera) {
-                camera->_computeProjection();
+                camera->_computeProjections();
             }
         }
     }
 
     // Call user defined callback, if needed
-    if (_internal::user_callbacks.resize != nullptr) {
-        _internal::user_callbacks.resize(ptr, w, h);
+    if (window->_resize_callback != nullptr) {
+        window->_resize_callback(ptr, w, h);
     }
 }
 CATCH_AND_RETHROW_FUNC_EXC;
@@ -37,6 +40,11 @@ CATCH_AND_RETHROW_FUNC_EXC;
 // Determines current monitor of the window
 void Window::window_pos_callback(GLFWwindow* ptr, int x, int y) try
 {
+    Window* window = get(ptr);
+    if (!window)
+        return;
+    Context const context = window->setContext();
+
     if (Log::GL::Callbacks::query(Log::GL::Callbacks::get().window_pos)) {
         char buff[256];
         sprintf_s(buff, "'%s' -> Callback -> position (%d, %d)",
@@ -47,15 +55,15 @@ void Window::window_pos_callback(GLFWwindow* ptr, int x, int y) try
     window->_x = x;
     window->_y = y;
 
-    if (window->_monitors.size() == 1) {
+    if (_main._monitors.size() == 1) {
         window->_setMainMonitor(0);
     }
     else {
         int const x_center = x + window->_w / 2;
         int const y_center = y + window->_h / 2;
 
-        for (int i = 0; i != window->_monitors.size(); ++i) {
-            GLFWmonitor* monitor = window->_monitors[i];
+        for (int i = 0; i != _main._monitors.size(); ++i) {
+            GLFWmonitor* monitor = _main._monitors[i];
             int x0, y0, xmax, ymax;
             glfwGetMonitorPos(monitor, &x0, &y0);
             GLFWvidmode const* mode = glfwGetVideoMode(monitor);
@@ -71,14 +79,19 @@ void Window::window_pos_callback(GLFWwindow* ptr, int x, int y) try
     }
 
     // Call user defined callback, if needed
-    if (_internal::user_callbacks.position != nullptr) {
-        _internal::user_callbacks.position(ptr, x, y);
+    if (window->_pos_callback != nullptr) {
+        window->_pos_callback(ptr, x, y);
     }
 }
 CATCH_AND_RETHROW_FUNC_EXC;
 
 void Window::mouse_position_callback(GLFWwindow* ptr, double x, double y)
 {
+    Window* window = get(ptr);
+    if (!window)
+        return;
+    Context const context = window->setContext();
+
     if (Log::GL::Callbacks::query(Log::GL::Callbacks::get().mouse_position)) {
         char buff[256];
         sprintf_s(buff, "'%s' -> Callback -> mouse position (%.1f, %.1f)",
@@ -91,14 +104,17 @@ void Window::mouse_position_callback(GLFWwindow* ptr, double x, double y)
         return;
 
     // Call user defined callback, if needed
-    if (_internal::user_callbacks.mouse_position != nullptr) {
-        _internal::user_callbacks.mouse_position(ptr, x, y);
+    if (window->_mouse_position_callback != nullptr) {
+        window->_mouse_position_callback(ptr, x, y);
     }
 }
 
 void Window::window_iconify_callback(GLFWwindow* ptr, int state)
 {
-    window->_is_iconified = static_cast<bool>(state);
+    Window* window = get(ptr);
+    if (!window)
+        return;
+    Context const context = window->setContext();
 
     if (Log::GL::Callbacks::query(Log::GL::Callbacks::get().window_iconify)) {
         char buff[256];
@@ -107,15 +123,22 @@ void Window::window_iconify_callback(GLFWwindow* ptr, int state)
         LOG_GL_MSG(buff);
     }
 
+    window->_is_iconified = static_cast<bool>(state);
+
     // Call user defined callback, if needed
-    if (_internal::user_callbacks.iconify != nullptr) {
-        _internal::user_callbacks.iconify(ptr, state);
+    if (window->_iconify_callback != nullptr) {
+        window->_iconify_callback(ptr, state);
     }
 }
 
 // Used for clickable planes and such
 void Window::mouse_button_callback(GLFWwindow* ptr, int button, int action, int mods) try
 {
+    Window* window = get(ptr);
+    if (!window)
+        return;
+    Context const context = window->setContext();
+
     if (Log::GL::Callbacks::query(Log::GL::Callbacks::get().mouse_button)) {
         char buff[256];
         sprintf_s(buff, "'%s' -> Callback -> mouse button (#%d -> %d, %d)",
@@ -163,8 +186,8 @@ void Window::mouse_button_callback(GLFWwindow* ptr, int button, int action, int 
     }
 
     // Call user defined callback, if needed
-    if (!has_focused_area && _internal::user_callbacks.mouse_button != nullptr) {
-        _internal::user_callbacks.mouse_button(ptr, button, action, mods);
+    if (!has_focused_area && window->_mouse_button_callback != nullptr) {
+        window->_mouse_button_callback(ptr, button, action, mods);
     }
 }
 CATCH_AND_RETHROW_FUNC_EXC;
@@ -172,6 +195,11 @@ CATCH_AND_RETHROW_FUNC_EXC;
 // Stores key inputs
 void Window::key_callback(GLFWwindow* ptr, int key, int scancode, int action, int mods) try
 {
+    Window* window = get(ptr);
+    if (!window)
+        return;
+    Context const context = window->setContext();
+
     if (Log::GL::Callbacks::query(Log::GL::Callbacks::get().key)) {
         char buff[256];
         sprintf_s(buff, "'%s' -> Callback -> key (#%d (=%d) -> %d, %d)",
@@ -236,8 +264,8 @@ void Window::key_callback(GLFWwindow* ptr, int key, int scancode, int action, in
     }
 
     // Call user defined callback, if needed
-    if (!has_focused_area && _internal::user_callbacks.key != nullptr) {
-        _internal::user_callbacks.key(ptr, key, scancode, action, mods);
+    if (!has_focused_area && window->_key_callback != nullptr) {
+        window->_key_callback(ptr, key, scancode, action, mods);
     }
 }
 CATCH_AND_RETHROW_FUNC_EXC;
@@ -245,6 +273,11 @@ CATCH_AND_RETHROW_FUNC_EXC;
 // Character input callback
 void Window::char_callback(GLFWwindow* ptr, unsigned int codepoint)
 {
+    Window* window = get(ptr);
+    if (!window)
+        return;
+    Context const context = window->setContext();
+
     // Block inputs
     if (window->_block_inputs)
         return;
@@ -253,22 +286,22 @@ void Window::char_callback(GLFWwindow* ptr, unsigned int codepoint)
     TR::Area::cursorAddText(str);
 
     // Call user defined callback, if needed
-    if (_internal::user_callbacks.character != nullptr) {
-        _internal::user_callbacks.character(ptr, codepoint);
+    if (window->_char_callback != nullptr) {
+        window->_char_callback(ptr, codepoint);
     }
 }
 
 void Window::_retrieveMonitors()
 {
     // Clear vector
-    _monitors.clear();
+    _main._monitors.clear();
     // Retrieve all monitors
     int size;
     GLFWmonitor** arr = glfwGetMonitors(&size);
     // Store pointers in our vector
-    _monitors.resize(size);
+    _main._monitors.resize(size);
     for (int i = 0; i < size; i++) {
-        _monitors[i] = arr[i];
+        _main._monitors[i] = arr[i];
     }
 }
 
@@ -283,7 +316,7 @@ void Window::monitor_callback(GLFWmonitor* ptr, int event) try
     // Ignore arguments
     ptr; event;
 
-    window->_retrieveMonitors();
+     _retrieveMonitors();
 }
 CATCH_AND_RETHROW_FUNC_EXC;
 

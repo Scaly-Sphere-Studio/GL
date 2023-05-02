@@ -1,12 +1,12 @@
 #include "GL/Objects/Models/PlaneRenderer.hpp"
-#include "GL/Globals.hpp"
+#include "GL/Window.hpp"
 #include <ranges>
 
 SSS_GL_BEGIN;
 
 PlaneRenderer::PlaneRenderer() try
 {
-    setShaders(getPresetShaders(static_cast<uint32_t>(Shaders::Preset::Plane)));
+    setShaders(Window::getPresetShaders(static_cast<uint32_t>(Shaders::Preset::Plane)));
 
     // Edit VBO
     constexpr float vertices[] = {
@@ -34,7 +34,7 @@ PlaneRenderer::PlaneRenderer() try
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
         glEnableVertexAttribArray(1);
     });
-    _vao.bind();
+    _vao.unbind();
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
@@ -77,10 +77,10 @@ void PlaneRenderer::render() try
     _vao.bind();
 
     uint32_t count = 0;
-    _VPs.resize(maxGLSLTextureUnits());
-    _Models.resize(maxGLSLTextureUnits());
-    _TextureOffsets.resize(maxGLSLTextureUnits());
-    _Alphas.resize(maxGLSLTextureUnits());
+    _VPs.resize(Window::maxGLSLTextureUnits());
+    _Models.resize(Window::maxGLSLTextureUnits());
+    _TextureOffsets.resize(Window::maxGLSLTextureUnits());
+    _Alphas.resize(Window::maxGLSLTextureUnits());
     // Check if we need to reset the depth buffer before rendering
     if (clear_depth_buffer) {
         glClear(GL_DEPTH_BUFFER_BIT);
@@ -95,7 +95,7 @@ void PlaneRenderer::render() try
     // Loop over each plane
     for (Plane::Shared const& plane : planes) {
         // Check if we can't cache more instances and need to make a draw call.
-        if (count == maxGLSLTextureUnits()) {
+        if (count == Window::maxGLSLTextureUnits()) {
             _renderPart(*shader, count);
         }
         if (!plane || !plane->_texture)

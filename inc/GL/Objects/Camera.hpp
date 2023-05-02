@@ -16,6 +16,9 @@ SSS_GL_BEGIN;
 #pragma warning(disable: 4251)
 #pragma warning(disable: 4275)
 
+// Pre-declaration
+class Window;
+
 /** Abstractization of View and Projection matrices, used in Renderer::Chunk.
  *  @sa create()
  */
@@ -137,7 +140,7 @@ public:
     /** Returns the View and %Projection matrices previously computed together.
      *  @sa getView(), getProjection()
      */
-    inline glm::mat4 getVP() const noexcept { return _vp; };
+    inline glm::mat4 getVP() const noexcept { return _vps.at(glfwGetCurrentContext()); };
     /** Returns the previously computed View matrix.
      *  @sa getVP(), getProjection()
      */
@@ -145,7 +148,7 @@ public:
     /** Returns the previously computed %Projection matrix.
      *  @sa getVP(), getView()
      */
-    inline glm::mat4 getProjection() const noexcept { return _projection; };
+    inline glm::mat4 getProjection() const noexcept { return _projections.at(glfwGetCurrentContext()); };
 
 private:
     glm::vec3 _position{ 0 };
@@ -156,10 +159,12 @@ private:
     float _fov{ 70.f };
     float _z_near{ 0.1f }, _z_far{ 100.f };
     Projection _projection_type{ Projection::Ortho };
-    glm::mat4 _projection{ 1 };
-    void _computeProjection();
 
-    glm::mat4 _vp{ 1 };
+    std::map<GLFWwindow*, glm::mat4> _projections;
+    glm::mat4 _computeProjection(Window const& window);
+    void _computeProjections();
+
+    std::map<GLFWwindow*, glm::mat4> _vps;
     void _computeVP();
 };
 

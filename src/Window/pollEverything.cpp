@@ -1,4 +1,4 @@
-#include "Window.hpp"
+#include "GL/Window.hpp"
 
 SSS_GL_BEGIN;
 
@@ -24,6 +24,34 @@ static void processInputs(  std::queue<std::pair<int, bool>>& queue,
     }
 }
 
+void Window::_poll()
+{
+    // Process inputs
+    processInputs(_key_queue, _key_inputs, _input_stack_time);
+    processInputs(_click_queue, _click_inputs, _input_stack_time);
+    // Mouse position (no queue because it's only x & y)
+    if (!_block_inputs) {
+        double x, y;
+        glfwGetCursorPos(getGLFWwindow(), &x, &y);
+        _old_cursor_x = _cursor_x;
+        _old_cursor_y = _cursor_y;
+        _cursor_x = static_cast<int>(x);
+        _cursor_y = static_cast<int>(y);
+        _cursor_diff_x = _cursor_x - _old_cursor_x;
+        _cursor_diff_y = _old_cursor_y - _cursor_y; // reverse y coords
+    }
+
+    Input const left_click = getClickInputs()[GLFW_MOUSE_BUTTON_LEFT];
+    _clicked_model.reset();
+    if (left_click.is_pressed()) {
+        _clicked_model = _hovered_model;
+        _held_model = _hovered_model;
+    }
+    else if (left_click.is_released()) {
+        _held_model.reset();
+    }
+}
+
 void pollEverything() try
 {
     using namespace std::chrono;
@@ -36,31 +64,11 @@ void pollEverything() try
     // Update every Text Area (this won't do anything if nothing is needed)
     TR::Area::updateAll();
 
-    // Process inputs
-    processInputs(window->_key_queue, window->_key_inputs, window->_input_stack_time);
-    processInputs(window->_click_queue, window->_click_inputs, window->_input_stack_time);
-    // Mouse position (no queue because it's only x & y)
-    if (!window->_block_inputs) {
-        double x, y;
-        glfwGetCursorPos(window->getGLFWwindow(), &x, &y);
-        window->_old_cursor_x = window->_cursor_x;
-        window->_old_cursor_y = window->_cursor_y;
-        window->_cursor_x = static_cast<int>(x);
-        window->_cursor_y = static_cast<int>(y);
-        window->_cursor_diff_x = window->_cursor_x - window->_old_cursor_x;
-        window->_cursor_diff_y = window->_old_cursor_y - window->_cursor_y; // reverse y coords
-    }
+    // Poll all windows
+    Window::_main->_poll();
+    for (auto& [ptr, win] : Window::_main._subs)
+        win->_poll();
 
-    Input const left_click = window->getClickInputs()[GLFW_MOUSE_BUTTON_LEFT];
-    window->_clicked_model.reset();
-    if (left_click.is_pressed()) {
-        window->_clicked_model = window->_hovered_model;
-        window->_held_model = window->_hovered_model;
-    }
-    else if (left_click.is_released()) {
-        window->_held_model.reset();
-    }
-    
     // Loop over each Texture instance
     for (Texture::Weak const weak : Texture::_instances) {
         Texture::Shared const texture = weak.lock();
