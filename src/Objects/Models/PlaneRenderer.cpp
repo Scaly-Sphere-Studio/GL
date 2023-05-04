@@ -140,15 +140,17 @@ bool PlaneRenderer::_findNearestModel(float x, float y)
         VP = camera->getVP();
     }
     // Loop over each plane in chunk
-    for (Plane::Shared const& plane : planes) {
+    for (Plane::Shared const& plane : planes | std::views::reverse) {
         if (!plane)
             continue;
         // Check if plane is hovered and retrieve its relative depth
         double z = DBL_MAX;
         if (plane->_isHovered(VP, x, y, z)) {
             result = true;
+            // allowed diff
+            static constexpr double epsilon = 0.0001;
             // Update hovered stats if plane is nearer
-            if (z < _hovered_z) {
+            if (z < _hovered_z && (_hovered_z - z) > epsilon) {
                 _hovered_z = z;
                 _hovered = plane;
             }

@@ -18,7 +18,7 @@ print("  > Window created")
 
 -- Text area
 do
-    area = TR.Area.create()
+    area = TR.Area.new()
     area.w = 300
     area.h = 300
     area.focusable = true

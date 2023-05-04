@@ -76,7 +76,12 @@ public:
         std::chrono::nanoseconds delay;
     };
 
+    inline static void setResourceFolder(std::string const& path) { _resource_folder = path; };
+    inline static std::string getResourceFolder() { return _resource_folder; };
+
 private:
+    static std::string _resource_folder;
+
     Basic::Texture _raw_texture;    // OpenGL texture
     Type _type{ Type::Raw };        // Texture type
     Frame::Vector _frames{ 1 };     // Vector of frames (is used for images AND animations)
@@ -85,8 +90,16 @@ private:
     int _text_w{ 0 }, _text_h{ 0 }; // Last TR dimensions (stored for scaling update)
     uint32_t _text_area_id{ 0 };    // TR::Area id
     std::string _filepath;          // Image filepath
+    bool _has_running_thread{ false };  // Whether the texture will soon be updated
+    bool _was_just_updated{ false };    // Whether the texture just got an update
+    std::function<void()> _callback;
 
 public:
+
+    inline bool hasRunningThread() const noexcept { return _has_running_thread; };
+    inline bool wasJustUpdated() const noexcept { return _was_just_updated; };
+    inline void setUpdateCallback(std::function<void()> callback) noexcept { _callback = callback; };
+
     /** Explicitly sets the Texture::Type.
      *  @sa getType()
      */
@@ -155,10 +168,10 @@ public:
 private:
 
     // Async class which fills _raw_pixels using stb_image
-    class _AsyncLoading : public AsyncBase <std::string> {
+    class _AsyncLoading : public AsyncBase <std::string, std::string> {
         friend SSS_GL_API void pollEverything();
     protected:
-        virtual void _asyncFunction(std::string filepath);
+        virtual void _asyncFunction(std::string folder, std::string filepath);
     private:
         Frame::Vector _frames;
         std::chrono::nanoseconds _total_frames_time;

@@ -11,6 +11,8 @@
 
 SSS_GL_BEGIN;
 
+std::string Texture::_resource_folder;
+
 Texture::Texture() try
     : _raw_texture(GL_TEXTURE_2D_ARRAY)
 {
@@ -82,8 +84,9 @@ void Texture::setType(Type type) noexcept
 
 void Texture::loadImage(std::string const& filepath)
 {
-    _loading_thread.run(filepath);
+    _loading_thread.run(_resource_folder, filepath);
     _filepath = filepath;
+    _has_running_thread = true;
 }
 
 void Texture::editRawPixels(void const* pixels, int width, int height) try
@@ -104,6 +107,10 @@ void Texture::editRawPixels(void const* pixels, int width, int height) try
     // Update plane type and scaling
     _type = Type::Raw;
     _updatePlanes();
+
+    _was_just_updated = true;
+    if (_callback)
+        _callback();
 
     // Log
     if (Log::GL::Texture::query(Log::GL::Texture::get().edit)) {
@@ -161,12 +168,19 @@ void Texture::savePNG() const
     stbi_write_png(name.c_str(), w, h, 4, &pixels[0], 0);
 }
 
-void Texture::_AsyncLoading::_asyncFunction(std::string filepath)
+void Texture::_AsyncLoading::_asyncFunction(std::string folder, std::string filepath)
 {
     _frames.clear();
     _total_frames_time = std::chrono::nanoseconds(0);
     _w = 0;
     _h = 0;
+    std::string path;
+    if (path = folder + filepath; folder.empty() || !pathIsFile(path)) {
+        if (path = pathWhich(filepath); !pathIsFile(path)) {
+            throw_exc(CONTEXT_MSG("Found no file for given arguments", filepath));
+        }
+    }
+
     // Check if filepath ends with ".png"
     // If file is a PNG or APNG, use load_apng (which works for simple PNG files)
     // Else, use stbi functions
@@ -175,7 +189,7 @@ void Texture::_AsyncLoading::_asyncFunction(std::string filepath)
     if (filepath.compare(filepath.length() - png.length(), png.length(), png) == 0) {
         // Load frames
         std::vector<_internal::APNGFrame> apng_frames;
-        if (load_apng(filepath.c_str(), apng_frames) < 0) {
+        if (load_apng(path.c_str(), apng_frames) < 0) {
             SSS::throw_exc(CONTEXT_MSG("load_apng error", filepath));
         }
         // Copy data
@@ -210,11 +224,11 @@ void Texture::_AsyncLoading::_asyncFunction(std::string filepath)
         // Load image
         SSS::C_Ptr <uint32_t, void(*)(void*), stbi_image_free>
             raw_pixels(reinterpret_cast<uint32_t*>(stbi_load(
-                pathWhich(filepath).c_str(),    // Filepath to picture
-                &_w,        // Width, to query
-                &_h,        // Height, to query
-                nullptr,    // Byte composition, to query if not requested
-                4           // Byte composition, to request (here RGBA32)
+                path.c_str(),   // Filepath to picture
+                &_w,            // Width, to query
+                &_h,            // Height, to query
+                nullptr,        // Byte composition, to query if not requested
+                4               // Byte composition, to request (here RGBA32)
             )));
         // Throw if error
         if (raw_pixels == nullptr) {
@@ -259,6 +273,9 @@ void Texture::_internalEdit(void const* pixels, int w, int h)
     }
     _raw_texture.editSettings(w, h);
     _raw_texture.editPixels(pixels);
+    _was_just_updated = true;
+    if (_callback)
+        _callback();
     // Log
     if (Log::GL::Texture::query(Log::GL::Texture::get().edit)) {
         LOG_GL_MSG("Texture -> edit");

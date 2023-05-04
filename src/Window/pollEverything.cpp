@@ -74,11 +74,15 @@ void pollEverything() try
         Texture::Shared const texture = weak.lock();
         if (!texture)
             continue;
+        texture->_has_running_thread = false;
+        texture->_was_just_updated = false;
         // Handle file loading threads, or text area threads
         if (texture->_type == Texture::Type::Raw) {
             // Skip if no thread is pending, or nothing was parsed
             auto& thread = texture->_loading_thread;
-            if (thread.isPending() && !thread._frames.empty()) {
+            if (thread.isRunning())
+                texture->_has_running_thread = true;
+            else if (thread.isPending() && !thread._frames.empty()) {
                 // Move pixels from thread to texture instance, so that future
                 // threads can run without affecting those pixels.
                 texture->_frames = std::move(thread._frames);
@@ -93,17 +97,23 @@ void pollEverything() try
                     texture->_raw_texture.editPixels(texture->_frames[i].pixels.data(), i);
                 }
                 thread.setAsHandled();
+                texture->_was_just_updated = true;
+                if (texture->_callback)
+                    texture->_callback();
             }
         }
         else if (texture->_type == Texture::Type::Text) {
             TR::Area* text_area = texture->getTextArea();
             // Skip if no Area is set or if no new pixels
-            if (text_area && text_area->pixelsWereChanged()) {
-                // Retrieve dimensions
-                int new_w, new_h;
-                text_area->pixelsGetDimensions(new_w, new_h);
-                // Update dimensions if needed, edit OpenGL texture
-                texture->_internalEdit(text_area->pixelsGet(), new_w, new_h);
+            if (text_area) {
+                texture->_has_running_thread = text_area->hasRunningThread();
+                if (text_area->pixelsWereChanged()) {
+                    // Retrieve dimensions
+                    int new_w, new_h;
+                    text_area->pixelsGetDimensions(new_w, new_h);
+                    // Update dimensions if needed, edit OpenGL texture
+                    texture->_internalEdit(text_area->pixelsGet(), new_w, new_h);
+                }
             }
         }
 
