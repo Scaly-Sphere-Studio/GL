@@ -216,20 +216,6 @@ namespace Basic {
         }
     }
 
-    void VAO::bind_vbo(VBO const& vbo)
-    {
-        bind();
-        vbo.bind();
-        _vbo = vbo.id;
-    }
-
-    void VAO::bind_ibo(IBO const& ibo)
-    {
-        bind();
-        ibo.bind();
-        _ibo = ibo.id;
-    }
-
     void VAO::setup(std::function<void()> f)
     {
         bind();
@@ -243,10 +229,6 @@ namespace Basic {
         if (_ids.count(current) == 0) {
             _ids[current] = _create();
             bind(_ids[current]);
-            if (_vbo != 0)
-                VBO::bind(_vbo);
-            if (_ibo != 0)
-                IBO::bind(_ibo);
             if (_setup_func)
                 _setup_func();
         }

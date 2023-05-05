@@ -26,9 +26,9 @@ PlaneRenderer::PlaneRenderer() try
     _ibo.edit(sizeof(indices), indices, GL_STATIC_DRAW);
     
     // Setup VAO
-    _vao.bind_vbo(_vbo);
-    _vao.bind_ibo(_ibo);
-    _vao.setup([]() {
+    _vao.setup([this]() {
+        _vbo.bind();
+        _ibo.bind();
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));

@@ -302,8 +302,6 @@ namespace Basic {
          */
         ~VAO();
 
-        void bind_vbo(VBO const& vbo);
-        void bind_ibo(IBO const& ibo);
         void setup(std::function<void()> f);
         
         /** Binds the vertex array to the context in which it was created.
@@ -321,7 +319,6 @@ namespace Basic {
     private:
         static GLuint _create();
         std::map<GLFWwindow*, GLuint> _ids;
-        GLuint _vbo{ 0 }, _ibo{ 0 };
         std::function<void()> _setup_func;
     };
 

@@ -4,9 +4,9 @@ SSS_GL_BEGIN;
 
 LineRenderer::LineRenderer()
 {
-    _vao.bind_vbo(_vbo);
-    _vao.bind_ibo(_ibo);
-    _vao.setup([]() {
+    _vao.setup([this]() {
+        _vbo.bind();
+        _ibo.bind();
         //Coordinates
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 2,
