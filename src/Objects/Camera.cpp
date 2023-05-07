@@ -91,7 +91,49 @@ void Camera::setProjectionType(Projection type)
 
 void Camera::setFOV(float degrees)
 {
+    if (degrees >= 175.f)
+        degrees = 175.f;
+    else if (degrees <= 1.f)
+        degrees = 1.f;
     _fov = degrees;
+    _correctZoom();
+    _computeProjections();
+}
+
+void Camera::_correctZoom()
+{
+    if (_zoom == 1.f)
+        return;
+
+    if (_zoom <= 0)
+        _zoom = 0.000001f;
+    if (_projection_type == Projection::Perspective) {
+        float const fov = _fov / _zoom;
+        if (fov >= 175.f)
+            _zoom = _fov / 175.f;
+        else if (fov <= 1.f)
+            _zoom = _fov / 1.f;
+    }
+}
+
+void Camera::zoomIn(float value)
+{
+    _zoom += (_zoom * value);
+    _correctZoom();
+    _computeProjections();
+}
+
+void Camera::zoomOut(float value)
+{
+    _zoom -= (_zoom * value);
+    _correctZoom();
+    _computeProjections();
+}
+
+void Camera::setZoom(float value)
+{
+    _zoom = value;
+    _correctZoom();
     _computeProjections();
 }
 
@@ -132,21 +174,19 @@ glm::mat4 Camera::_computeProjection(Window const& window)
 
     switch (_projection_type) {
     case Projection::Ortho: {
-        float const x = ratio > 1.f ? ratio : 1.f;
-        float const y = ratio > 1.f ? 1.f : 1.f / ratio;
+        float const x = (ratio > 1.f ? ratio : 1.f) / _zoom;
+        float const y = (ratio > 1.f ? 1.f : 1.f / ratio) / _zoom;
         projection = glm::ortho(-x, x, -y, y, _z_near, _z_far);
-    }
-        break;
+    }   break;
     case Projection::OrthoFixed: {
         int w, h;
         window.getDimensions(w, h);
-        float const x = static_cast<float>(w) / 2.f;
-        float const y = static_cast<float>(h) / 2.f;
+        float const x = (static_cast<float>(w) / 2.f) / _zoom;
+        float const y = (static_cast<float>(h) / 2.f) / _zoom;
         projection = glm::ortho(-x, x, -y, y, _z_near, _z_far);
-    }
-        break;
+    }   break;
     case Projection::Perspective:
-        projection = glm::perspective(glm::radians(_fov), ratio, _z_near, _z_far);
+        projection = glm::perspective(glm::radians(_fov / _zoom), ratio, _z_near, _z_far);
         break;
     }
 

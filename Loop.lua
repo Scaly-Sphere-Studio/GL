@@ -85,4 +85,21 @@ then
     end
 end
 
+if (window:keyIsHeld(GL.KEY_KP_ADD))
+then
+    camera:zoomIn(0.01)
+end
+
+if (window:keyIsHeld(GL.KEY_KP_SUBTRACT))
+then
+    camera:zoomOut(0.01)
+end
+
+if (window:keyIsPressed(GL.KEY_KP_DIVIDE))
+then
+    camera.fov = 150
+    print(camera.fov)
+    print(camera.zoom)
+end
+
 plane.alpha = plane.alpha + alpha_coeff

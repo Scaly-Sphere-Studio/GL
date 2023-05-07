@@ -76,6 +76,9 @@ inline void lua_setup_GL(sol::state& lua)
     camera["rotate"] = &Camera::rotate;
     camera["proj_type"] = sol::property(&Camera::getProjectionType, &Camera::setProjectionType);
     camera["fov"] = sol::property(&Camera::getFOV, &Camera::setFOV);
+    camera["zoomIn"] = &Camera::zoomIn;
+    camera["zoomOut"] = &Camera::zoomOut;
+    camera["zoom"] = sol::property(&Camera::getZoom, &Camera::setZoom);
     camera["z_near"] = sol::property(&Camera::getZNear, &Camera::setZNear);
     camera["z_far"] = sol::property(&Camera::getZFar, &Camera::setZFar);
     

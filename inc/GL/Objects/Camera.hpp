@@ -111,6 +111,12 @@ public:
      */
     inline float getFOV() const noexcept { return _fov; };
 
+    void zoomIn(float value = 0.01f);
+    void zoomOut(float value = 0.01f);
+    void setZoom(float value);
+    inline float getZoom() const noexcept { return _zoom; };
+    inline void resetZoom() { setZoom(1.f); };
+
     /** Sets the visibility range of the camera.
      *  @sa getRange(), setZNear(), setZFar()
      */
@@ -154,6 +160,8 @@ private:
     glm::vec3 _position{ 0 };
     glm::vec2 _rot_angles{ 0 };
     glm::mat4 _view{ 1 };
+    float _zoom{ 1.f };
+    void _correctZoom();
     void _computeView();
 
     float _fov{ 70.f };
