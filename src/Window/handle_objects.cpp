@@ -1,4 +1,6 @@
 #include "GL/Window.hpp"
+#include "GL/Objects/Shaders.hpp"
+#include "GL/Objects/Models/PlaneRenderer.hpp"
 
 SSS_GL_BEGIN;
 

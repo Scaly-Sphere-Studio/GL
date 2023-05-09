@@ -5,6 +5,8 @@
 #define SOL_STRINGS_ARE_NUMBERS 1
 #include <sol/sol.hpp>
 #include "Window.hpp"
+#include "Objects/Models/PlaneRenderer.hpp"
+#include "Objects/Models/LineRenderer.hpp"
 
 inline std::ostream& operator<<(std::ostream& out, glm::vec3 const& vec)
 {

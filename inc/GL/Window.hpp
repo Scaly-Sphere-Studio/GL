@@ -1,9 +1,7 @@
 #ifndef SSS_GL_WINDOW_HPP
 #define SSS_GL_WINDOW_HPP
 
-#include "Objects/Texture.hpp"
-#include "Objects/Models/PlaneRenderer.hpp"
-#include "Objects/Models/LineRenderer.hpp"
+#include "Objects/Basic.hpp"
 #include <map>
 #include <array>
 #include <queue>
@@ -40,6 +38,10 @@ namespace SSS::Log::GL {
 }
 
 SSS_GL_BEGIN;
+
+class Shaders;
+class RendererBase;
+class ModelBase;
 
 class SSS_GL_API Context {
     friend class Window;
@@ -101,7 +103,7 @@ private:
     public:
         ~MainPtr() { reset(); };
         std::map<GLFWwindow*, Ptr> _subs;
-        std::map<uint32_t, Shaders::Shared> _preset_shaders;
+        std::map<uint32_t, std::shared_ptr<Shaders>> _preset_shaders;
         std::vector<GLFWmonitor*> _monitors;
         uint32_t _max_glsl_tex_units{ 0 };
     };
@@ -243,40 +245,40 @@ public:
     inline auto getCursorDiff() const noexcept { return std::make_tuple(_cursor_diff_x, _cursor_diff_y); };
 
 private:
-    RendererBase::Vector _renderers; // Renderers
+    std::vector<std::shared_ptr<RendererBase>> _renderers; // Renderers
 
 public:
 
-    static Shaders::Shared getPresetShaders(uint32_t id) noexcept;
+    static std::shared_ptr<Shaders> getPresetShaders(uint32_t id) noexcept;
 
-    inline void setRenderers(RendererBase::Vector const& renderers) noexcept { _renderers = renderers; };
+    inline void setRenderers(std::vector<std::shared_ptr<RendererBase>> const& renderers) noexcept { _renderers = renderers; };
     inline auto const& getRenderers() const noexcept { return _renderers; };
-    void addRenderer(RendererBase::Shared renderer, size_t index);
-    void addRenderer(RendererBase::Shared renderer);
-    void removeRenderer(RendererBase::Shared renderer);
+    void addRenderer(std::shared_ptr<RendererBase> renderer, size_t index);
+    void addRenderer(std::shared_ptr<RendererBase> renderer);
+    void removeRenderer(std::shared_ptr<RendererBase> renderer);
 
-    ModelBase::Shared getHovered() const noexcept { return _hovered_model.lock(); };
+    std::shared_ptr<ModelBase> getHovered() const noexcept { return _hovered_model.lock(); };
     template<class Derived>
     std::shared_ptr<Derived> getHovered() const noexcept {
-        ModelBase::Shared model = getHovered();
+        std::shared_ptr<ModelBase> model = getHovered();
         if (model == nullptr)
             return nullptr;
         return std::dynamic_pointer_cast<Derived>(model);
     }
 
-    ModelBase::Shared getClicked() const { return _clicked_model.lock(); };
+    std::shared_ptr<ModelBase> getClicked() const { return _clicked_model.lock(); };
     template<class Derived>
     std::shared_ptr<Derived> getClicked() const {
-        ModelBase::Shared const model = getClicked();
+        std::shared_ptr<ModelBase> const model = getClicked();
         if (!model)
             return nullptr;
         return std::dynamic_pointer_cast<Derived>(model);
     }
 
-    ModelBase::Shared getHeld() const { return _held_model.lock(); };
+    std::shared_ptr<ModelBase> getHeld() const { return _held_model.lock(); };
     template<class Derived>
     std::shared_ptr<Derived> getHeld() const {
-        ModelBase::Shared const model = getHeld();
+        std::shared_ptr<ModelBase> const model = getHeld();
         if (!model)
             return nullptr;
         return std::dynamic_pointer_cast<Derived>(model);
@@ -320,9 +322,9 @@ private:
     int _cursor_x{ 0 }, _old_cursor_x{ 0 }, _cursor_diff_x{ 0 },
         _cursor_y{ 0 }, _old_cursor_y{ 0 }, _cursor_diff_y{ 0 };
 
-    ModelBase::Weak _hovered_model;
-    ModelBase::Weak _clicked_model;    // (left click)
-    ModelBase::Weak _held_model;       // (left click)
+    std::weak_ptr<ModelBase> _hovered_model;
+    std::weak_ptr<ModelBase> _clicked_model;    // (left click)
+    std::weak_ptr<ModelBase> _held_model;       // (left click)
     void _updateHoveredModel();
     void _updateHoveredModelIfNeeded(std::chrono::steady_clock::time_point const& now);
 

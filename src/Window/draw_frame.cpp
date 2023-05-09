@@ -1,4 +1,5 @@
 #include "GL/Window.hpp"
+#include "GL/Objects/Models/PlaneRenderer.hpp"
 #include <filesystem>
 #include <ranges>
 

@@ -2,6 +2,8 @@
 #define SSS_GL_HPP
 
 #include "GL/Window.hpp"
+#include "GL/Objects/Models/PlaneRenderer.hpp"
+#include "GL/Objects/Models/LineRenderer.hpp"
 #ifdef SSS_LUA
 #include "GL/Lua.hpp"
 #endif // SSS_LUA
