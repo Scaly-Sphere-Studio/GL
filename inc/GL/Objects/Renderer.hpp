@@ -47,7 +47,7 @@ public:
 #pragma warning(pop)
 
 template<class Derived>
-class Renderer : public RendererBase, public Basic::SharedBase<Derived> {
+class Renderer : public RendererBase, public Basic::InstancedBase<Derived> {
 protected:
     Renderer()                              = default;  // Constructor
 public:

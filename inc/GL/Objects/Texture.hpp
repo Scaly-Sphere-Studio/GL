@@ -41,7 +41,7 @@ INTERNAL_END;
  *  internal Basic::Texture.
  *  @sa Window::createTexture()
  */
-class SSS_GL_API Texture final : public Basic::InstancedBase<Texture> {
+class SSS_GL_API Texture : public Basic::InstancedBase<Texture> {
 
     friend Basic::SharedBase<Texture>;
     friend SSS_GL_API void pollEverything();

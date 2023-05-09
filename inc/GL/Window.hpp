@@ -41,7 +41,7 @@ namespace SSS::Log::GL {
 
 SSS_GL_BEGIN;
 
-class SSS_GL_API Context final {
+class SSS_GL_API Context {
     friend class Window;
 public:
     /** Swap to previous context if it was changed in constructor.*/
@@ -67,7 +67,7 @@ private:
 #pragma warning(disable: 4275)
 
 /** Abstractization of \c GLFWwindow logic.*/
-class SSS_GL_API Window final : public Base, public std::enable_shared_from_this<Window> {
+class SSS_GL_API Window : public Base, public std::enable_shared_from_this<Window> {
     
     friend SSS_GL_API void pollEverything();
 
@@ -110,7 +110,7 @@ private:
     static MainPtr _main;
 
 public:
-    struct CreateArgs final {
+    struct CreateArgs {
         /** Width of the window (auto-shrinks to fit monitor).*/
         int w{ 720 };
         /** Height of the window (auto-shrinks to fit monitor).*/

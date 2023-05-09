@@ -21,7 +21,7 @@ SSS_GL_BEGIN;
  *  This is useful to enforce specific orders of chunks without
  *  having to worry about their depth (Background, Scene, Text, UI...).
  */
-class SSS_GL_API PlaneRenderer final : public Renderer<PlaneRenderer> {
+class SSS_GL_API PlaneRenderer : public Renderer<PlaneRenderer> {
     friend class Basic::SharedBase<PlaneRenderer>;
     friend class Window;
 

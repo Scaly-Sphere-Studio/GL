@@ -16,7 +16,7 @@ SSS_GL_BEGIN;
 #pragma warning(disable: 4275)
 
 /** 2D plane derived from Model.*/
-class SSS_GL_API Plane final : public Model<Plane> {
+class SSS_GL_API Plane : public Model<Plane> {
     friend class Basic::SharedBase<Plane>;
     friend class PlaneRenderer;
     friend class Window;

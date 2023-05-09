@@ -164,7 +164,7 @@ namespace Basic {
     /** Abstractisation of OpenGL \b textures and their
      *  creation, deletion, settings and editing.
      */
-    struct SSS_GL_API Texture final {
+    struct SSS_GL_API Texture {
         /** Constructor, creates an \b OpenGL and sets #id accordingly.
          *  Forces to be bound to a Window instance.
          *  @sa ~Texture()
@@ -213,7 +213,7 @@ namespace Basic {
     /** Abstractisation of OpenGL vertex buffer objects (\b %VBO) and
      *  their creation, deletion, and editing.
      */
-    struct SSS_GL_API VBO final {
+    struct SSS_GL_API VBO {
         /** Constructor, creates an \b OpenGL buffer object and
          *  sets #id accordingly.
          *  Forces to be bound to a Window instance.
@@ -248,7 +248,7 @@ namespace Basic {
     /** Abstractisation of OpenGL index buffer objects (\b %IBO) and
      *  their creation, deletion, and editing.
      */
-    struct SSS_GL_API IBO final {
+    struct SSS_GL_API IBO {
         /** Constructor, creates an \b OpenGL buffer object and
          *  sets #id accordingly.
          *  Forces to be bound to a Window instance.
@@ -289,7 +289,7 @@ namespace Basic {
     /** Abstractisation of OpenGL vertex array objects (\b %VAO) and
      *  their creation, deletion, and binding.
      */
-    struct SSS_GL_API VAO final {
+    struct SSS_GL_API VAO {
         /** Constructor, creates an \b OpenGL vertex array and
          *  sets #id accordingly.
          *  Forces to be bound to a Window instance.

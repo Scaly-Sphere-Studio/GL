@@ -26,7 +26,7 @@ SSS_GL_BEGIN;
 /** Non-exhaustive abstractization of \b OpenGL shaders.
  *  @sa Window::createShaders(), Renderer::setShadersID()
  */
-class SSS_GL_API Shaders final : public Basic::SharedBase<Shaders> {
+class SSS_GL_API Shaders : public Basic::InstancedBase<Shaders> {
     friend class Basic::SharedBase<Shaders>;
     friend class Window;
 
@@ -46,7 +46,7 @@ public:
         Plane
     };
 
-    using SharedBase::create;
+    using InstancedBase::create;
     static Shared create(std::string const& vert_file, std::string const& frag_file);
 
     /** Loads shaders from raw strings (useful for Preset shaders).
