@@ -18,7 +18,7 @@ SSS_GL_BEGIN;
 /** 2D plane derived from Model.*/
 class SSS_GL_API Plane : public Model<Plane> {
     friend class Basic::SharedBase<Plane>;
-    friend class PlaneRenderer;
+    friend class PlaneRendererBase;
     friend class Window;
     friend class Texture;
     friend SSS_GL_API void pollEverything();

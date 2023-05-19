@@ -4,7 +4,7 @@
 
 SSS_GL_BEGIN;
 
-PlaneRenderer::PlaneRenderer() try
+PlaneRendererBase::PlaneRendererBase() try
 {
     setShaders(Window::getPresetShaders(static_cast<uint32_t>(Shaders::Preset::Plane)));
 
@@ -38,7 +38,7 @@ PlaneRenderer::PlaneRenderer() try
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
-void PlaneRenderer::_renderPart(Shaders& shader, uint32_t& count) const
+void PlaneRendererBase::_renderPart(Shaders& shader, uint32_t& count) const
 {
     static constexpr std::array<GLint, 128> texture_IDs = {
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
@@ -64,7 +64,7 @@ void PlaneRenderer::_renderPart(Shaders& shader, uint32_t& count) const
     }
 }
 
-void PlaneRenderer::render() try
+void PlaneRendererBase::render() try
 {
     if (!isActive()) {
         return;
@@ -117,15 +117,7 @@ void PlaneRenderer::render() try
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
-PlaneRenderer::Shared PlaneRenderer::create(Camera::Shared cam, bool clear_depth_buffer)
-{
-    Shared shared = Renderer::create();
-    shared->camera = cam;
-    shared->clear_depth_buffer = clear_depth_buffer;
-    return shared;
-}
-
-bool PlaneRenderer::_findNearestModel(float x, float y)
+bool PlaneRendererBase::_findNearestModel(float x, float y)
 {
     _hovered.reset();
     _hovered_z = DBL_MAX;

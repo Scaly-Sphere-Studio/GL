@@ -31,14 +31,16 @@ inline void lua_setup_GL(sol::state& lua)
     renderer["shaders"] = sol::property(&RendererBase::getShaders, &RendererBase::setShaders);
     renderer["active"] = sol::property(&RendererBase::isActive, &RendererBase::setActivity);
 
+    auto plane_renderer_base = gl.new_usertype<PlaneRendererBase>("PlaneRendererBase", sol::no_constructor);
+    plane_renderer_base["clear_depth_buffer"] = &PlaneRendererBase::clear_depth_buffer;
+    plane_renderer_base["camera"] = &PlaneRendererBase::camera;
+    plane_renderer_base["planes"] = &PlaneRendererBase::planes;
+
     auto plane_renderer = gl.new_usertype<PlaneRenderer>("PlaneRenderer", sol::factories(
         sol::resolve<PlaneRenderer::Shared()>(PlaneRenderer::create),
         [](Camera* cam) { return PlaneRenderer::create(Camera::get(cam)); },
         [](Camera* cam, bool clear) { return PlaneRenderer::create(Camera::get(cam), clear); }
-    ),  sol::base_classes, sol::bases<RendererBase, ::SSS::Base>());
-    plane_renderer["clear_depth_buffer"] = &PlaneRenderer::clear_depth_buffer;
-    plane_renderer["camera"] = &PlaneRenderer::camera;
-    plane_renderer["planes"] = &PlaneRenderer::planes;
+    ),  sol::base_classes, sol::bases<PlaneRendererBase, RendererBase, ::SSS::Base>());
 
     auto line_renderer = gl.new_usertype<LineRenderer>("LineRenderer",
         sol::factories(sol::resolve<LineRenderer::Shared()>(LineRenderer::create)),
