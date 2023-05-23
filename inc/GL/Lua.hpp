@@ -27,11 +27,11 @@ inline void lua_setup_GL(sol::state& lua)
     shaders["loadFromFiles"] = &Shaders::loadFromFiles;
     shaders["loadFromStrings"] = &Shaders::loadFromStrings;
 
-    auto renderer = gl.new_usertype<RendererBase>("RendererBase", sol::no_constructor);
+    auto renderer = gl.new_usertype<RendererBase>("", sol::no_constructor);
     renderer["shaders"] = sol::property(&RendererBase::getShaders, &RendererBase::setShaders);
     renderer["active"] = sol::property(&RendererBase::isActive, &RendererBase::setActivity);
 
-    auto plane_renderer_base = gl.new_usertype<PlaneRendererBase>("PlaneRendererBase", sol::no_constructor);
+    auto plane_renderer_base = gl.new_usertype<PlaneRendererBase>("", sol::no_constructor);
     plane_renderer_base["clear_depth_buffer"] = &PlaneRendererBase::clear_depth_buffer;
     plane_renderer_base["camera"] = &PlaneRendererBase::camera;
     plane_renderer_base["planes"] = &PlaneRendererBase::planes;
@@ -92,7 +92,7 @@ inline void lua_setup_GL(sol::state& lua)
         { "Perspective", Camera::Projection::Perspective }
     });
 
-    auto model = gl.new_usertype<ModelBase>("ModelBase", sol::no_constructor);
+    auto model = gl.new_usertype<ModelBase>("", sol::no_constructor);
     model["scaling"] = sol::property(&ModelBase::getScaling, &ModelBase::setScaling);
     model["rotation"] = sol::property(&ModelBase::getRotation, &ModelBase::setRotation);
     model["translation"] = sol::property(&ModelBase::getTranslation, &ModelBase::setTranslation);
@@ -166,6 +166,7 @@ inline void lua_setup_GL(sol::state& lua)
     window["removeRenderer"] = [](Window& win, RendererBase* ptr) {
         win.removeRenderer(ptr->getShared());
     },
+    window["getHoveredPlane"] = &GL::Window::getHovered<GL::Plane>;
 
     window["fps_limit"] = sol::property(&Window::getFPSLimit, &Window::setFPSLimit);
     window["vsync"] = sol::property(&Window::getVSYNC, &Window::setVSYNC);
@@ -184,7 +185,6 @@ inline void lua_setup_GL(sol::state& lua)
     window["iconified"] = sol::property(&Window::isIconified, &Window::setIconification);
     window["maximized"] = sol::property(&Window::isMaximized, &Window::setMaximization);
     window["visible"] = sol::property(&Window::isVisible, &Window::setVisibility);
-    window["create"] = &Window::create;
     // Window args
     auto args = gl.new_usertype<Window::CreateArgs>("WindowArgs");
     args["w"] = &Window::CreateArgs::w;
@@ -346,5 +346,5 @@ inline void lua_setup_GL(sol::state& lua)
 }
 
 SSS_GL_END;
-
+                                      
 #endif // SSS_GL_LUA_HPP
