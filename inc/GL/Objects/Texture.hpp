@@ -92,13 +92,14 @@ private:
     std::string _filepath;          // Image filepath
     bool _has_running_thread{ false };  // Whether the texture will soon be updated
     bool _was_just_updated{ false };    // Whether the texture just got an update
-    std::function<void()> _callback;
+    std::function<void(Texture&)> _callback_f;
+    void _callback();
 
 public:
 
     inline bool hasRunningThread() const noexcept { return _has_running_thread; };
     inline bool wasJustUpdated() const noexcept { return _was_just_updated; };
-    inline void setUpdateCallback(std::function<void()> callback) noexcept { _callback = callback; };
+    inline void setUpdateCallback(std::function<void(Texture&)> f) noexcept { _callback_f = f; };
 
     /** Explicitly sets the Texture::Type.
      *  @sa getType()

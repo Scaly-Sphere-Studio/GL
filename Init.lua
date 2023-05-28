@@ -54,6 +54,12 @@ do
 
     plane_renderer.planes:add(plane)
     
+    plane_renderer:forEach(function(p)
+        p:setTextureCallback(function(p)
+            p:rotate(vec3.new(0, 0, 1))
+        end)
+    end)
+
     line_renderer.shaders = line_shaders
     line_renderer.camera = camera
 end

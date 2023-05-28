@@ -51,6 +51,17 @@ Texture::Shared Texture::create(TR::Area const& area)
     return ret;
 }
 
+void Texture::_callback()
+{
+    _was_just_updated = true;
+    if (_callback_f)
+        _callback_f(*this);
+    for (auto const& plane : Plane::getInstances()) {
+        if (plane->getTexture().get() == this && plane->_texture_callback)
+            plane->_texture_callback(*plane);
+    }
+}
+
 void Texture::setType(Type type) noexcept
 {
     if (type == _type) {
@@ -108,9 +119,7 @@ void Texture::editRawPixels(void const* pixels, int width, int height) try
     _type = Type::Raw;
     _updatePlanes();
 
-    _was_just_updated = true;
-    if (_callback)
-        _callback();
+    _callback();
 
     // Log
     if (Log::GL::Texture::query(Log::GL::Texture::get().edit)) {
@@ -243,11 +252,10 @@ void Texture::_AsyncLoading::_asyncFunction(std::string folder, std::string file
 
 void Texture::_updatePlanes()
 {
-    Shared const shared = shared_from_this();
     // Update texture scaling of all planes & buttons matching this texture
     for (Plane::Weak const& weak : Plane::_instances) {
         Plane::Shared const plane = weak.lock();
-        if (plane->_texture == shared) {
+        if (plane->_texture.get() == this) {
             plane->_updateTexScaling();
             plane->_animation_duration = std::chrono::nanoseconds(0);
             plane->_texture_offset = 0;
@@ -273,9 +281,8 @@ void Texture::_internalEdit(void const* pixels, int w, int h)
     }
     _raw_texture.editSettings(w, h);
     _raw_texture.editPixels(pixels);
-    _was_just_updated = true;
-    if (_callback)
-        _callback();
+    _callback();
+    
     // Log
     if (Log::GL::Texture::query(Log::GL::Texture::get().edit)) {
         LOG_GL_MSG("Texture -> edit");

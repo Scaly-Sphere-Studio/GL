@@ -116,6 +116,7 @@ inline void lua_setup_GL(sol::state& lua)
         [](Plane& plane) { return plane.duplicate(); }
     ),  sol::base_classes, sol::bases<ModelBase, ::SSS::Base>());
     plane["texture"] = sol::property(&Plane::getTexture, &Plane::setTexture);
+    plane["setTextureCallback"] = &Plane::setTextureCallback;
     plane["play"] = &Plane::play;
     plane["pause"] = &Plane::pause;
     plane["stop"] = &Plane::stop;

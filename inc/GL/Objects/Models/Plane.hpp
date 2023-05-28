@@ -49,6 +49,8 @@ public:
     /** Returns the Texture used for this instance.*/
     inline Texture::Shared getTexture() const noexcept { return _texture; };
 
+    void setTextureCallback(std::function<void(Plane&)> func) { _texture_callback = func; };
+
     inline void play() noexcept { _is_playing = true; };
     inline void pause() noexcept { _is_playing = false; };
     inline void stop() noexcept { _is_playing = false; _animation_duration = std::chrono::nanoseconds(0); };
@@ -88,6 +90,7 @@ private:
     void _updateTextureOffset();
 
     Texture::Shared _texture;
+    std::function<void(Plane&)> _texture_callback;
     uint32_t _texture_offset{ 0 };
     bool _is_playing{ false };
     bool _looping{ false };

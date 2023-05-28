@@ -104,16 +104,8 @@ end
 
 plane.alpha = plane.alpha + alpha_coeff
 
-local function rotatePlane(plane)
-    plane:rotate(vec3.new(0, 0, 1))
-end
-
 local function isUpsideDown(plane)
     return plane.rotation.z > 90 or plane.rotation.z < -90
 end
 
-
-plane_renderer:forEach(rotatePlane)
-
-local ret = plane_renderer:forEachB(isUpsideDown)
-print("is upside down:", ret)
+print("is upside down:", plane_renderer:forEachB(isUpsideDown))

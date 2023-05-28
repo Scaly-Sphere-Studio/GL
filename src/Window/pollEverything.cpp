@@ -99,9 +99,7 @@ void pollEverything() try
                     texture->_raw_texture.editPixels(texture->_frames[i].pixels.data(), i);
                 }
                 thread.setAsHandled();
-                texture->_was_just_updated = true;
-                if (texture->_callback)
-                    texture->_callback();
+                texture->_callback();
             }
         }
         else if (texture->_type == Texture::Type::Text) {
