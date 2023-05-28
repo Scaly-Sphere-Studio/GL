@@ -39,6 +39,40 @@ public:
     /** Specified Planes.*/
     std::vector<Plane::Shared> planes;
 
+    template <typename T>
+    T forEach(std::function<T(Plane&)> func)
+    {
+        T ret{};
+        for (auto const& plane : planes) {
+            if (!plane)
+                continue;
+            ret += func(*plane);
+        }
+        return ret;
+    };
+
+    template<>
+    void forEach(std::function<void(Plane&)> func)
+    {
+        for (auto const& plane : planes) {
+            if (!plane)
+                continue;
+            func(*plane);
+        }
+    };
+
+    template<>
+    bool forEach(std::function<bool(Plane&)> func)
+    {
+        for (auto const& plane : planes) {
+            if (!plane)
+                continue;
+            if (func(*plane))
+                return true;
+        }
+        return false;
+    };
+
 private:
     Basic::VAO _vao;
     Basic::VBO _vbo;

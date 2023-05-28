@@ -35,6 +35,11 @@ inline void lua_setup_GL(sol::state& lua)
     plane_renderer_base["clear_depth_buffer"] = &PlaneRendererBase::clear_depth_buffer;
     plane_renderer_base["camera"] = &PlaneRendererBase::camera;
     plane_renderer_base["planes"] = &PlaneRendererBase::planes;
+    plane_renderer_base["forEach"] = &PlaneRendererBase::forEach<void>;
+    plane_renderer_base["forEachB"] = &PlaneRendererBase::forEach<bool>;
+    plane_renderer_base["forEachF"] = &PlaneRendererBase::forEach<float>;
+    plane_renderer_base["forEachI"] = &PlaneRendererBase::forEach<int>;
+    plane_renderer_base["forEachS"] = &PlaneRendererBase::forEach<std::string>;
 
     auto plane_renderer = gl.new_usertype<PlaneRenderer>("PlaneRenderer", sol::factories(
         sol::resolve<PlaneRenderer::Shared()>(PlaneRenderer::create),
