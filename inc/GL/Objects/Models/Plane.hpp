@@ -110,10 +110,10 @@ private:
 
     // Called from _isHovered
     bool _hoverTriangle(glm::mat4 const& mvp, glm::vec3 const& A,
-        glm::vec3 const& B, glm::vec3 const& C, float x, float y,
+        glm::vec3 const& B, glm::vec3 const& C, double x, double y,
         double &z, bool& is_hovered);
     // Returns true and updates z if Plane is hovered
-    bool _isHovered(glm::mat4 const& VP, float x, float y, double &z);
+    bool _isHovered(glm::mat4 const& VP, double x, double y, double &z);
 };
 
 #pragma warning(pop)

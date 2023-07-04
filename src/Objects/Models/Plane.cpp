@@ -109,7 +109,7 @@ void Plane::_updateTexScaling()
 }
 
 bool Plane::_hoverTriangle(glm::mat4 const& mvp, glm::vec3 const& A,
-    glm::vec3 const& B, glm::vec3 const& C, float x, float y,
+    glm::vec3 const& B, glm::vec3 const& C, double x, double y,
     double& z, bool& is_hovered)
 {
     // Skip if one (or more) of the points is behind the camera
@@ -119,19 +119,16 @@ bool Plane::_hoverTriangle(glm::mat4 const& mvp, glm::vec3 const& A,
 
     // Check if P is inside the triangle ABC via barycentric coordinates
     float const denominator = ((B.y - C.y) * (A.x - C.x) + (C.x - B.x) * (A.y - C.y));
-    float const a = ((B.y - C.y) * (x - C.x) + (C.x - B.x) * (y - C.y)) / denominator;
-    float const b = ((C.y - A.y) * (x - C.x) + (A.x - C.x) * (y - C.y)) / denominator;
+    float const a = ((B.y - C.y) * static_cast<float>(x - C.x)
+                  +  (C.x - B.x) * static_cast<float>(y - C.y))
+                  / denominator;
+    float const b = ((C.y - A.y) * static_cast<float>(x - C.x)
+                  +  (A.x - C.x) * static_cast<float>(y - C.y))
+                  / denominator;
     float const c = 1.f - a - b;
-    if (!(0.f <= a && a <= 1.f && 0.f <= b && b <= 1.f && 0.f <= c && c <= 1.f)) {
-        return false;
-    }
     // Compute relative Z (not the real scene Z, as it's computed via
     // normalized vertices)
-    z = a * A.z + b * B.z + c * C.z;
-    // If z < -1.f, then it is behind the camera
-    if (z < -1.f) {
-        return true;
-    }
+    z = static_cast<double>(a * A.z + b * B.z + c * C.z);
 
     // Inverse and normalize relative x/y in a -0.5/+0.5 range
     glm::vec4 P = glm::inverse(mvp) * glm::vec4(x, y, z, 1);
@@ -143,6 +140,15 @@ bool Plane::_hoverTriangle(glm::mat4 const& mvp, glm::vec3 const& A,
     // Get the relative x & y position the cursor is hovering over.
     _relative_x = static_cast<int>(P.x * static_cast<float>(_tex_w));
     _relative_y = static_cast<int>(P.y * static_cast<float>(_tex_h));
+
+    // If z < -1.f, then it is behind the camera
+    if (z < -1.f) {
+        return true;
+    }
+    // In or outside the triangle
+    if (!(0.f <= a && a <= 1.f && 0.f <= b && b <= 1.f && 0.f <= c && c <= 1.f)) {
+        return false;
+    }
 
     // End function if no texture provided, or if the hitbox doesn't care about alpha.
     if (!_texture || _hitbox == Hitbox::Full) {
@@ -180,7 +186,7 @@ bool Plane::_hoverTriangle(glm::mat4 const& mvp, glm::vec3 const& A,
 }
 
 // Updates _is_hovered via the mouse position callback.
-bool Plane::_isHovered(glm::mat4 const& VP, float x, float y, double &z) try
+bool Plane::_isHovered(glm::mat4 const& VP, double x, double y, double &z) try
 {
     // Skip if no hitbox
     if (_hitbox == Hitbox::None) {

@@ -42,6 +42,7 @@ SSS_GL_BEGIN;
 class Shaders;
 class RendererBase;
 class ModelBase;
+class Camera;
 
 class SSS_GL_API Context {
     friend class Window;
@@ -224,6 +225,7 @@ public:
 
     inline int keyCount(int key) const noexcept { return _key_inputs[key].count(); }
 
+    inline bool keyMod(int mod) const noexcept { return (_key_mods & mod) != 0; };
 
     inline auto const& getClickInputs() const noexcept { return _click_inputs; };
 
@@ -257,7 +259,7 @@ public:
     void addRenderer(std::shared_ptr<RendererBase> renderer);
     void removeRenderer(std::shared_ptr<RendererBase> renderer);
 
-    std::shared_ptr<ModelBase> getHovered() const noexcept { return _hovered_model.lock(); };
+    std::shared_ptr<ModelBase> getHovered() const noexcept { return _hovered.model.lock(); };
     template<class Derived>
     std::shared_ptr<Derived> getHovered() const noexcept {
         std::shared_ptr<ModelBase> model = getHovered();
@@ -265,8 +267,9 @@ public:
             return nullptr;
         return std::dynamic_pointer_cast<Derived>(model);
     }
+    std::shared_ptr<Camera> getHoveredCam() const noexcept { return _hovered.camera.lock(); };
 
-    std::shared_ptr<ModelBase> getClicked() const { return _clicked_model.lock(); };
+    std::shared_ptr<ModelBase> getClicked() const { return _clicked.model.lock(); };
     template<class Derived>
     std::shared_ptr<Derived> getClicked() const {
         std::shared_ptr<ModelBase> const model = getClicked();
@@ -274,8 +277,9 @@ public:
             return nullptr;
         return std::dynamic_pointer_cast<Derived>(model);
     }
+    std::shared_ptr<Camera> getClickedCam() const noexcept { return _clicked.camera.lock(); };
 
-    std::shared_ptr<ModelBase> getHeld() const { return _held_model.lock(); };
+    std::shared_ptr<ModelBase> getHeld() const { return _held.model.lock(); };
     template<class Derived>
     std::shared_ptr<Derived> getHeld() const {
         std::shared_ptr<ModelBase> const model = getHeld();
@@ -283,6 +287,7 @@ public:
             return nullptr;
         return std::dynamic_pointer_cast<Derived>(model);
     }
+    std::shared_ptr<Camera> getHeldCam() const noexcept { return _held.camera.lock(); };
 
     /** Draws everything in order of Renderer IDs.
      *  @sa printFrame()
@@ -322,9 +327,14 @@ private:
     int _cursor_x{ 0 }, _old_cursor_x{ 0 }, _cursor_diff_x{ 0 },
         _cursor_y{ 0 }, _old_cursor_y{ 0 }, _cursor_diff_y{ 0 };
 
-    std::weak_ptr<ModelBase> _hovered_model;
-    std::weak_ptr<ModelBase> _clicked_model;    // (left click)
-    std::weak_ptr<ModelBase> _held_model;       // (left click)
+    struct _ModelData {
+        std::weak_ptr<ModelBase> model;
+        std::weak_ptr<Camera> camera;
+    };
+
+    _ModelData _hovered;
+    _ModelData _clicked;    // (left click)
+    _ModelData _held;       // (left click)
     void _updateHoveredModel();
     void _updateHoveredModelIfNeeded(std::chrono::steady_clock::time_point const& now);
 
@@ -479,6 +489,7 @@ private:
 
     std::queue<std::pair<int, bool>> _key_queue;
     std::array<Input, GLFW_KEY_LAST + 1> _key_inputs;
+    int _key_mods{ 0 };
     
     std::queue<std::pair<int, bool>> _click_queue;
     std::array<Input, GLFW_MOUSE_BUTTON_LAST + 1> _click_inputs;

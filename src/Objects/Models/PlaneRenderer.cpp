@@ -117,7 +117,7 @@ void PlaneRendererBase::render() try
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
-bool PlaneRendererBase::_findNearestModel(float x, float y)
+bool PlaneRendererBase::_findNearestModel(double x, double y)
 {
     _hovered.reset();
     _hovered_z = DBL_MAX;

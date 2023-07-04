@@ -44,13 +44,17 @@ void Window::_poll()
     }
 
     Input const left_click = getClickInputs()[GLFW_MOUSE_BUTTON_LEFT];
-    _clicked_model.reset();
+    _clicked.model.reset();
+    _clicked.camera.reset();
     if (left_click.is_pressed()) {
-        _clicked_model = _hovered_model;
-        _held_model = _hovered_model;
+        _clicked.model = _hovered.model;
+        _clicked.camera = _hovered.camera;
+        _held.model = _hovered.model;
+        _held.camera = _hovered.camera;
     }
     else if (left_click.is_released()) {
-        _held_model.reset();
+        _held.model.reset();
+        _held.camera.reset();
     }
 }
 

@@ -85,7 +85,7 @@ private:
 
     Plane::Weak _hovered;
     double _hovered_z{ DBL_MAX };
-    bool _findNearestModel(float x, float y);
+    bool _findNearestModel(double x, double y);
 };
 
 template <class Derived>

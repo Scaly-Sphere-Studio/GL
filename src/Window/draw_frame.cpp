@@ -26,25 +26,22 @@ void Window::drawObjects()
 void Window::_updateHoveredModel()
 {
     // Reset hovering
-    _hovered_model.reset();
+    _hovered.model.reset();
+    _hovered.camera.reset();
     double z = DBL_MAX;
 
     // If the cursor is disabled (Camera mode), then its relative position is at
     // the center of the window, which, on -1/+1 coordinates, is 0/0.
-    float x = 0.f, y = 0.f;
+    double x = 0., y = 0.;
     // Else find real coordinates
     if (glfwGetInputMode(_window.get(), GLFW_CURSOR) != GLFW_CURSOR_DISABLED) {
-        // Retrieve cursor coordinates, ranging from 0 to width/height
-        double x_offset, y_offset;
-        glfwGetCursorPos(_window.get(), &x_offset, &y_offset);
         // Ensure cursor is inside the window
         double const w = static_cast<double>(_w), h = static_cast<double>(_h);
-        if (x_offset < 0.0 || x_offset >= w || y_offset < 0.0 || y_offset >= h) {
-            return;
-        }
+        x = static_cast<double>(_cursor_x);
+        y = static_cast<double>(_cursor_y);
         // Normalize to -1/+1 coordinates
-        x = static_cast<float>((x_offset / w * 2.0) - 1.0);
-        y = static_cast<float>(((y_offset / h * 2.0) - 1.0) * -1.0);
+        x = (x / w * 2.0) - 1.0;
+        y = ((y / h * 2.0) - 1.0) * -1.0;
     }
 
     // Loop over each renderer (in reverse order) and find their nearest
@@ -58,7 +55,8 @@ void Window::_updateHoveredModel()
         if (renderer != nullptr && renderer->_findNearestModel(x, y)) {
             // If a model was found, update hover status
             if (renderer->_hovered_z < z) {
-                _hovered_model = renderer->_hovered;
+                _hovered.model = renderer->_hovered;
+                _hovered.camera = renderer->camera;
                 z = renderer->_hovered_z;
             }
             // If the depth buffer was reset by the renderer, previous tested
@@ -70,7 +68,7 @@ void Window::_updateHoveredModel()
         }
     }
     if (Log::GL::Window::query(Log::GL::Window::get().hovered_model)) {
-        auto const model = _hovered_model.lock();
+        auto const model = _hovered.model.lock();
         if (model) {
             std::string type;
             if (std::dynamic_pointer_cast<Plane>(model))

@@ -59,30 +59,15 @@ end
 
 if (plane.alpha == 1)
 then
-    alpha_coeff = -0.01
+    alpha_coeff = -0.003
 elseif (plane.alpha == 0)
 then
-    alpha_coeff = 0.01
+    alpha_coeff = 0.003
 end
 
 if (window:keyIsPressed(GL.KEY_C))
 then
-    print(GL.getCursorPos())
-end
-
-if (window:keyIsPressed(GL.KEY_ENTER))
-then
-    GL.close()
-    return
-end
-
-if (plane:isHeld())
-then
-    local x, y = GL.getCursorDiff()
-    if (x ~= 0 or y ~= 0)
-    then
-        plane:translate(vec3.new(x, y, 0))
-    end
+    print(window:getCursorPos())
 end
 
 if (window:keyIsHeld(GL.KEY_KP_ADD))
@@ -108,4 +93,4 @@ local function isUpsideDown(plane)
     return plane.rotation.z > 90 or plane.rotation.z < -90
 end
 
-print("is upside down:", plane_renderer:forEachB(isUpsideDown))
+--print("is upside down:", plane_renderer:forEachB(isUpsideDown))
