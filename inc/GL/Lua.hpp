@@ -149,6 +149,7 @@ inline void lua_setup_GL(sol::state& lua)
     );
     window["keyIsReleased"] = &Window::keyIsReleased;
     window["keyCount"] = &Window::keyCount;
+    window["keyMod"] = &Window::keyMod;
 
     window["clickIsHeld"] = sol::overload(
         sol::resolve<bool(int) const>(&Window::clickIsHeld),
@@ -333,6 +334,15 @@ inline void lua_setup_GL(sol::state& lua)
         gl["KEY_RIGHT_ALT"]     = GLFW_KEY_RIGHT_ALT;
         gl["KEY_RIGHT_SUPER"]   = GLFW_KEY_RIGHT_SUPER;
         gl["KEY_MENU"]          = GLFW_KEY_MENU;
+    }
+    // GLFW_MOD_XXX macros
+    {
+        gl["MOD_SHIFT"]     = GLFW_MOD_SHIFT;
+        gl["MOD_CONTROL"]   = GLFW_MOD_CONTROL;
+        gl["MOD_ALT"]       = GLFW_MOD_ALT;
+        gl["MOD_SUPER"]     = GLFW_MOD_SUPER;
+        gl["MOD_CAPS_LOCK"] = GLFW_MOD_CAPS_LOCK;
+        gl["MOD_NUM_LOCK"]  = GLFW_MOD_NUM_LOCK;
     }
     // GLFW_MOUSE_BUTTON_XXX macros
     {
