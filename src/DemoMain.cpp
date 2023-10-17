@@ -27,6 +27,7 @@ void close_callback(GLFWwindow* win)
 
 int main() try
 {
+    Log::GL::Callbacks::get().window_resize = true;
     // Setup Lua
     sol::state lua;
     lua.open_libraries(sol::lib::base, sol::lib::string);
@@ -38,15 +39,15 @@ int main() try
     lua.safe_script_file("Init.lua");
     GL::Window& window = lua["window"];
 
-    GL::Window& win2 = GL::Window::create();
-    win2.setRenderers(window.getRenderers());
+    // GL::Window& win2 = GL::Window::create();
+    // win2.setRenderers(window.getRenderers());
 
     // Finish setting up window
     glClearColor(0.3f, 0.3f, 0.3f, 0.f);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     window.setCallback(glfwSetKeyCallback, key_callback);
-    win2.setCallback(glfwSetWindowCloseCallback, close_callback);
+    // win2.setCallback(glfwSetWindowCloseCallback, close_callback);
 
     // Lines
     using Line = GL::Polyline;
@@ -67,11 +68,11 @@ int main() try
         // Swap buffers
         window.printFrame();
 
-        if (window.keyIsPressed(GLFW_KEY_F1))
-            win2.setVisibility(true);
+        //if (window.keyIsPressed(GLFW_KEY_F1))
+            // win2.setVisibility(true);
 
-        win2.drawObjects();
-        win2.printFrame();
+        // win2.drawObjects();
+        // win2.printFrame();
     }
 
     window.close();

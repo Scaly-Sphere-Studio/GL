@@ -181,13 +181,21 @@ glm::mat4 Camera::_computeProjection(Window const& window)
     case Projection::OrthoFixed: {
         int w, h;
         window.getDimensions(w, h);
-        float const x = (static_cast<float>(w) / 2.f) / _zoom;
-        float const y = (static_cast<float>(h) / 2.f) / _zoom;
-        projection = glm::ortho(-x, x, -y, y, _z_near, _z_far);
+        bool const w_odd = (w & 1) == 1;
+        if (w_odd) --w;
+        bool const h_odd = (h & 1) == 1;
+        if (h_odd) --h;
+        float const xl = (static_cast<float>(w) / 2.f) / _zoom;
+        float const xr = w_odd ? (static_cast<float>(w + 2) / 2.f) / _zoom : xl;
+        float const yb = (static_cast<float>(h) / 2.f) / _zoom;
+        float const yt = h_odd ? (static_cast<float>(h + 2) / 2.f) / _zoom : yb;
+        projection = glm::ortho(-xl, xr, -yb, yt, _z_near, _z_far);
     }   break;
     case Projection::Perspective:
         projection = glm::perspective(glm::radians(_fov / _zoom), ratio, _z_near, _z_far);
         break;
+    default:
+        throw_exc("Unhandled projection");
     }
 
     return projection;

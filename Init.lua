@@ -18,13 +18,18 @@ print("  > Window created")
 
 -- Text area
 do
+    TR.addFontDir("C:/dev/projects/Scaly-Sphere-Studio/LuaEditor/fonts")
     area = TR.Area.new()
     area.w = 300
     area.h = 300
     area.focusable = true
+    --area.print_mode = TR.PrintMode.Typewriter
+    area.TW_speed = 30
+    area:setMargins(20, 20)
     local fmt = area:getFmt()
-    fmt.charsize = 50
-    fmt.text_color.func = TR.ColorFunc.Rainbow
+    fmt.charsize = 14
+    --fmt.text_color.func = TR.ColorFunc.Rainbow
+    fmt.font = "NotoSansMono-Regular.ttf"
     area:setFmt(fmt)
     area.string = "Lorem ipsum dolor sit amet."
 end
@@ -50,7 +55,6 @@ do
     camera.z_far = 1000
     camera.proj_type = GL.Projection.OrthoFixed
     
-    plane:rotate(vec3.new(0, 45, 45))
     plane:scale(300)
     plane.hitbox = GL.PlaneHitbox.Full
 

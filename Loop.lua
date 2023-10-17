@@ -1,18 +1,22 @@
-local speed = 1.5
+local speed = 0.005
 
-if (window:keyIsHeld(GL.KEY_UP))
+if ((window:keyMod(GL.MOD_SHIFT) and window:keyIsPressed(GL.KEY_UP))
+    or (not window:keyMod(GL.MOD_SHIFT) and window:keyIsHeld(GL.KEY_UP)))
 then
     camera:move( vec3.new(0, speed, 0) )
 end
-if (window:keyIsHeld(GL.KEY_DOWN))
+if ((window:keyMod(GL.MOD_SHIFT) and window:keyIsPressed(GL.KEY_DOWN))
+    or (not window:keyMod(GL.MOD_SHIFT) and window:keyIsHeld(GL.KEY_DOWN)))
 then
     camera:move( vec3.new(0, -speed, 0) )
 end
-if (window:keyIsHeld(GL.KEY_LEFT))
+if ((window:keyMod(GL.MOD_SHIFT) and window:keyIsPressed(GL.KEY_LEFT))
+    or (not window:keyMod(GL.MOD_SHIFT) and window:keyIsHeld(GL.KEY_LEFT)))
 then
     camera:move( vec3.new(-speed, 0, 0) )
 end
-if (window:keyIsHeld(GL.KEY_RIGHT))
+if ((window:keyMod(GL.MOD_SHIFT) and window:keyIsPressed(GL.KEY_RIGHT))
+    or (not window:keyMod(GL.MOD_SHIFT) and window:keyIsHeld(GL.KEY_RIGHT)))
 then
     camera:move( vec3.new(speed, 0, 0) )
 end
@@ -87,7 +91,7 @@ then
     print(camera.zoom)
 end
 
-plane.alpha = plane.alpha + alpha_coeff
+--plane.alpha = plane.alpha + alpha_coeff
 
 local function isUpsideDown(plane)
     return plane.rotation.z > 90 or plane.rotation.z < -90
