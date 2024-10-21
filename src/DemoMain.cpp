@@ -25,6 +25,11 @@ void close_callback(GLFWwindow* win)
     glfwSetWindowShouldClose(win, false);
 }
 
+void scroll_callback(GLFWwindow* win, double x, double y)
+{
+    TR::Area::get(0)->scroll(y * -40);
+}
+
 int main() try
 {
     Log::GL::Callbacks::get().window_resize = true;
@@ -47,6 +52,7 @@ int main() try
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     window.setCallback(glfwSetKeyCallback, key_callback);
+    window.setCallback(glfwSetScrollCallback, scroll_callback);
     // win2.setCallback(glfwSetWindowCloseCallback, close_callback);
 
     // Lines
