@@ -2,6 +2,7 @@
 #define SSS_GL_MODEL_HPP
 
 #include "Basic.hpp"
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_decompose.hpp>
 
 /** @file
