@@ -181,7 +181,7 @@ Window& Window::create(CreateArgs const& args)
 
 Window* Window::get(GLFWwindow* ptr) noexcept
 {
-    if (_main->getGLFWwindow() == ptr)
+    if (_main && _main->getGLFWwindow() == ptr)
         return _main.get();
     for (auto& [key, win] : _main._subs) {
         if (key == ptr)
