@@ -6,6 +6,8 @@ SSS_GL_BEGIN;
 
 Window::MainPtr Window::_main;
 
+std::function<void()> _internal::gladLoader;
+
 // Constructor, creates a window
 Window::Window(CreateArgs const& args) try
     : _is_main(!_main)
@@ -84,6 +86,8 @@ Window::Window(CreateArgs const& args) try
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         SSS::throw_exc("Failed to initialize GLAD");
     }
+    if (_internal::gladLoader)
+        _internal::gladLoader();
 
     // Set viewport
     glViewport(0, 0, _w, _h);

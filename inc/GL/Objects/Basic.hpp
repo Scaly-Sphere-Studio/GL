@@ -58,6 +58,24 @@ SSS_GL_BEGIN;
  */
 SSS_GL_API void pollEverything();
 
+INTERNAL_BEGIN;
+
+extern SSS_GL_API std::function<void()> gladLoader;
+
+#ifndef SSS_GL_EXPORTS
+
+    static inline void defaultLoader() {
+        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+            SSS::throw_exc("Failed to initialize GLAD");
+        }
+    }
+
+#define SSS_GL_EXPOSE_OPENGL ::SSS::GL::_internal::gladLoader = ::SSS::GL::_internal::defaultLoader;
+
+#endif
+
+INTERNAL_END;
+
 class Input {
 public:
     inline int count() const noexcept { return _count; }
