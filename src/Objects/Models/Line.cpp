@@ -278,6 +278,13 @@ uint8_t Polyline::path_meshing(Math::Gradient<float> gradient_thickness, Math::G
             (this->*joint_type_func)(static_cast<uint32_t>(i), mesh_last, ortho, define_line_thickness(g_thick.evaluate(t)), g_col.evaluate(t));
         }
     }
+
+    // TODO: Fix la 3D quand on aura le temps et que ça sera nécessaire
+    // Normalize Z
+    float const z = mesh.at(0).v_pos.z;
+    for (Vertex& v : mesh) {
+        v.v_pos.z = z;
+    }
     return 0;
 }
 

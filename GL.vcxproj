@@ -39,8 +39,6 @@
     <None Include="Init.lua" />
     <None Include="DownloadVcpkgScripts.ps1" />
     <None Include="Doxyfile" />
-    <None Include="glsl\line.frag" />
-    <None Include="glsl\line.vert" />
     <None Include="Loop.lua" />
     <None Include="vcpkg_scripts\Install.ps1" />
     <None Include="vcpkg_scripts\Remove.ps1" />

@@ -81,14 +81,13 @@ print("  > TR::Area created")
 -- Window objects
 do
     camera = GL.Camera.new()
-    plane = GL.Plane.new(area)
+    plane = GL.Plane.new()--area)
 
     plane_renderer = GL.PlaneRenderer.new(camera)
     window:addRenderer(plane_renderer)
 
-    line_shaders = GL.Shaders.new("glsl/line.vert", "glsl/line.frag")
     line_renderer = GL.LineRenderer.new()
-    --window:addRenderer(line_renderer)
+    window:addRenderer(line_renderer)
 end
 print("  > Window objects created")
 
@@ -111,7 +110,6 @@ do
     --    end)
     --end)
 
-    line_renderer.shaders = line_shaders
     line_renderer.camera = camera
 end
 

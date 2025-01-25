@@ -1,15 +1,18 @@
 #include "GL/Objects/Models/LineRenderer.hpp"
+#include "GL/Window.hpp"
 
 SSS_GL_BEGIN;
 
 LineRenderer::LineRenderer()
 {
+    setShaders(Window::getPresetShaders(static_cast<uint32_t>(Shaders::Preset::Line)));
+
     _vao.setup([this]() {
         _vbo.bind();
         _ibo.bind();
         //Coordinates
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2,
+        glVertexAttribPointer(0, 3,
             GL_FLOAT, GL_FALSE,
             sizeof(Polyline::Vertex), (void*)0);
         //Colors
@@ -27,7 +30,7 @@ void LineRenderer::gen_batch(Polyline::Vertex::Vec& mesh, Polyline::Indices::Vec
 {
     size_t indice_size = 0, mesh_size = 0, offset = 0;
 
-    std::sort(Polyline::_batch.begin(), Polyline::_batch.end(), Polyline::sort);
+    //std::sort(Polyline::_batch.begin(), Polyline::_batch.end(), Polyline::sort);
 
     //Check if the lines pointer are expired and set the necessary reserve size for the batch
     for (std::weak_ptr<Polyline> arrow_weak : Polyline::_batch) {

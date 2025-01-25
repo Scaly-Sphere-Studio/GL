@@ -43,7 +43,9 @@ public:
     /** Internal preset shaders IDs*/
     enum class Preset : uint32_t {
         /** Plane shaders, used by Plane::Renderer by default.*/
-        Plane
+        Plane,
+        /** Line shaders, used by Line::Renderer by default.*/
+        Line
     };
 
     using InstancedBase::create;

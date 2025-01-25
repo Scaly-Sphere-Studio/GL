@@ -46,6 +46,47 @@ void main()
 )";
 }
 
+static void _lineShadersData(std::string& vertex, std::string& fragment)
+{
+    vertex = R"(
+#version 440 core
+
+//Coordinates and colors data input
+layout(location = 0) in vec3 vertexPosition_modelspace;
+layout(location = 1) in vec4 model_colors;
+
+//Color output for the fragment shader
+out vec4 fragmentColor;
+
+// Projection matrix
+uniform mat4 u_MVP;
+
+
+void main(){
+    //Transform the vertex position using the ortho projection matrix
+    gl_Position =  u_MVP * vec4(vertexPosition_modelspace, 1);
+
+    //Color output for the fragment shader
+    fragmentColor = model_colors;
+}
+)";
+
+    fragment = R"(
+#version 440 core
+
+//Color input from the vertex shader
+in vec4 fragmentColor;
+
+//Color output using vertices data
+out vec4 l_Color;
+
+
+void main(){
+  l_Color = fragmentColor;
+}
+)";
+}
+
 void Window::_loadPresetShaders() try
 {
     std::string vertex_data, fragment_data;
@@ -59,6 +100,19 @@ void Window::_loadPresetShaders() try
         shader.reset(new Shaders());
         // Retrieve shader data
         _planeShadersData(vertex_data, fragment_data);
+        // Load shader
+        shader->loadFromStrings(vertex_data, fragment_data);
+    }
+
+    // Line shader
+    {
+        uint32_t const id = static_cast<uint32_t>(Shaders::Preset::Line);
+        // Retrieve shader pointer
+        auto& shader = _main._preset_shaders[id];
+        // Allocate new shader
+        shader.reset(new Shaders());
+        // Retrieve shader data
+        _lineShadersData(vertex_data, fragment_data);
         // Load shader
         shader->loadFromStrings(vertex_data, fragment_data);
     }
