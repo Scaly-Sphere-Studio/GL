@@ -10,10 +10,12 @@ static void _planeShadersData(std::string& vertex, std::string& fragment)
 layout(location = 0) in vec3 a_Pos;
 layout(location = 1) in vec2 a_UV;
 
-uniform mat4 u_Models[gl_MaxTextureImageUnits];
-uniform mat4 u_VPs[gl_MaxTextureImageUnits];
-uniform float u_TextureOffsets[gl_MaxTextureImageUnits];
-uniform float u_Alphas[gl_MaxTextureImageUnits];
+layout(location = 2) in mat4 a_Model;
+
+layout(location = 6) in float a_Alpha;
+layout(location = 7) in float a_TextureOffset;
+
+uniform mat4 u_VP;
 
 out vec3 UVW;
 out float Alpha;
@@ -21,9 +23,9 @@ flat out int instanceID;
 
 void main()
 {
-    gl_Position = u_VPs[gl_InstanceID] * u_Models[gl_InstanceID] * vec4(a_Pos, 1);
-    UVW = vec3(a_UV, u_TextureOffsets[gl_InstanceID]);
-    Alpha = u_Alphas[gl_InstanceID];
+    gl_Position = u_VP * a_Model * vec4(a_Pos, 1);
+    UVW = vec3(a_UV, a_TextureOffset);
+    Alpha = a_Alpha;
     instanceID = gl_InstanceID;
 }
 )";

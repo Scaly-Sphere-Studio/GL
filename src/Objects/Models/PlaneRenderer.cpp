@@ -4,7 +4,7 @@
 
 SSS_GL_BEGIN;
 
-PlaneRendererBase::PlaneRendererBase() try
+PlaneRenderer::PlaneRenderer() try
 {
     setShaders(Window::getPresetShaders(static_cast<uint32_t>(Shaders::Preset::Plane)));
 
@@ -14,31 +14,69 @@ PlaneRendererBase::PlaneRendererBase() try
         -0.5f,  0.5f, 0.0f,   0.f, 1.f - 1.f,   // top left
         -0.5f, -0.5f, 0.0f,   0.f, 1.f - 0.f,   // bottom left
          0.5f, -0.5f, 0.0f,   1.f, 1.f - 0.f,   // bottom right
-         0.5f,  0.5f, 0.0f,   1.f, 1.f - 1.f    // top right
+         0.5f,  0.5f, 0.0f,   1.f, 1.f - 1.f,   // top right
     };
-    _vbo.edit(sizeof(vertices), vertices, GL_STATIC_DRAW);
+    _static_vbo.edit(sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     // Edit IBO
     constexpr unsigned int indices[] = {
         0, 1, 2,  // first triangle
         2, 3, 0   // second triangle
     };
-    _ibo.edit(sizeof(indices), indices, GL_STATIC_DRAW);
-    
+    _static_ibo.edit(sizeof(indices), indices, GL_STATIC_DRAW);
+
     // Setup VAO
     _vao.setup([this]() {
-        _vbo.bind();
-        _ibo.bind();
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-        glEnableVertexAttribArray(1);
-    });
+
+        enum {
+            PLANE_POS,
+            PLANE_UV,
+
+            PLANE_MODEL_MAT4_1,
+            PLANE_MODEL_MAT4_2,
+            PLANE_MODEL_MAT4_3,
+            PLANE_MODEL_MAT4_4,
+
+            PLANE_ALPHA,
+            PLANE_TEX_OFFSET,
+        };
+
+        _static_vbo.bind();
+        _static_ibo.bind();
+        glEnableVertexAttribArray(PLANE_POS);
+        glVertexAttribPointer(PLANE_POS, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(PLANE_UV);
+        glVertexAttribPointer(PLANE_UV, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+
+        _model_vbo.bind();
+        glEnableVertexAttribArray(PLANE_MODEL_MAT4_1);
+        glEnableVertexAttribArray(PLANE_MODEL_MAT4_2);
+        glEnableVertexAttribArray(PLANE_MODEL_MAT4_3);
+        glEnableVertexAttribArray(PLANE_MODEL_MAT4_4);
+        glVertexAttribPointer(PLANE_MODEL_MAT4_1, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(0));
+        glVertexAttribPointer(PLANE_MODEL_MAT4_2, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(1 * sizeof(glm::vec4)));
+        glVertexAttribPointer(PLANE_MODEL_MAT4_3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(2 * sizeof(glm::vec4)));
+        glVertexAttribPointer(PLANE_MODEL_MAT4_4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3 * sizeof(glm::vec4)));
+        glVertexAttribDivisor(PLANE_MODEL_MAT4_1, 1);
+        glVertexAttribDivisor(PLANE_MODEL_MAT4_2, 1);
+        glVertexAttribDivisor(PLANE_MODEL_MAT4_3, 1);
+        glVertexAttribDivisor(PLANE_MODEL_MAT4_4, 1);
+
+        _alpha_vbo.bind();
+        glEnableVertexAttribArray(PLANE_ALPHA);
+        glVertexAttribPointer(PLANE_ALPHA, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
+        glVertexAttribDivisor(PLANE_ALPHA, 1);
+
+        _tex_offset_vbo.bind();
+        glEnableVertexAttribArray(PLANE_TEX_OFFSET);
+        glVertexAttribPointer(PLANE_TEX_OFFSET, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
+        glVertexAttribDivisor(PLANE_TEX_OFFSET, 1);
+        });
     _vao.unbind();
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
-void PlaneRendererBase::_renderPart(Shaders& shader, uint32_t& count) const
+void PlaneRenderer::_renderPart(Shaders& shader, uint32_t& count) const
 {
     static constexpr std::array<GLint, 128> texture_IDs = {
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
@@ -53,18 +91,14 @@ void PlaneRendererBase::_renderPart(Shaders& shader, uint32_t& count) const
 
     if (count != 0) {
         // Set Texture IDs & MVP uniforms
-        shader.setUniform1iv("u_Textures", count, &texture_IDs[0]);
-        shader.setUniformMat4fv("u_VPs", count, GL_FALSE, &_VPs[0][0][0]);
-        shader.setUniformMat4fv("u_Models", count, GL_FALSE, &_Models[0][0][0]);
-        shader.setUniform1fv("u_TextureOffsets", count, &_TextureOffsets[0]);
-        shader.setUniform1fv("u_Alphas", count, &_Alphas[0]);
+        shader.setUniform1iv("u_Textures", count, texture_IDs.data());
         // Draw all required instances
         glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr, count);
         count = 0;
     }
 }
 
-void PlaneRendererBase::render() try
+void PlaneRenderer::render() try
 {
     if (!isActive()) {
         return;
@@ -76,22 +110,38 @@ void PlaneRendererBase::render() try
     shader->use();
     _vao.bind();
 
-    uint32_t count = 0;
-    _VPs.resize(Window::maxGLSLTextureUnits());
-    _Models.resize(Window::maxGLSLTextureUnits());
-    _TextureOffsets.resize(Window::maxGLSLTextureUnits());
-    _Alphas.resize(Window::maxGLSLTextureUnits());
+    std::vector<glm::mat4> models;
+    std::vector<float> tex_offsets;
+    std::vector<float> alphas;
+
+    models.reserve(planes.size());
+    tex_offsets.reserve(planes.size());
+    alphas.reserve(planes.size());
+
     // Check if we need to reset the depth buffer before rendering
     if (clear_depth_buffer) {
         glClear(GL_DEPTH_BUFFER_BIT);
     }
 
     // Set VP
-    glm::mat4 VP(1);
-    if (camera) {
-        VP = camera->getVP();
+    shader->setUniformMat4fv("u_VP", 1, GL_FALSE,
+        glm::value_ptr(camera ? camera->getVP() : glm::mat4(1)));
+
+    // Loop over each plane
+    for (Plane::Shared const& plane : planes) {
+        if (!plane || !plane->_texture)
+            continue;
+        // Store components
+        models.emplace_back(plane->getModelMat4());
+        tex_offsets.emplace_back(static_cast<float>(plane->_texture_offset));
+        alphas.emplace_back(plane->getAlpha());
     }
 
+    _model_vbo.edit(models, GL_DYNAMIC_DRAW);
+    _alpha_vbo.edit(alphas, GL_DYNAMIC_DRAW);
+    _tex_offset_vbo.edit(tex_offsets, GL_DYNAMIC_DRAW);
+
+    uint32_t count = 0;
     // Loop over each plane
     for (Plane::Shared const& plane : planes) {
         // Check if we can't cache more instances and need to make a draw call.
@@ -101,11 +151,6 @@ void PlaneRendererBase::render() try
         if (!plane || !plane->_texture)
             continue;
 
-        // Store MVP components (set uniforms later)
-        _VPs[count] = VP;
-        _Models[count] = plane->getModelMat4();
-        _TextureOffsets[count] = static_cast<float>(plane->_texture_offset);
-        _Alphas[count] = plane->getAlpha();
         // Bind another active texture (set uniform IDs later)
         glActiveTexture(GL_TEXTURE0 + count);
         plane->_texture->bind();
@@ -117,7 +162,7 @@ void PlaneRendererBase::render() try
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
-bool PlaneRendererBase::_findNearestModel(double x, double y)
+bool PlaneRenderer::_findNearestModel(double x, double y)
 {
     _hovered.reset();
     _hovered_z = DBL_MAX;

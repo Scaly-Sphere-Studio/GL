@@ -31,21 +31,19 @@ inline void lua_setup_GL(sol::state& lua)
     renderer["shaders"] = sol::property(&RendererBase::getShaders, &RendererBase::setShaders);
     renderer["active"] = sol::property(&RendererBase::isActive, &RendererBase::setActivity);
 
-    auto plane_renderer_base = gl.new_usertype<PlaneRendererBase>("", sol::no_constructor);
-    plane_renderer_base["clear_depth_buffer"] = &PlaneRendererBase::clear_depth_buffer;
-    plane_renderer_base["camera"] = &PlaneRendererBase::camera;
-    plane_renderer_base["planes"] = &PlaneRendererBase::planes;
-    plane_renderer_base["forEach"] = &PlaneRendererBase::forEach<void>;
-    plane_renderer_base["forEachB"] = &PlaneRendererBase::forEach<bool>;
-    plane_renderer_base["forEachF"] = &PlaneRendererBase::forEach<float>;
-    plane_renderer_base["forEachI"] = &PlaneRendererBase::forEach<int>;
-    plane_renderer_base["forEachS"] = &PlaneRendererBase::forEach<std::string>;
-
     auto plane_renderer = gl.new_usertype<PlaneRenderer>("PlaneRenderer", sol::factories(
         sol::resolve<PlaneRenderer::Shared()>(PlaneRenderer::create),
         [](Camera* cam) { return PlaneRenderer::create(Camera::get(cam)); },
         [](Camera* cam, bool clear) { return PlaneRenderer::create(Camera::get(cam), clear); }
-    ),  sol::base_classes, sol::bases<PlaneRendererBase, RendererBase, ::SSS::Base>());
+    ), sol::base_classes, sol::bases<RendererBase, ::SSS::Base>());
+    plane_renderer["clear_depth_buffer"] = &PlaneRenderer::clear_depth_buffer;
+    plane_renderer["camera"] = &PlaneRenderer::camera;
+    plane_renderer["planes"] = &PlaneRenderer::planes;
+    plane_renderer["forEach"] = &PlaneRenderer::forEach<void>;
+    plane_renderer["forEachB"] = &PlaneRenderer::forEach<bool>;
+    plane_renderer["forEachF"] = &PlaneRenderer::forEach<float>;
+    plane_renderer["forEachI"] = &PlaneRenderer::forEach<int>;
+    plane_renderer["forEachS"] = &PlaneRenderer::forEach<std::string>;
 
     auto line_renderer = gl.new_usertype<LineRenderer>("LineRenderer",
         sol::factories(sol::resolve<LineRenderer::Shared()>(LineRenderer::create)),
@@ -172,8 +170,19 @@ inline void lua_setup_GL(sol::state& lua)
     );
     window["removeRenderer"] = [](Window& win, RendererBase* ptr) {
         win.removeRenderer(ptr->getShared());
-    },
-    window["getHoveredPlane"] = &GL::Window::getHovered<GL::Plane>;
+    };
+    window["renderers"] = sol::property(
+        &Window::getRenderers,
+        [](Window& win, std::vector<RendererBase*> renderers) {
+            std::vector<RendererBase::Shared> arg;
+            arg.reserve(renderers.size());
+            for (auto renderer : renderers)
+                arg.emplace_back(renderer->getShared());
+            win.setRenderers(arg);
+        }
+    );
+
+    window["getHoveredPlane"] = &Window::getHovered<Plane>;
 
     window["fps_limit"] = sol::property(&Window::getFPSLimit, &Window::setFPSLimit);
     window["vsync"] = sol::property(&Window::getVSYNC, &Window::setVSYNC);

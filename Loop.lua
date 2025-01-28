@@ -1,4 +1,4 @@
-local speed = 0.005
+local speed = 5
 
 if ((window:keyMod(GL.MOD_SHIFT) and window:keyIsPressed(GL.KEY_UP))
     or (not window:keyMod(GL.MOD_SHIFT) and window:keyIsHeld(GL.KEY_UP)))

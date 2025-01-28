@@ -21,12 +21,12 @@ SSS_GL_BEGIN;
  *  This is useful to enforce specific orders of chunks without
  *  having to worry about their depth (Background, Scene, Text, UI...).
  */
-class SSS_GL_API PlaneRendererBase : public RendererBase {
+class SSS_GL_API PlaneRenderer : public RendererBase, public Basic::InstancedBase<PlaneRenderer> {
     friend class Window;
+    friend class Basic::SharedBase<PlaneRenderer>;
 
-protected:
-    PlaneRendererBase();
 private:
+    PlaneRenderer();
     void _renderPart(Shaders& shader, uint32_t& count) const;
 
 public:
@@ -38,6 +38,20 @@ public:
     Camera::Shared camera;
     /** Specified Planes.*/
     std::vector<Plane::Shared> planes;
+
+    static auto create(Camera::Shared cam, bool clear_depth_buffer = false) {
+        auto shared = Renderer<PlaneRenderer>::create();
+        shared->camera = cam;
+        shared->clear_depth_buffer = clear_depth_buffer;
+        return shared;
+    }
+
+    using Basic::SharedBase<PlaneRenderer>::Shared;
+    using Basic::InstancedBase<PlaneRenderer>::create;
+    virtual RendererBase::Shared getShared() noexcept override {
+        Shared shared = Basic::SharedBase<PlaneRenderer>::shared_from_this();
+        return shared;
+    };
 
     template <typename T>
     T forEach(std::function<T(Plane&)> func)
@@ -75,43 +89,19 @@ public:
 
 private:
     Basic::VAO _vao;
-    Basic::VBO _vbo;
-    Basic::IBO _ibo;
-    
-    std::vector<glm::mat4> _VPs;
-    std::vector<glm::mat4> _Models;
-    std::vector<float> _TextureOffsets;
-    std::vector<float> _Alphas;
+    // Static Plane vertices
+    Basic::VBO _static_vbo;
+    Basic::IBO _static_ibo;
+    // Plane Model mat4
+    Basic::VBO _model_vbo;
+    // Plane alpha
+    Basic::VBO _alpha_vbo;
+    // Plane texture offset (used to read apng)
+    Basic::VBO _tex_offset_vbo;
 
     Plane::Weak _hovered;
     double _hovered_z{ DBL_MAX };
     bool _findNearestModel(double x, double y);
-};
-
-template <class Derived>
-class PlaneRendererTemplate : public PlaneRendererBase, public Basic::InstancedBase<Derived> {
-protected:
-    PlaneRendererTemplate() = default;
-public:
-    static auto create(Camera::Shared cam, bool clear_depth_buffer = false) {
-        auto shared = Renderer<Derived>::create();
-        shared->camera = cam;
-        shared->clear_depth_buffer = clear_depth_buffer;
-        return shared;
-    }
-
-    using Basic::SharedBase<Derived>::Shared;
-    using Basic::InstancedBase<Derived>::create;
-    virtual RendererBase::Shared getShared() noexcept override {
-        Shared shared = Basic::SharedBase<Derived>::shared_from_this();
-        return shared;
-    };
-};
-
-class PlaneRenderer : public PlaneRendererTemplate<PlaneRenderer> {
-    friend class Basic::SharedBase<PlaneRenderer>;
-private:
-    PlaneRenderer() = default;
 };
 
 #pragma warning(pop)

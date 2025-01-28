@@ -94,6 +94,8 @@ Window::Window(CreateArgs const& args) try
     // Enable blending (transparency)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    // Enable Z buffer
+    glEnable(GL_DEPTH_TEST);
 
     // Initial clear
     glClear(GL_COLOR_BUFFER_BIT);
