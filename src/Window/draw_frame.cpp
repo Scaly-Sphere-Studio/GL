@@ -20,6 +20,10 @@ void Window::drawObjects()
                 return;
             renderer->render();
         }
+        // Reset list of modified Planes
+        Plane::_modified.models.clear();
+        Plane::_modified.alphas.clear();
+        Plane::_modified.texture_offsets.clear();
     }
 }
 

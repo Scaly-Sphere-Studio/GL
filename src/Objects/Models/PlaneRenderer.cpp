@@ -98,6 +98,25 @@ void PlaneRenderer::_renderPart(Shaders& shader, uint32_t& count) const
     }
 }
 
+bool PlaneRenderer::_containsOneOf(std::set<Plane::Shared> const& set) const noexcept
+{
+    return std::any_of(set.cbegin(), set.cend(),
+        [this](Plane::Shared const& plane) {
+            return std::find(planes.cbegin(), planes.cend(), plane) != planes.cend();
+        }
+    );
+}
+
+template <typename T>
+void PlaneRenderer::_updateVBO(T(Plane::* getMember)() const, Basic::VBO& vbo) {
+    std::vector<T> vec;
+    vec.reserve(planes.size());
+    for (Plane::Shared const& plane : planes) {
+        vec.push_back(((*plane).*getMember)());
+    }
+    vbo.edit(vec, GL_DYNAMIC_DRAW);
+};
+
 void PlaneRenderer::render() try
 {
     if (!isActive()) {
@@ -110,14 +129,6 @@ void PlaneRenderer::render() try
     shader->use();
     _vao.bind();
 
-    std::vector<glm::mat4> models;
-    std::vector<float> tex_offsets;
-    std::vector<float> alphas;
-
-    models.reserve(planes.size());
-    tex_offsets.reserve(planes.size());
-    alphas.reserve(planes.size());
-
     // Check if we need to reset the depth buffer before rendering
     if (clear_depth_buffer) {
         glClear(GL_DEPTH_BUFFER_BIT);
@@ -127,19 +138,15 @@ void PlaneRenderer::render() try
     shader->setUniformMat4fv("u_VP", 1, GL_FALSE,
         glm::value_ptr(camera ? camera->getVP() : glm::mat4(1)));
 
-    // Loop over each plane
-    for (Plane::Shared const& plane : planes) {
-        if (!plane || !plane->_texture)
-            continue;
-        // Store components
-        models.emplace_back(plane->getModelMat4());
-        tex_offsets.emplace_back(static_cast<float>(plane->_texture_offset));
-        alphas.emplace_back(plane->getAlpha());
-    }
+    // Edit VBOs if needed
+    if (_containsOneOf(Plane::_modified.models))
+        _updateVBO(&Plane::getModelMat4, _model_vbo);
 
-    _model_vbo.edit(models, GL_DYNAMIC_DRAW);
-    _alpha_vbo.edit(alphas, GL_DYNAMIC_DRAW);
-    _tex_offset_vbo.edit(tex_offsets, GL_DYNAMIC_DRAW);
+    if (_containsOneOf(Plane::_modified.alphas))
+        _updateVBO(&Plane::getAlpha, _alpha_vbo);
+
+    if (_containsOneOf(Plane::_modified.texture_offsets))
+        _updateVBO(&Plane::getTexOffset, _tex_offset_vbo);
 
     uint32_t count = 0;
     // Loop over each plane

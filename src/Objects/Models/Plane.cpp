@@ -2,6 +2,8 @@
 
 SSS_GL_BEGIN;
 
+Plane::_Modified Plane::_modified{};
+
 Plane::Plane() try
 {
 }
@@ -10,6 +12,9 @@ CATCH_AND_RETHROW_METHOD_EXC;
 Plane::Shared Plane::create(Texture::Shared texture)
 {
     Shared ret = create();
+    _modified.models.emplace(ret);
+    _modified.alphas.emplace(ret);
+    _modified.texture_offsets.emplace(ret);
     ret->setTexture(texture);
     return ret;
 }
@@ -21,14 +26,11 @@ Plane::Shared Plane::duplicate() const
     return plane;
 }
 
-glm::mat4 Plane::getModelMat4()
+void Plane::_computeModelMat4()
 {
-    if (_should_compute_mat4) {
-        glm::mat4 scaling = glm::scale(_scaling, _tex_scaling);
-        _model_mat4 = _translation * _rotation * scaling;
-        _should_compute_mat4 = false;
-    }
-    return _model_mat4;
+    glm::mat4 scaling = glm::scale(_scaling, _tex_scaling);
+    _model_mat4 = _translation * _rotation * scaling;
+    _modified.models.emplace(shared_from_this());
 }
 
 void Plane::getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles, glm::vec3& translation)
@@ -41,6 +43,12 @@ void Plane::setTexture(Texture::Shared texture)
 {
     _texture = texture;
     _updateTexScaling();
+}
+
+void Plane::setAlpha(float alpha) noexcept
+{
+    _alpha = std::clamp(alpha, 0.f, 1.f);
+    _modified.alphas.emplace(shared_from_this());
 }
 
 void Plane::_updateTextureOffset()
@@ -67,7 +75,10 @@ void Plane::_updateTextureOffset()
     for (uint32_t i = 0; i < frames.size(); ++i) {
         duration -= frames[i].delay;
         if (duration < std::chrono::nanoseconds(0)) {
-            _texture_offset = i;
+            if (_texture_offset != i) {
+                _modified.texture_offsets.emplace(shared_from_this());
+                _texture_offset = i;
+            }
             break;
         }
     }
@@ -77,7 +88,7 @@ void Plane::_updateTexScaling()
 {
     if (!_texture) {
         _tex_scaling = glm::vec3(1);
-        _should_compute_mat4 = true;
+        _computeModelMat4();
         return;
     }
     // Check if dimensions changed
@@ -104,7 +115,7 @@ void Plane::_updateTexScaling()
     // If scaling changed, indicate that the Model matrice should be computed
     if (_tex_scaling != scaling) {
         _tex_scaling = scaling;
-        _should_compute_mat4 = true;
+        _computeModelMat4();
     }
 }
 

@@ -3,6 +3,7 @@
 
 #include "../Model.hpp"
 #include "../Texture.hpp"
+#include <set>
 
 /** @file
  *  Defines class SSS::GL::Plane.
@@ -40,7 +41,10 @@ public:
     static Shared create(Texture::Shared texture);
     Shared duplicate() const;
 
-    virtual glm::mat4 getModelMat4() override;
+protected:
+    virtual void _computeModelMat4() override;
+
+public:
     virtual void getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles,
         glm::vec3& translation) override;
     
@@ -62,8 +66,8 @@ public:
     void setLooping(bool enable) noexcept { _looping = enable; };
     bool isLooping() const noexcept { return _looping; };
 
-    inline void setAlpha(float alpha) noexcept { _alpha = std::clamp(alpha, 0.f, 1.f); };
-    inline float getAlpha() const noexcept { return _alpha; };
+    void setAlpha(float alpha) noexcept;
+    inline float getAlpha(void) const noexcept { return _alpha; };
 
     /** Types of hitboxes for on-click events to proc (or not)
      *  when in %Plane coordinates.
@@ -86,8 +90,16 @@ public:
     /** Returns relative hovering coordinates (only valid if isHovered() returns true).*/
     inline void getRelativeCoords(int& x, int& y) const noexcept { x = _relative_x; y = _relative_y; };
 
+    inline float getTexOffset() const noexcept { return static_cast<float>(_texture_offset); };
+
 private:
     void _updateTextureOffset();
+
+    static struct _Modified {
+        std::set<Plane::Shared> models;
+        std::set<Plane::Shared> alphas;
+        std::set<Plane::Shared> texture_offsets;
+    } _modified;
 
     Texture::Shared _texture;
     std::function<void(Plane&)> _texture_callback;

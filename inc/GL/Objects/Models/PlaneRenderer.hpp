@@ -28,6 +28,10 @@ class SSS_GL_API PlaneRenderer : public RendererBase, public Basic::InstancedBas
 private:
     PlaneRenderer();
     void _renderPart(Shaders& shader, uint32_t& count) const;
+    bool _containsOneOf(std::set<Plane::Shared> const& set) const noexcept;
+
+    template <typename T>
+    void _updateVBO(T(Plane::* getMember)() const, Basic::VBO& vbo);
 
 public:
     void render() override;

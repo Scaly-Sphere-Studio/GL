@@ -43,8 +43,12 @@ public:
     /** Modifies translation.*/
     void translate(glm::vec3 translation);
 
-    /** Returns the %Model matrix, compute if needed.*/
-    virtual glm::mat4 getModelMat4();
+protected:
+    virtual void _computeModelMat4();
+
+public:
+    /** Returns the %Model matrix.*/
+    inline glm::mat4 getModelMat4() const noexcept { return _model_mat4; };
     /** Returns the scaling, rotation angles, and translation in given parameters.*/
     virtual void getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles,
         glm::vec3& translation);
@@ -65,8 +69,6 @@ protected:
     glm::mat4 _translation;
     /** %Model matrix, computed by getModelMat4().*/
     glm::mat4 _model_mat4;
-    /** Whether getModelMat4() should compute _model_mat4.*/
-    bool _should_compute_mat4{ true };
 };
 
 #pragma warning(pop)

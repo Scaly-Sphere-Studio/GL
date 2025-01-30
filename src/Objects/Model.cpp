@@ -16,13 +16,13 @@ ModelBase::~ModelBase() = default;
 void ModelBase::setScaling(glm::vec3 scaling)
 {
     _scaling = glm::scale(glm::mat4(1), scaling);
-    _should_compute_mat4 = true;
+    _computeModelMat4();
 }
 
 void ModelBase::scale(glm::vec3 scaling)
 {
     _scaling = glm::scale(_scaling, scaling);
-    _should_compute_mat4 = true;
+    _computeModelMat4();
 }
 
 void ModelBase::setRotation(glm::vec3 angles)
@@ -39,28 +39,24 @@ void ModelBase::rotate(glm::vec3 angles)
         _rotation = glm::rotate(_rotation, glm::radians(angles.y), glm::vec3(0, 1, 0));
     if (angles.z != 0.f)
         _rotation = glm::rotate(_rotation, glm::radians(angles.z), glm::vec3(0, 0, 1));
-    _should_compute_mat4 = true;
+    _computeModelMat4();
 }
 
 void ModelBase::setTranslation(glm::vec3 position)
 {
     _translation = glm::translate(glm::mat4(1), position);
-    _should_compute_mat4 = true;
+    _computeModelMat4();
 }
 
 void ModelBase::translate(glm::vec3 translation)
 {
     _translation = glm::translate(_translation, translation);
-    _should_compute_mat4 = true;
+    _computeModelMat4();
 }
 
-glm::mat4 ModelBase::getModelMat4()
+void ModelBase::_computeModelMat4()
 {
-    if (_should_compute_mat4) {
-        _model_mat4 = _translation * _rotation * _scaling;
-        _should_compute_mat4 = false;
-    }
-    return _model_mat4;
+    _model_mat4 = _translation * _rotation * _scaling;
 }
 
 void ModelBase::getAllTransformations(glm::vec3 & scaling, glm::vec3 & rot_angles, glm::vec3 & translation)
