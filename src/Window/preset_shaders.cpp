@@ -13,7 +13,7 @@ layout(location = 1) in vec2 a_UV;
 layout(location = 2) in mat4 a_Model;
 
 layout(location = 6) in float a_Alpha;
-layout(location = 7) in float a_TextureOffset;
+layout(location = 7) in uint a_TextureOffset;
 
 uniform mat4 u_VP;
 

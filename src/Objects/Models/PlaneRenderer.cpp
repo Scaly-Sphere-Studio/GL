@@ -69,7 +69,7 @@ PlaneRenderer::PlaneRenderer() try
 
         _tex_offset_vbo.bind();
         glEnableVertexAttribArray(PLANE_TEX_OFFSET);
-        glVertexAttribPointer(PLANE_TEX_OFFSET, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
+        glVertexAttribIPointer(PLANE_TEX_OFFSET, 1, GL_UNSIGNED_INT, sizeof(uint32_t), (void*)0);
         glVertexAttribDivisor(PLANE_TEX_OFFSET, 1);
         });
     _vao.unbind();

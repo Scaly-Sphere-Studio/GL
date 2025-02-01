@@ -90,7 +90,7 @@ public:
     /** Returns relative hovering coordinates (only valid if isHovered() returns true).*/
     inline void getRelativeCoords(int& x, int& y) const noexcept { x = _relative_x; y = _relative_y; };
 
-    inline float getTexOffset() const noexcept { return static_cast<float>(_texture_offset); };
+    inline uint32_t getTexOffset() const noexcept { return _texture_offset; };
 
 private:
     void _updateTextureOffset();
