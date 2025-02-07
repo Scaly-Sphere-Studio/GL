@@ -146,6 +146,7 @@ namespace Basic {
     protected:
         InstancedBase() {};
         using Weak = std::weak_ptr<T>;
+    private:
         static std::vector<Weak> _instances;
 
     public:

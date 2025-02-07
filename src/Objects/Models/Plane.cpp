@@ -2,67 +2,77 @@
 
 SSS_GL_BEGIN;
 
-Plane::_Modified Plane::_modified{};
+PlaneBase::RawSet PlaneBase::_instances{};
+PlaneBase::_Modified PlaneBase::_modified{};
 
-Plane::Plane() try
+PlaneBase::PlaneBase() try
 {
+    _instances.emplace(this);
+    for (auto& set : _modified.all)
+        set.emplace(this);
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
-Plane::Shared Plane::create(Texture::Shared texture)
+PlaneBase::~PlaneBase()
 {
-    Shared ret = create();
-    _modified.models.emplace(ret);
-    _modified.alphas.emplace(ret);
-    _modified.texture_offsets.emplace(ret);
-    ret->setTexture(texture);
-    return ret;
+    _instances.erase(this);
+    for (auto& set : _modified.all)
+        set.emplace(this);
 }
 
-Plane::Shared Plane::duplicate() const
+void PlaneBase::_computeModelMat4()
 {
-    Shared plane = create();
-    *plane = *this;
-    return plane;
+    ModelBase::_computeModelMat4();
+    _modified.models.emplace(this);
 }
 
-void Plane::_computeModelMat4()
+glm::mat4 PlaneBase::_getScalingMat4() const
 {
-    glm::mat4 scaling = glm::scale(_scaling, _tex_scaling);
-    _model_mat4 = _translation * _rotation * scaling;
-    _modified.models.emplace(shared_from_this());
+    return glm::scale(ModelBase::_getScalingMat4(), _tex_scaling);;
 }
 
-void Plane::getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles, glm::vec3& translation)
+void PlaneBase::getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles, glm::vec3& translation) const
 {
-    Model::getAllTransformations(scaling, rot_angles, translation);
+    ModelBase::getAllTransformations(scaling, rot_angles, translation);
     scaling /= _tex_scaling;
 }
 
-void Plane::setTexture(Texture::Shared texture)
+void PlaneBase::setTexture(Texture::Shared texture)
 {
     _texture = texture;
     _updateTexScaling();
 }
 
-void Plane::setAlpha(float alpha) noexcept
+void PlaneBase::setAlpha(float alpha) noexcept
 {
-    _alpha = std::clamp(alpha, 0.f, 1.f);
-    _modified.alphas.emplace(shared_from_this());
+    float const new_alpha = std::clamp(alpha, 0.f, 1.f);
+    if (_alpha != new_alpha) {
+        _alpha = new_alpha;
+        _modified.alphas.emplace(this);
+    }
 }
 
-void Plane::_updateTextureOffset()
+void PlaneBase::_setTextureOffset(uint32_t offset)
 {
-    _texture_offset = 0;
-    if (!_texture || _texture->getTotalFramesTime() == std::chrono::nanoseconds(0))
+    if (_texture_offset != offset) {
+        _texture_offset = offset;
+        _modified.tex_offsets.emplace(this);
+    }
+}
+
+void PlaneBase::_updateTextureOffset()
+{
+    if (!_texture || _texture->getTotalFramesTime() == std::chrono::nanoseconds(0)) {
+        _setTextureOffset(0);
         return;
+    }
     auto const& frames = _texture->getFrames();
 
     // If loop disabled & animation completed, stop playing
     if (!_looping && _animation_duration >= _texture->getTotalFramesTime()) {
         _is_playing = false;
         _animation_duration = std::chrono::nanoseconds(0);
-        _texture_offset = static_cast<uint32_t>(frames.size()) - 1;
+        _setTextureOffset(static_cast<uint32_t>(frames.size()) - 1);
     }
 
     // Remove excess time
@@ -75,16 +85,13 @@ void Plane::_updateTextureOffset()
     for (uint32_t i = 0; i < frames.size(); ++i) {
         duration -= frames[i].delay;
         if (duration < std::chrono::nanoseconds(0)) {
-            if (_texture_offset != i) {
-                _modified.texture_offsets.emplace(shared_from_this());
-                _texture_offset = i;
-            }
+            _setTextureOffset(i);
             break;
         }
     }
 }
 
-void Plane::_updateTexScaling()
+void PlaneBase::_updateTexScaling()
 {
     if (!_texture) {
         _tex_scaling = glm::vec3(1);
@@ -119,7 +126,7 @@ void Plane::_updateTexScaling()
     }
 }
 
-bool Plane::_hoverTriangle(glm::mat4 const& mvp, glm::vec3 const& A,
+bool PlaneBase::_hoverTriangle(glm::mat4 const& mvp, glm::vec3 const& A,
     glm::vec3 const& B, glm::vec3 const& C, double x, double y,
     double& z, bool& is_hovered)
 {
@@ -197,16 +204,16 @@ bool Plane::_hoverTriangle(glm::mat4 const& mvp, glm::vec3 const& A,
 }
 
 // Updates _is_hovered via the mouse position callback.
-bool Plane::_isHovered(glm::mat4 const& VP, double x, double y, double &z) try
+bool PlaneBase::_isHovered(glm::mat4 const& VP, double x, double y, double &z) try
 {
     // Skip if no hitbox
     if (_hitbox == Hitbox::None) {
         return false;
     }
 
-    // Plane MVP matrix
+    // PlaneBase MVP matrix
     glm::mat4 const mvp = VP * getModelMat4();
-    // Plane's coordinates
+    // PlaneBase's coordinates
     glm::vec4 const A4 = mvp * glm::vec4(-0.5, 0.5, 0, 1);   // Top left
     glm::vec4 const B4 = mvp * glm::vec4(-0.5, -0.5, 0, 1);  // Bottom left
     glm::vec4 const C4 = mvp * glm::vec4(0.5, -0.5, 0, 1);   // Bottom right

@@ -23,7 +23,7 @@ inline void lua_setup_GL(sol::state& lua)
     auto shaders = gl.new_usertype<Shaders>("Shaders", sol::factories(
         sol::resolve<Shaders::Shared()>(Shaders::create),
         sol::resolve<Shaders::Shared(std::string const&, std::string const&)>(Shaders::create)
-    ),  sol::base_classes, sol::bases<::SSS::Base>());
+    ), sol::base_classes, sol::bases<::SSS::Base>());
     shaders["loadFromFiles"] = &Shaders::loadFromFiles;
     shaders["loadFromStrings"] = &Shaders::loadFromStrings;
 
@@ -38,7 +38,13 @@ inline void lua_setup_GL(sol::state& lua)
     ), sol::base_classes, sol::bases<RendererBase, ::SSS::Base>());
     plane_renderer["clear_depth_buffer"] = &PlaneRenderer::clear_depth_buffer;
     plane_renderer["camera"] = &PlaneRenderer::camera;
-    plane_renderer["planes"] = &PlaneRenderer::planes;
+    plane_renderer["planes"] = sol::property(
+        [](PlaneRenderer& ren) { return ren.planes; },
+        [](PlaneRenderer& ren, std::vector<Plane*> planes) {
+            for (Plane* plane : planes)
+                ren.planes.push_back(Plane::get(plane));
+        }
+    );
     plane_renderer["forEach"] = &PlaneRenderer::forEach<void>;
     plane_renderer["forEachB"] = &PlaneRenderer::forEach<bool>;
     plane_renderer["forEachF"] = &PlaneRenderer::forEach<float>;
@@ -106,25 +112,29 @@ inline void lua_setup_GL(sol::state& lua)
     model["isClicked"] = sol::resolve<bool() const>(&ModelBase::isClicked);
     model["isHeld"] = sol::resolve<bool() const>(&ModelBase::isHeld);
 
+    auto plane_base = gl.new_usertype<PlaneBase>("", sol::no_constructor,
+        sol::base_classes, sol::bases<ModelBase>());
+    plane_base["texture"] = sol::property(&Plane::getTexture, &Plane::setTexture);
+    plane_base["setTextureCallback"] = &Plane::setTextureCallback;
+    plane_base["play"] = &Plane::play;
+    plane_base["pause"] = &Plane::pause;
+    plane_base["stop"] = &Plane::stop;
+    plane_base["isPlaying"] = &Plane::isPlaying;
+    plane_base["isPaused"] = &Plane::isPaused;
+    plane_base["isStopped"] = &Plane::isStopped;
+    plane_base["loop"] = sol::property(&Plane::isLooping, &Plane::setLooping);
+    plane_base["alpha"] = sol::property(&Plane::getAlpha, &Plane::setAlpha);
+    plane_base["hitbox"] = sol::property(&Plane::getHitbox, &Plane::setHitbox);
+    
     auto plane = gl.new_usertype<Plane>("Plane", sol::factories(
         sol::resolve<Plane::Shared()>(Plane::create),
         [](Texture* texture) { return Plane::create(Texture::get(texture)); },
         [](TR::Area& area) { return Plane::create(Texture::create(area)); },
         [](char const* filepath) { return Plane::create(Texture::create(filepath)); },
         [](Plane& plane) { return plane.duplicate(); }
-    ),  sol::base_classes, sol::bases<ModelBase, ::SSS::Base>());
-    plane["texture"] = sol::property(&Plane::getTexture, &Plane::setTexture);
-    plane["setTextureCallback"] = &Plane::setTextureCallback;
-    plane["play"] = &Plane::play;
-    plane["pause"] = &Plane::pause;
-    plane["stop"] = &Plane::stop;
-    plane["isPlaying"] = &Plane::isPlaying;
-    plane["isPaused"] = &Plane::isPaused;
-    plane["isStopped"] = &Plane::isStopped;
-    plane["loop"] = sol::property(&Plane::isLooping, &Plane::setLooping);
-    plane["alpha"] = sol::property(&Plane::getAlpha, &Plane::setAlpha);
-    plane["hitbox"] = sol::property(&Plane::getHitbox, &Plane::setHitbox);
+    ), sol::base_classes, sol::bases<PlaneBase, ModelBase, ::SSS::Base>());
     plane["duplicate"] = &Plane::duplicate;
+    
     gl.new_enum<Plane::Hitbox>("PlaneHitbox", {
         { "None", Plane::Hitbox::None },
         { "Alpha", Plane::Hitbox::Alpha },

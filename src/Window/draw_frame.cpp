@@ -17,13 +17,12 @@ void Window::drawObjects()
         // Render all active renderers
         for (auto const& renderer : _renderers) {
             if (!renderer || !renderer->isActive())
-                return;
+                continue;
             renderer->render();
         }
         // Reset list of modified Planes
-        Plane::_modified.models.clear();
-        Plane::_modified.alphas.clear();
-        Plane::_modified.texture_offsets.clear();
+        for (auto& set : PlaneBase::_modified.all)
+            set.clear();
     }
 }
 

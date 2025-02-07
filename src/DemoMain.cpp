@@ -44,13 +44,13 @@ int main() try
     lua.safe_script_file("Init.lua");
     GL::Window& window = lua["window"];
 
+    Log::GL::Window::get().fps = true;
+
     // GL::Window& win2 = GL::Window::create();
     // win2.setRenderers(window.getRenderers());
 
     // Finish setting up window
     glClearColor(0.3f, 0.3f, 0.3f, 0.f);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     window.setCallback(glfwSetKeyCallback, key_callback);
     window.setCallback(glfwSetScrollCallback, scroll_callback);
     // win2.setCallback(glfwSetWindowCloseCallback, close_callback);

@@ -173,8 +173,7 @@ Window& Window::create(CreateArgs const& args)
     win.reset(new Window(args));
     GLFWwindow* ptr = win->getGLFWwindow();
     _main._subs[ptr] = std::move(win);
-    for (auto& weak_camera : Camera::_instances) {
-        auto camera = weak_camera.lock();
+    for (auto camera : Camera::getInstances()) {
         if (camera)
             camera->_computeProjections();
     }

@@ -253,12 +253,11 @@ void Texture::_AsyncLoading::_asyncFunction(std::string folder, std::string file
 void Texture::_updatePlanes()
 {
     // Update texture scaling of all planes & buttons matching this texture
-    for (Plane::Weak const& weak : Plane::_instances) {
-        Plane::Shared const plane = weak.lock();
+    for (PlaneBase* plane : PlaneBase::_instances) {
         if (plane->_texture.get() == this) {
             plane->_updateTexScaling();
             plane->_animation_duration = std::chrono::nanoseconds(0);
-            plane->_texture_offset = 0;
+            plane->_setTextureOffset(0);
         }
     }
 }

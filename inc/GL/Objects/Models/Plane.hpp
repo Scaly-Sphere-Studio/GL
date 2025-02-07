@@ -17,43 +17,58 @@ SSS_GL_BEGIN;
 #pragma warning(disable: 4275)
 
 /** 2D plane derived from Model.*/
-class SSS_GL_API Plane : public Model<Plane> {
-    friend class Basic::SharedBase<Plane>;
+class SSS_GL_API PlaneBase : public ModelBase {
     friend class PlaneRenderer;
     friend class Window;
     friend class Texture;
     friend SSS_GL_API void pollEverything();
 
+public:
+    using RawSet = std::set<PlaneBase*>;
+
 private:
-    Plane();
+    static RawSet _instances;
+
+protected:
+    PlaneBase();
 
     // Make copy & move operations private
-    Plane(const Plane&)             = default;   // Copy constructor
-    Plane(Plane&&)                  = default;   // Move constructor
-    Plane& operator=(const Plane&)  = default;   // Copy assignment
-    Plane& operator=(Plane&&)       = default;   // Move assignment
+    PlaneBase(const PlaneBase&)             = delete;   // Copy constructor
+    PlaneBase(PlaneBase&&)                  = delete;   // Move constructor
+    PlaneBase& operator=(const PlaneBase&)  = default;  // Copy assignment
+    PlaneBase& operator=(PlaneBase&&)       = delete;   // Move assignment
 
 public:
     /** Destructor, default.*/
-    virtual ~Plane() = default;
-
-    using Basic::InstancedBase<Plane>::create;
-    static Shared create(Texture::Shared texture);
-    Shared duplicate() const;
+    virtual ~PlaneBase();
 
 protected:
-    virtual void _computeModelMat4() override;
+    static struct _Modified {
+        std::array<RawSet, 3> all;
+        RawSet& models = all[0];
+        RawSet& alphas = all[1];
+        RawSet& tex_offsets  = all[2];
+    } _modified;
+
+public:
+    static inline RawSet const& getModifiedModels() { return _modified.models; };
+    static inline RawSet const& getModifiedAlphas() { return _modified.alphas; };
+    static inline RawSet const& getModifiedTexOffsets() { return _modified.tex_offsets; };
+
+protected:
+    virtual void _computeModelMat4() override final;
+    virtual glm::mat4 _getScalingMat4() const override;
 
 public:
     virtual void getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles,
-        glm::vec3& translation) override;
-    
+        glm::vec3& translation) const override;
+
     /** Sets the Texture to be used for this instance.*/
     void setTexture(Texture::Shared texture);;
     /** Returns the Texture used for this instance.*/
     inline Texture::Shared getTexture() const noexcept { return _texture; };
 
-    void setTextureCallback(std::function<void(Plane&)> func) { _texture_callback = func; };
+    void setTextureCallback(std::function<void(PlaneBase&)> func) { _texture_callback = func; };
 
     inline void play() noexcept { _is_playing = true; };
     inline void pause() noexcept { _is_playing = false; };
@@ -93,16 +108,11 @@ public:
     inline uint32_t getTexOffset() const noexcept { return _texture_offset; };
 
 private:
+    void _setTextureOffset(uint32_t offset);
     void _updateTextureOffset();
 
-    static struct _Modified {
-        std::set<Plane::Shared> models;
-        std::set<Plane::Shared> alphas;
-        std::set<Plane::Shared> texture_offsets;
-    } _modified;
-
     Texture::Shared _texture;
-    std::function<void(Plane&)> _texture_callback;
+    std::function<void(PlaneBase&)> _texture_callback;
     uint32_t _texture_offset{ 0 };
     bool _is_playing{ false };
     bool _looping{ false };
@@ -127,6 +137,32 @@ private:
     // Returns true and updates z if Plane is hovered
     bool _isHovered(glm::mat4 const& VP, double x, double y, double &z);
 };
+
+template<class Derived>
+class PlaneTemplate : public PlaneBase, public Basic::InstancedBase<Derived> {
+    friend class Basic::SharedBase<Derived>;
+
+public:
+    using Basic::SharedBase<Derived>::Shared;
+    using Basic::SharedBase<Derived>::Weak;
+    using Basic::InstancedBase<Derived>::create;
+
+    static auto create(Texture::Shared texture)
+    {
+        auto ret = create();
+        ret->setTexture(texture);
+        return ret;
+    }
+
+    auto duplicate() const
+    {
+        auto shared = create();
+        std::memcpy(shared.get(), this, sizeof(Derived));
+        return shared;
+    }
+};
+
+class Plane : public PlaneTemplate<Plane> {};
 
 #pragma warning(pop)
 

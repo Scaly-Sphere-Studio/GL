@@ -27,11 +27,11 @@ class SSS_GL_API PlaneRenderer : public RendererBase, public Basic::InstancedBas
 
 private:
     PlaneRenderer();
-    void _renderPart(Shaders& shader, uint32_t& count) const;
-    bool _containsOneOf(std::set<Plane::Shared> const& set) const noexcept;
+    void _renderPart(Shaders& shader, uint32_t& count, uint32_t& offset) const;
+    bool _containsOneOf(PlaneBase::RawSet const& set) const noexcept;
 
     template <typename T>
-    void _updateVBO(T(Plane::* getMember)() const, Basic::VBO& vbo);
+    void _updateVBO(T(PlaneBase::* getMember)() const, Basic::VBO& vbo);
 
 public:
     void render() override;
@@ -41,7 +41,7 @@ public:
     /** Specified Camera.*/
     Camera::Shared camera;
     /** Specified Planes.*/
-    std::vector<Plane::Shared> planes;
+    std::vector<std::shared_ptr<PlaneBase>> planes;
 
     static auto create(Camera::Shared cam, bool clear_depth_buffer = false) {
         auto shared = Renderer<PlaneRenderer>::create();
@@ -50,15 +50,15 @@ public:
         return shared;
     }
 
-    using Basic::SharedBase<PlaneRenderer>::Shared;
-    using Basic::InstancedBase<PlaneRenderer>::create;
+    using SharedBase::Shared;
+    using InstancedBase::create;
     virtual RendererBase::Shared getShared() noexcept override {
-        Shared shared = Basic::SharedBase<PlaneRenderer>::shared_from_this();
+        Shared shared = SharedBase::shared_from_this();
         return shared;
     };
 
     template <typename T>
-    T forEach(std::function<T(Plane&)> func)
+    T forEach(std::function<T(PlaneBase&)> func)
     {
         T ret{};
         for (auto const& plane : planes) {
@@ -70,7 +70,7 @@ public:
     };
 
     template<>
-    void forEach(std::function<void(Plane&)> func)
+    void forEach(std::function<void(PlaneBase&)> func)
     {
         for (auto const& plane : planes) {
             if (!plane)
@@ -80,7 +80,7 @@ public:
     };
 
     template<>
-    bool forEach(std::function<bool(Plane&)> func)
+    bool forEach(std::function<bool(PlaneBase&)> func)
     {
         for (auto const& plane : planes) {
             if (!plane)
@@ -103,7 +103,7 @@ private:
     // Plane texture offset (used to read apng)
     Basic::VBO _tex_offset_vbo;
 
-    Plane::Weak _hovered;
+    std::weak_ptr<PlaneBase> _hovered;
     double _hovered_z{ DBL_MAX };
     bool _findNearestModel(double x, double y);
 };

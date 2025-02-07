@@ -76,8 +76,7 @@ void pollEverything() try
         win->_poll();
 
     // Loop over each Texture instance
-    for (Texture::Weak const weak : Texture::_instances) {
-        Texture::Shared const texture = weak.lock();
+    for (Texture::Shared const texture : Texture::getInstances()) {
         if (!texture)
             continue;
         texture->_has_running_thread = false;
@@ -124,12 +123,7 @@ void pollEverything() try
     }
 
     // Loop over each Plane instance
-    for (Plane::Weak const& weak : Plane::_instances) {
-        Plane::Shared const plane = weak.lock();
-        if (!plane) {
-            continue;
-        }
-        
+    for (PlaneBase* plane : PlaneBase::_instances) {
         if (plane->isPlaying()) {
             plane->_animation_duration += time_since_last_poll;
             plane->_updateTextureOffset();

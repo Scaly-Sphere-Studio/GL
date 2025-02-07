@@ -24,8 +24,7 @@ void Window::window_resize_callback(GLFWwindow* ptr, int w, int h) try
         glViewport(0, 0, w, h);
 
         // Update screen_ratio of cameras
-        for (Camera::Weak weak : Camera::_instances) {
-            Camera::Shared camera = weak.lock();
+        for (Camera::Shared camera : Camera::getInstances()) {
             if (camera) {
                 camera->_computeProjections();
             }

@@ -45,13 +45,16 @@ public:
 
 protected:
     virtual void _computeModelMat4();
+    virtual inline glm::mat4 _getScalingMat4() const { return _scaling; };
+    virtual inline glm::mat4 _getRotationMat4() const { return _rotation; };
+    virtual inline glm::mat4 _getTranslationMat4() const { return _translation; };
 
 public:
     /** Returns the %Model matrix.*/
     inline glm::mat4 getModelMat4() const noexcept { return _model_mat4; };
     /** Returns the scaling, rotation angles, and translation in given parameters.*/
     virtual void getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles,
-        glm::vec3& translation);
+        glm::vec3& translation) const;
     glm::vec3 getScaling();
     glm::vec3 getRotation();
     glm::vec3 getTranslation();
@@ -60,7 +63,7 @@ public:
     bool isClicked() const noexcept;
     bool isHeld() const noexcept;
 
-protected:
+private:
     /** Scaling part of the %Model matrix.*/
     glm::mat4 _scaling;
     /** Rotation part of the %Model matrix.*/
