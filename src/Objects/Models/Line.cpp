@@ -151,27 +151,7 @@ Polyline::Shared Polyline::Bezier(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::ve
     Math::Gradient<glm::vec4> g_color;
     g_color.push(std::make_pair(0.0f, color));
 
-    Vertex::Vec path;
-    std::vector<std::pair<float, glm::vec3>> v;
-    v.emplace_back(std::make_pair(0.f, a));
-    v.emplace_back(std::make_pair(0.5f, Math::bezier_func(0.5f, a, b, c, d)));
-    v.emplace_back(std::make_pair(1.f, d));
-
-    Math::bezier_recurs(v, v[0], v[1], a, b, c, d);
-    Math::bezier_recurs(v, v[1], v[2], a, b, c, d);
-
-    std::sort(v.begin(), v.end(), Math::sort_pair_vec);
-    path.reserve(v.size());
-
-    for (auto p : v) {
-        path.emplace_back(p.second);
-    }
-
-    Shared line(new Polyline(path, g_thickness, g_color, jopt, topt));
-    _batch.emplace_back(line);
-    path.clear();
-
-    return line;
+    return Bezier(a, b, c, d, g_thickness, g_color);
 }
 
 Polyline::Mesh_info::Mesh_info() :
@@ -281,7 +261,7 @@ uint8_t Polyline::path_meshing(Math::Gradient<float> gradient_thickness, Math::G
 
     // TODO: Fix la 3D quand on aura le temps et que ça sera nécessaire
     // Normalize Z
-    float const z = mesh.at(0).v_pos.z;
+    float const z = path.at(0).v_pos.z;
     for (Vertex& v : mesh) {
         v.v_pos.z = z;
     }

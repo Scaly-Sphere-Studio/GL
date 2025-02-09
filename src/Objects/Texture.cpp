@@ -19,8 +19,8 @@ Texture::Texture() try
     _raw_texture.bind();
     _raw_texture.parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     _raw_texture.parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    _raw_texture.parameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    _raw_texture.parameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    _raw_texture.parameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    _raw_texture.parameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     
     // Log
     if (Log::GL::Texture::query(Log::GL::Texture::get().life_state)) {
