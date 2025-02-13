@@ -102,7 +102,7 @@ void Window::mouse_position_callback(GLFWwindow* ptr, double x, double y)
 
     // TR
     auto area = TR::Area::getFocused();
-    auto plane = window->getHeld<Plane>();
+    auto plane = window->getHeld<PlaneBase>();
     if (area && plane && plane->_texture && plane->_texture->getType() == Texture::Type::Text
         && plane->_texture->getTextArea() == area)
     {
@@ -168,32 +168,19 @@ void Window::mouse_button_callback(GLFWwindow* ptr, int button, int action, int 
     }
 
     // Set focus of Text Area
-    if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS) {
-        Plane::Shared const plane = window->getHovered<Plane>();
-        if (plane && plane->_texture && plane->_texture->getType() == Texture::Type::Text) {
-            TR::Area* area = plane->_texture->getTextArea();
-            if (area && area->isFocusable()) {
-                int x, y;
-                plane->getRelativeCoords(x, y);
-                area->cursorPlace(x, y);
-                // Reset key_inputs
-                while (!window->_key_queue.empty()) {
-                    window->_key_queue.pop();
-                }
-                for (auto& key : window->_key_inputs) {
-                    key.reset();
-                }
-            }
+    if (auto area = TR::Area::getFocused();
+        area && button == GLFW_MOUSE_BUTTON_1)
+    {
+        auto plane = window->getHovered<PlaneBase>();
+        if (action == GLFW_PRESS) {
+            if (plane && plane->getTextArea() && plane->getTextArea()->isFocusable())
+                window->placeHoveredTextAreaCursor();
             else
                 TR::Area::resetFocus();
         }
-        else
-            TR::Area::resetFocus();
-    }
-    else if (auto area = TR::Area::getFocused(); area && button == GLFW_MOUSE_BUTTON_1
-        && action == GLFW_RELEASE && !window->keyMod(GLFW_MOD_SHIFT))
-    {
-        area->unlockSelection();
+        else if (action == GLFW_RELEASE && !window->keyMod(GLFW_MOD_SHIFT)) {
+            area->unlockSelection();
+        }
     }
 
     // Fill inputs if no focused text Area OR key was released
@@ -236,7 +223,7 @@ void Window::key_callback(GLFWwindow* ptr, int key, int scancode, int action, in
     {
         if ((mods & GLFW_MOD_SHIFT) != 0)
             area->lockSelection();
-        else if (auto plane = window->getHeld<Plane>(); !plane || !plane->_texture
+        else if (auto plane = window->getHeld<PlaneBase>(); !plane || !plane->_texture
             || plane->_texture->_type != Texture::Type::Text || plane->_texture->getTextArea() != area)
             area->unlockSelection();
     }

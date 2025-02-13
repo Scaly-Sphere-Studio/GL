@@ -124,6 +124,8 @@ void PlaneBase::_updateTexScaling()
         _tex_scaling = scaling;
         _computeModelMat4();
     }
+    if (_texture_size_callback)
+        _texture_size_callback(*this);
 }
 
 bool PlaneBase::_hoverTriangle(glm::mat4 const& mvp, glm::vec3 const& A,

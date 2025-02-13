@@ -26,6 +26,26 @@ void Window::drawObjects()
     }
 }
 
+void Window::placeHoveredTextAreaCursor()
+{
+    auto const plane = getHovered<PlaneBase>();
+    if (plane && plane->_texture && plane->_texture->getType() == Texture::Type::Text) {
+        TR::Area* area = plane->_texture->getTextArea();
+        if (area && area->isFocusable()) {
+            int x, y;
+            plane->getRelativeCoords(x, y);
+            area->cursorPlace(x, y);
+            // Reset key_inputs
+            while (!_key_queue.empty()) {
+                _key_queue.pop();
+            }
+            for (auto& key : _key_inputs) {
+                key.reset();
+            }
+        }
+    }
+}
+
 void Window::_updateHoveredModel()
 {
     // Reset hovering

@@ -67,8 +67,10 @@ public:
     void setTexture(Texture::Shared texture);;
     /** Returns the Texture used for this instance.*/
     inline Texture::Shared getTexture() const noexcept { return _texture; };
+    inline TR::Area* getTextArea() const noexcept { return _texture ? _texture->getTextArea() : nullptr; };
 
     void setTextureCallback(std::function<void(PlaneBase&)> func) { _texture_callback = func; };
+    void setTextureSizeCallback(std::function<void(PlaneBase&)> func) { _texture_size_callback = func; };
 
     inline void play() noexcept { _is_playing = true; };
     inline void pause() noexcept { _is_playing = false; };
@@ -113,6 +115,7 @@ private:
 
     Texture::Shared _texture;
     std::function<void(PlaneBase&)> _texture_callback;
+    std::function<void(PlaneBase&)> _texture_size_callback;
     uint32_t _texture_offset{ 0 };
     bool _is_playing{ false };
     bool _looping{ false };

@@ -289,6 +289,8 @@ public:
     }
     std::shared_ptr<Camera> getHeldCam() const noexcept { return _held.camera.lock(); };
 
+    void placeHoveredTextAreaCursor();
+
     /** Draws everything in order of Renderer IDs.
      *  @sa printFrame()
      */

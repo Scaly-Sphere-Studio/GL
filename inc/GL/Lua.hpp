@@ -116,6 +116,7 @@ inline void lua_setup_GL(sol::state& lua)
         sol::base_classes, sol::bases<ModelBase>());
     plane_base["texture"] = sol::property(&Plane::getTexture, &Plane::setTexture);
     plane_base["setTextureCallback"] = &Plane::setTextureCallback;
+    plane_base["setTextureSizeCallback"] = &Plane::setTextureSizeCallback;
     plane_base["play"] = &Plane::play;
     plane_base["pause"] = &Plane::pause;
     plane_base["stop"] = &Plane::stop;

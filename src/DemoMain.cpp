@@ -74,6 +74,9 @@ int main() try
         // Swap buffers
         window.printFrame();
 
+        if (window.getClickInputs()[GLFW_MOUSE_BUTTON_1].is_pressed(2))
+            window.placeHoveredTextAreaCursor();
+
         //if (window.keyIsPressed(GLFW_KEY_F1))
             // win2.setVisibility(true);
 

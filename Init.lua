@@ -74,7 +74,7 @@ for video games and applications!]]
     area.wrapping = true
     --area.print_mode = TR.PrintMode.Typewriter
     area.TW_speed = 20
-    --area.focusable = true;
+    area.focusable = true;
     --area.focus = true;
 end
 

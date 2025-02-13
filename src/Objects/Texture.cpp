@@ -56,7 +56,7 @@ void Texture::_callback()
     _was_just_updated = true;
     if (_callback_f)
         _callback_f(*this);
-    for (auto const& plane : Plane::getInstances()) {
+    for (auto const& plane : PlaneBase::_instances) {
         if (plane->getTexture().get() == this && plane->_texture_callback)
             plane->_texture_callback(*plane);
     }
