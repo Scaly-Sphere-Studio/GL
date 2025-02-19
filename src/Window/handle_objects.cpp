@@ -13,7 +13,7 @@ Shaders::Shared Window::getPresetShaders(uint32_t id) noexcept
     return _main._preset_shaders.at(id);
 }
 
-void Window::addRenderer(RendererBase::Shared renderer, size_t index)
+void Window::addRenderer(std::shared_ptr<RendererBase> renderer, size_t index)
 {
     if (index > _renderers.size()) {
         LOG_METHOD_CTX_WRN("Index out of bound", index);
@@ -26,12 +26,12 @@ void Window::addRenderer(RendererBase::Shared renderer, size_t index)
     _renderers.insert(_renderers.cbegin() + index, renderer);
 }
 
-void Window::addRenderer(RendererBase::Shared renderer)
+void Window::addRenderer(std::shared_ptr<RendererBase> renderer)
 {
     addRenderer(renderer, _renderers.size());
 }
 
-void Window::removeRenderer(RendererBase::Shared renderer)
+void Window::removeRenderer(std::shared_ptr<RendererBase> renderer)
 {
     auto const it = std::find(_renderers.cbegin(), _renderers.cend(), renderer);
     if (it != _renderers.cend())

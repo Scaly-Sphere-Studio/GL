@@ -20,10 +20,7 @@ SSS_GL_BEGIN;
  */
 class SSS_GL_API RendererBase {
 public:
-    using Shared = std::shared_ptr<RendererBase>;
-    using Vector = std::vector<Shared>;
-
-    virtual Shared getShared() noexcept = 0;
+    virtual std::shared_ptr<RendererBase> getSharedBase() noexcept = 0;
     /** Your rendering logic here.*/
     virtual void render() = 0;
 
@@ -47,7 +44,7 @@ public:
 #pragma warning(pop)
 
 template<class Derived>
-class Renderer : public RendererBase, public Basic::InstancedBase<Derived> {
+class Renderer : public RendererBase, public SharedClass<Derived> {
 protected:
     Renderer()                              = default;  // Constructor
 public:
@@ -60,10 +57,8 @@ public:
     Renderer& operator=(Renderer&&)         = delete;   // Move assignment
     /** \endcond*/
 
-    using Basic::SharedBase<Derived>::Shared;
-    virtual RendererBase::Shared getShared() noexcept override {
-        Shared shared = Basic::SharedBase<Derived>::shared_from_this();
-        return shared;
+    virtual std::shared_ptr<RendererBase> getSharedBase() noexcept final {
+        return SharedClass<Derived>::shared_from_this();
     };
 };
 

@@ -39,17 +39,27 @@ inline void lua_setup_GL(sol::state& lua)
     plane_renderer["clear_depth_buffer"] = &PlaneRenderer::clear_depth_buffer;
     plane_renderer["camera"] = &PlaneRenderer::camera;
     plane_renderer["planes"] = sol::property(
-        [](PlaneRenderer& ren) { return ren.planes; },
+        [](PlaneRenderer& ren) { return ren.getPlanes(); },
         [](PlaneRenderer& ren, std::vector<Plane*> planes) {
+            std::vector<std::shared_ptr<PlaneBase>> vec;
+            vec.reserve(planes.size());
             for (Plane* plane : planes)
-                ren.planes.push_back(Plane::get(plane));
+                vec.push_back(Plane::get(plane));
+            ren.setPlanes(vec);
         }
     );
-    plane_renderer["forEach"] = &PlaneRenderer::forEach<void>;
-    plane_renderer["forEachB"] = &PlaneRenderer::forEach<bool>;
-    plane_renderer["forEachF"] = &PlaneRenderer::forEach<float>;
-    plane_renderer["forEachI"] = &PlaneRenderer::forEach<int>;
-    plane_renderer["forEachS"] = &PlaneRenderer::forEach<std::string>;
+    plane_renderer["addPlane"] = &PlaneRenderer::addPlane;
+    plane_renderer["removePlane"] = &PlaneRenderer::removePlane;
+    
+    plane_renderer["forEach"] = sol::resolve<void (std::function<void (Plane&)>)>
+        (&PlaneRenderer::forEach<Plane>);
+    
+    plane_renderer["forEachB"] = sol::resolve<bool (std::function<bool (Plane&)>)>
+        (&PlaneRenderer::forEach<Plane>);
+
+    plane_renderer["forEachF"] = &PlaneRenderer::forEach<Plane, float>;
+    plane_renderer["forEachI"] = &PlaneRenderer::forEach<Plane, int>;
+    plane_renderer["forEachS"] = &PlaneRenderer::forEach<Plane, std::string>;
 
     auto line_renderer = gl.new_usertype<LineRenderer>("LineRenderer",
         sol::factories(sol::resolve<LineRenderer::Shared()>(LineRenderer::create)),
@@ -59,7 +69,7 @@ inline void lua_setup_GL(sol::state& lua)
     auto texture = gl.new_usertype<Texture>("Texture", sol::factories(
         sol::resolve<Texture::Shared()>(Texture::create),
         sol::resolve<Texture::Shared(std::string const&)>(Texture::create),
-        sol::resolve<Texture::Shared(TR::Area const&)>(Texture::create)
+        sol::resolve<Texture::Shared(TR::Area::Shared)>(Texture::create)
     ),  sol::base_classes, sol::bases<::SSS::Base>());
     texture["resource_folder"] = sol::property(&Texture::getResourceFolder, &Texture::setResourceFolder);
     texture["hasRunningThread"] = &Texture::hasRunningThread;
@@ -130,7 +140,7 @@ inline void lua_setup_GL(sol::state& lua)
     auto plane = gl.new_usertype<Plane>("Plane", sol::factories(
         sol::resolve<Plane::Shared()>(Plane::create),
         [](Texture* texture) { return Plane::create(Texture::get(texture)); },
-        [](TR::Area& area) { return Plane::create(Texture::create(area)); },
+        [](TR::Area::Shared area) { return Plane::create(Texture::create(area)); },
         [](char const* filepath) { return Plane::create(Texture::create(filepath)); },
         [](Plane& plane) { return plane.duplicate(); }
     ), sol::base_classes, sol::bases<PlaneBase, ModelBase, ::SSS::Base>());
@@ -173,22 +183,22 @@ inline void lua_setup_GL(sol::state& lua)
 
     window["addRenderer"] = sol::overload(
         [](Window& win, RendererBase* ptr) {
-            win.addRenderer(ptr->getShared());
+            win.addRenderer(ptr->getSharedBase());
         },
         [](Window& win, RendererBase* ptr, size_t offset) {
-            win.addRenderer(ptr->getShared(), offset);
+            win.addRenderer(ptr->getSharedBase(), offset);
         }
     );
     window["removeRenderer"] = [](Window& win, RendererBase* ptr) {
-        win.removeRenderer(ptr->getShared());
+        win.removeRenderer(ptr->getSharedBase());
     };
     window["renderers"] = sol::property(
         &Window::getRenderers,
         [](Window& win, std::vector<RendererBase*> renderers) {
-            std::vector<RendererBase::Shared> arg;
+            std::vector<std::shared_ptr<RendererBase>> arg;
             arg.reserve(renderers.size());
             for (auto renderer : renderers)
-                arg.emplace_back(renderer->getShared());
+                arg.emplace_back(renderer->getSharedBase());
             win.setRenderers(arg);
         }
     );

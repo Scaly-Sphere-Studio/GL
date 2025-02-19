@@ -41,9 +41,9 @@ INTERNAL_END;
  *  internal Basic::Texture.
  *  @sa Window::createTexture()
  */
-class SSS_GL_API Texture : public Basic::InstancedBase<Texture> {
+class SSS_GL_API Texture : public InstancedClass<Texture> {
 
-    friend Basic::SharedBase<Texture>;
+    friend SharedClass<Texture>;
     friend SSS_GL_API void pollEverything();
     friend class Window;
 
@@ -54,9 +54,9 @@ public:
     /** Destructor, can log but otherwise default.*/
     ~Texture();
 
-    using InstancedBase::create;
+    using InstancedClass::create;
     static Shared create(std::string const& filepath);
-    static Shared create(TR::Area const& area);
+    static Shared create(TR::Area::Shared area);
 
     /** The Texture type, mainly to know which pixels to use (internal or TR).
      *  @sa setType(), getType()
@@ -88,7 +88,7 @@ private:
     std::chrono::nanoseconds _total_frames_time{ 0 }; // Total time for current animation to loop
     int _raw_w{ 0 }, _raw_h{ 0 };   // Raw dimensions
     int _text_w{ 0 }, _text_h{ 0 }; // Last TR dimensions (stored for scaling update)
-    uint32_t _text_area_id{ 0 };    // TR::Area id
+    TR::Area::Shared _area;         // TR::Area
     std::string _filepath;          // Image filepath
     bool _has_running_thread{ false };  // Whether the texture will soon be updated
     bool _was_just_updated{ false };    // Whether the texture just got an update
@@ -138,19 +138,14 @@ public:
      *  corresponding TR::Area's text rendering is completed, the next
      *  call to pollEverything() will update every Texture instance
      *  linked to it.
-     *  @sa getTextAreaID(), getTextArea()
-     */
-    void setTextAreaID(uint32_t id);
-    inline void setTextArea(TR::Area const& area) { setTextAreaID(area.getID()); };
-    /** Returns the TR::Area ID previously set via setTextAreaID(), or default (0).
      *  @sa getTextArea()
      */
-    inline uint32_t getTextAreaID() const noexcept { return _text_area_id; };
+    inline void setTextArea(TR::Area::Shared area);
     /** Returns the TR::Area corresponding to the ID set via
      *  setTextAreaID(), or nullptr.
      *  @sa getTextAreaID()
      */
-    inline TR::Area* getTextArea() const noexcept { return TR::Area::get(_text_area_id); };
+    inline TR::Area::Shared getTextArea() const noexcept { return _area; };
     
     /** Binds the internal Basic::Texture to the content in which it was created.
      *  Effectively calls Basic::Texture::bind().

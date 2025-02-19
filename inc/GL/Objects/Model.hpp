@@ -25,9 +25,6 @@ public:
     /** Virtual destructor, default.*/
     virtual ~ModelBase() = 0;
 
-    using Shared = std::shared_ptr<ModelBase>;
-    using Weak = std::weak_ptr<ModelBase>;
-
     /** Sets scaling (default: 1*1*1).*/
     void setScaling(glm::vec3 scaling = glm::vec3(1.f));
     /** Sets rotation angles (default: 0*0*0).*/
@@ -75,17 +72,6 @@ private:
 };
 
 #pragma warning(pop)
-
-template<class Derived>
-class Model : public ModelBase, public Basic::InstancedBase<Derived> {
-protected:
-    Model() {};
-
-public:
-    using Basic::SharedBase<Derived>::Shared;
-    using Basic::SharedBase<Derived>::Weak;
-};
-
 
 SSS_GL_END;
 

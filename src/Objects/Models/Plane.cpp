@@ -186,7 +186,7 @@ bool PlaneBase::_hoverTriangle(glm::mat4 const& mvp, glm::vec3 const& A,
         break;
     }
     case Texture::Type::Text: {
-        TR::Area* text_area = _texture->getTextArea();
+        TR::Area::Shared text_area = _texture->getTextArea();
         if (text_area) {
             int w, h;
             text_area->pixelsGetDimensions(w, h);

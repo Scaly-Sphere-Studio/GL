@@ -103,7 +103,7 @@ bool PlaneRenderer::_containsOneOf(PlaneBase::RawSet const& set) const noexcept
 {
     return std::any_of(set.cbegin(), set.cend(),
         [this](PlaneBase* modif) {
-            for (std::shared_ptr<PlaneBase> const& plane : planes)
+            for (std::shared_ptr<PlaneBase> const& plane : _planes)
                 if (plane.get() == modif)
                     return true;
             return false;
@@ -114,8 +114,8 @@ bool PlaneRenderer::_containsOneOf(PlaneBase::RawSet const& set) const noexcept
 template <typename T>
 void PlaneRenderer::_updateVBO(T(PlaneBase::* getMember)() const, Basic::VBO& vbo) {
     std::vector<T> vec;
-    vec.reserve(planes.size());
-    for (std::shared_ptr<PlaneBase> const& plane : planes) {
+    vec.reserve(_planes.size());
+    for (std::shared_ptr<PlaneBase> const& plane : _planes) {
         vec.push_back(((*plane).*getMember)());
     }
     vbo.edit(vec, GL_DYNAMIC_DRAW);
@@ -143,18 +143,20 @@ void PlaneRenderer::render() try
         glm::value_ptr(camera ? camera->getVP() : glm::mat4(1)));
 
     // Edit VBOs if needed
-    if (_containsOneOf(PlaneBase::getModifiedModels()))
+    if (_update_vbos || _containsOneOf(PlaneBase::getModifiedModels()))
         _updateVBO(&PlaneBase::getModelMat4, _model_vbo);
 
-    if (_containsOneOf(PlaneBase::getModifiedAlphas()))
+    if (_update_vbos || _containsOneOf(PlaneBase::getModifiedAlphas()))
         _updateVBO(&PlaneBase::getAlpha, _alpha_vbo);
 
-    if (_containsOneOf(PlaneBase::getModifiedTexOffsets()))
+    if (_update_vbos || _containsOneOf(PlaneBase::getModifiedTexOffsets()))
         _updateVBO(&PlaneBase::getTexOffset, _tex_offset_vbo);
+
+    _update_vbos = false;
 
     uint32_t count = 0, offset = 0;
     // Loop over each plane
-    for (std::shared_ptr<PlaneBase> const& plane : planes) {
+    for (std::shared_ptr<PlaneBase> const& plane : _planes) {
         // Check if we can't cache more instances and need to make a draw call.
         if (count == Window::maxGLSLTextureUnits()) {
             _renderPart(*shader, count, offset);
@@ -173,6 +175,24 @@ void PlaneRenderer::render() try
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
+void PlaneRenderer::addPlane(std::shared_ptr<PlaneBase> plane)
+{
+    _planes.push_back(plane);
+    _update_vbos = true;
+}
+
+void PlaneRenderer::removePlane(std::shared_ptr<PlaneBase> plane)
+{
+    _planes.erase(std::remove_if(
+        _planes.begin(),
+        _planes.end(),
+        [plane](auto p1) {
+            return p1.get() == plane.get();
+        }
+    ));
+    _update_vbos = true;
+}
+
 bool PlaneRenderer::_findNearestModel(double x, double y)
 {
     _hovered.reset();
@@ -188,7 +208,7 @@ bool PlaneRenderer::_findNearestModel(double x, double y)
         VP = camera->getVP();
     }
     // Loop over each plane in chunk
-    for (std::shared_ptr<PlaneBase> const& plane : planes | std::views::reverse) {
+    for (std::shared_ptr<PlaneBase> const& plane : _planes | std::views::reverse) {
         if (!plane)
             continue;
         // Check if plane is hovered and retrieve its relative depth

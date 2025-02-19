@@ -21,9 +21,9 @@ SSS_GL_BEGIN;
  *  This is useful to enforce specific orders of chunks without
  *  having to worry about their depth (Background, Scene, Text, UI...).
  */
-class SSS_GL_API PlaneRenderer : public RendererBase, public Basic::InstancedBase<PlaneRenderer> {
+class SSS_GL_API PlaneRenderer : public Renderer<PlaneRenderer> {
+    friend class SharedClass;
     friend class Window;
-    friend class Basic::SharedBase<PlaneRenderer>;
 
 private:
     PlaneRenderer();
@@ -34,58 +34,93 @@ private:
     void _updateVBO(T(PlaneBase::* getMember)() const, Basic::VBO& vbo);
 
 public:
-    void render() override;
+    virtual void render() override;
 
     /** Whether to reset Z-buffer before rendering.*/
     bool clear_depth_buffer{ false };
     /** Specified Camera.*/
     Camera::Shared camera;
     /** Specified Planes.*/
-    std::vector<std::shared_ptr<PlaneBase>> planes;
+
+private:
+    std::vector<std::shared_ptr<PlaneBase>> _planes;
+public:
+    inline auto const& getPlanes() const noexcept { return _planes; };
+
+    template <std::derived_from<PlaneBase> _Plane>
+    void setPlanes(std::vector<std::shared_ptr<_Plane>> planes)
+    {
+        _planes.clear();
+        addPlanes(planes);
+    }
+    
+    void addPlane(std::shared_ptr<PlaneBase> plane);
+    void removePlane(std::shared_ptr<PlaneBase> plane);
+    
+    template <std::derived_from<PlaneBase> _Plane>
+    void addPlanes(std::vector<std::shared_ptr<_Plane>> planes)
+    {
+        _planes.insert(_planes.end(), planes.cbegin(), planes.cend());
+        _update_vbos = true;
+    }
+    
+    template <std::derived_from<PlaneBase> _Plane>
+    void removePlanes(std::vector<std::shared_ptr<_Plane>> planes)
+    {
+        _planes.erase(
+            std::remove_if(
+                _planes.begin(),
+                _planes.end(),
+                [planes](auto p1) {
+                    return std::any_of(
+                        planes.cbegin(),
+                        planes.cend(),
+                        [p1](auto p2) { return p1.get() == p2.get(); }
+                    );
+                }
+            ), _planes.end()
+        );
+        _update_vbos = true;
+    }
+
+    using SharedClass::create;
 
     static auto create(Camera::Shared cam, bool clear_depth_buffer = false) {
-        auto shared = Renderer<PlaneRenderer>::create();
+        auto shared = SharedClass::create();
         shared->camera = cam;
         shared->clear_depth_buffer = clear_depth_buffer;
         return shared;
     }
 
-    using SharedBase::Shared;
-    using InstancedBase::create;
-    virtual RendererBase::Shared getShared() noexcept override {
-        Shared shared = SharedBase::shared_from_this();
-        return shared;
-    };
-
-    template <typename T>
-    T forEach(std::function<T(PlaneBase&)> func)
+    template<std::derived_from<PlaneBase> _Plane, class _T>
+    _T forEach(std::function<_T (_Plane&)> func)
     {
-        T ret{};
-        for (auto const& plane : planes) {
-            if (!plane)
-                continue;
-            ret += func(*plane);
+        _T ret{};
+        for (auto const& plane : _planes) {
+            if (!plane) continue;
+            auto cast_plane = std::dynamic_pointer_cast<_Plane>(plane);
+            ret += func(*cast_plane);
         }
         return ret;
     };
 
-    template<>
-    void forEach(std::function<void(PlaneBase&)> func)
+    template<std::derived_from<PlaneBase> _Plane>
+    void forEach(std::function<void (_Plane&)> func)
     {
-        for (auto const& plane : planes) {
-            if (!plane)
-                continue;
-            func(*plane);
+        for (auto const& plane : _planes) {
+            if (!plane) continue;
+            auto cast_plane = std::dynamic_pointer_cast<_Plane>(plane);
+            func(*cast_plane);
         }
     };
 
-    template<>
-    bool forEach(std::function<bool(PlaneBase&)> func)
+    template<std::derived_from<PlaneBase> _Plane>
+    bool forEach(std::function<bool (_Plane&)> func)
     {
-        for (auto const& plane : planes) {
-            if (!plane)
-                continue;
-            if (func(*plane))
+        for (auto const& plane : _planes) {
+            if (!plane) continue;
+            auto cast_plane = std::dynamic_pointer_cast<_Plane>(plane);
+            if (func(*cast_plane))
                 return true;
         }
         return false;
@@ -102,6 +137,9 @@ private:
     Basic::VBO _alpha_vbo;
     // Plane texture offset (used to read apng)
     Basic::VBO _tex_offset_vbo;
+
+    // To update all dynamic vbos
+    bool _update_vbos{ true };
 
     std::weak_ptr<PlaneBase> _hovered;
     double _hovered_z{ DBL_MAX };

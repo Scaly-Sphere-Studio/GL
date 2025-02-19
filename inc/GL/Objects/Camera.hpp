@@ -22,9 +22,9 @@ class Window;
 /** Abstractization of View and Projection matrices, used in Renderer::Chunk.
  *  @sa create()
  */
-class SSS_GL_API Camera : public Basic::InstancedBase<Camera> {
+class SSS_GL_API Camera : public InstancedClass<Camera> {
+    friend class SharedClass;
     friend class Window;
-    friend class Basic::SharedBase<Camera>;
 private:
     Camera();
 public:

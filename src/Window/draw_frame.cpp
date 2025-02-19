@@ -30,7 +30,7 @@ void Window::placeHoveredTextAreaCursor()
 {
     auto const plane = getHovered<PlaneBase>();
     if (plane && plane->_texture && plane->_texture->getType() == Texture::Type::Text) {
-        TR::Area* area = plane->_texture->getTextArea();
+        TR::Area::Shared area = plane->_texture->getTextArea();
         if (area && area->isFocusable()) {
             int x, y;
             plane->getRelativeCoords(x, y);

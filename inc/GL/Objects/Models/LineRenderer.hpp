@@ -13,7 +13,7 @@ SSS_GL_BEGIN;
 #pragma warning(disable: 4275)
 
 class SSS_GL_API LineRenderer : public Renderer<LineRenderer> {
-    friend class Basic::SharedBase<LineRenderer>;
+    friend class SharedClass;
     friend class Window;
 
 private:
@@ -21,7 +21,7 @@ private:
 
 public:
     Camera::Shared camera;
-    void render() override;
+    virtual void render() override;
 
 private:
     Basic::VAO _vao;

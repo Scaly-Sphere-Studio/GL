@@ -44,7 +44,7 @@ Texture::Shared Texture::create(std::string const& filepath)
     return ret;
 }
 
-Texture::Shared Texture::create(TR::Area const& area)
+Texture::Shared Texture::create(TR::Area::Shared area)
 {
     Shared ret = create();
     ret->setTextArea(area);
@@ -78,7 +78,7 @@ void Texture::setType(Type type) noexcept
         _raw_texture.editPixels(pixels.data());
     }
     else if (type == Type::Text) {
-        TR::Area* text_area = getTextArea();
+        TR::Area::Shared text_area = getTextArea();
         if (text_area) {
             text_area->pixelsGetDimensions(_text_w, _text_h);
             _updatePlanes();
@@ -128,15 +128,14 @@ void Texture::editRawPixels(void const* pixels, int width, int height) try
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
-void Texture::setTextAreaID(uint32_t id)
+void Texture::setTextArea(TR::Area::Shared area)
 {
-    _text_area_id = id;
-    TR::Area* text_area = getTextArea();
-    if (text_area) {
+    _area = area;
+    if (area) {
         _type = Type::Text;
         int w, h;
-        text_area->pixelsGetDimensions(w, h);
-        _internalEdit(text_area->pixelsGet(), w, h);
+        area->pixelsGetDimensions(w, h);
+        _internalEdit(area->pixelsGet(), w, h);
     }
 }
 

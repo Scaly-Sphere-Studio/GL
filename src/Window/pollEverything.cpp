@@ -106,7 +106,7 @@ void pollEverything() try
             }
         }
         else if (texture->_type == Texture::Type::Text) {
-            TR::Area* text_area = texture->getTextArea();
+            TR::Area::Shared text_area = texture->getTextArea();
             // Skip if no Area is set or if no new pixels
             if (text_area) {
                 texture->_has_running_thread = text_area->hasRunningThread();

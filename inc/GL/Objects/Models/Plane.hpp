@@ -67,7 +67,7 @@ public:
     void setTexture(Texture::Shared texture);;
     /** Returns the Texture used for this instance.*/
     inline Texture::Shared getTexture() const noexcept { return _texture; };
-    inline TR::Area* getTextArea() const noexcept { return _texture ? _texture->getTextArea() : nullptr; };
+    inline TR::Area::Shared getTextArea() const noexcept { return _texture ? _texture->getTextArea() : nullptr; };
 
     void setTextureCallback(std::function<void(PlaneBase&)> func) { _texture_callback = func; };
     void setTextureSizeCallback(std::function<void(PlaneBase&)> func) { _texture_size_callback = func; };
@@ -142,13 +142,9 @@ private:
 };
 
 template<class Derived>
-class PlaneTemplate : public PlaneBase, public Basic::InstancedBase<Derived> {
-    friend class Basic::SharedBase<Derived>;
-
+class PlaneTemplate : public PlaneBase, public InstancedClass<Derived> {
 public:
-    using Basic::SharedBase<Derived>::Shared;
-    using Basic::SharedBase<Derived>::Weak;
-    using Basic::InstancedBase<Derived>::create;
+    using InstancedClass<Derived>::create;
 
     static auto create(Texture::Shared texture)
     {
@@ -165,7 +161,11 @@ public:
     }
 };
 
-class Plane : public PlaneTemplate<Plane> {};
+class Plane : public PlaneTemplate<Plane> {
+    friend class SharedClass;
+private:
+    Plane() = default;
+};
 
 #pragma warning(pop)
 
