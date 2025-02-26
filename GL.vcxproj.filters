@@ -40,6 +40,7 @@
     <None Include="Doxyfile" />
     <None Include="Init.lua" />
     <None Include="Loop.lua" />
+    <None Include="RenderDoc.cap" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Window\Window.cpp">

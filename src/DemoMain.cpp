@@ -27,7 +27,8 @@ void close_callback(GLFWwindow* win)
 
 void scroll_callback(GLFWwindow* win, double x, double y)
 {
-    TR::Area::get(0)->scroll(y * -40);
+    if (auto area = TR::Area::getFocused(); area)
+        area->scroll(y * -40);
 }
 
 int main() try
@@ -57,16 +58,29 @@ int main() try
 
     // Lines
     using Line = GL::Polyline;
-    Line::Shared line[4];
-    line[0] = Line::Segment(glm::vec3(-200,  200, 0), glm::vec3( 200,  200, 0), 10.f, glm::vec4(0, 0, 1, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);
-    line[1] = Line::Segment(glm::vec3( 200,  200, 0), glm::vec3( 200, -200, 0), 10.f, glm::vec4(0, 1, 0, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);
-    line[2] = Line::Segment(glm::vec3( 200, -200, 0), glm::vec3(-200, -200, 0), 10.f, glm::vec4(1, 0, 0, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);
-    line[3] = Line::Segment(glm::vec3(-200, -200, 0), glm::vec3(-200,  200, 0), 10.f, glm::vec4(1, 1, 1, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);
+    Line::Shared line;
+    //Line::Shared line[4];
+    //line[0] = Line::Segment(glm::vec3(-200,  200, 0), glm::vec3( 200,  200, 0), 10.f, glm::vec4(0, 0, 1, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);
+    //line[1] = Line::Segment(glm::vec3( 200,  200, 0), glm::vec3( 200, -200, 0), 10.f, glm::vec4(0, 1, 0, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);
+    //line[2] = Line::Segment(glm::vec3( 200, -200, 0), glm::vec3(-200, -200, 0), 10.f, glm::vec4(1, 0, 0, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);
+    //line[3] = Line::Segment(glm::vec3(-200, -200, 0), glm::vec3(-200,  200, 0), 10.f, glm::vec4(1, 1, 1, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);
 
     // Main loop
     while (!window.shouldClose()) {
         // Poll events, threads, etc
         GL::pollEverything();
+        auto [w, h] = window.getDimensions();
+        auto [x, y] = window.getCursorPos();
+        glm::vec3 a, b, c, d;
+        a = glm::vec3(0, 0, 0);
+        d = glm::vec3(w / -2 + x, h / 2 - y, 0);
+        glm::vec3 offset(std::abs(a.x - d.x) / 2.f, 0, 0);
+        b = a - offset;
+        c = d + offset;
+        if (window.keyIsPressed(GLFW_KEY_SPACE)) {
+            LOG_MSG("SPACE")
+        }
+        line = Line::Bezier(a, b, c, d, 20.f, glm::vec4(1, 1, 1, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);
         // Script
         lua.safe_script_file("Loop.lua");
         // Draw renderers

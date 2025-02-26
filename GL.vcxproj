@@ -40,6 +40,7 @@
     <None Include="DownloadVcpkgScripts.ps1" />
     <None Include="Doxyfile" />
     <None Include="Loop.lua" />
+    <None Include="RenderDoc.cap" />
     <None Include="vcpkg_scripts\Install.ps1" />
     <None Include="vcpkg_scripts\Remove.ps1" />
   </ItemGroup>

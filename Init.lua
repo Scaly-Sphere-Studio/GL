@@ -105,8 +105,8 @@ do
     plane_png:translate(vec3.new(300, 0, 1))
     plane.hitbox = GL.PlaneHitbox.Full
 
-    plane_renderer.planes:add(plane)
-    plane_renderer.planes = {plane, plane_png}
+    --plane_renderer.planes:add(plane)
+    --plane_renderer.planes = {plane, plane_png}
     
     --plane_renderer:forEach(function(p)
     --    p:setTextureCallback(function(p)

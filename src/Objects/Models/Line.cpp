@@ -9,6 +9,7 @@ static constexpr double MINIMUM_BEVEL_ANGLE = M_PI / 18;
 
 std::vector<std::weak_ptr<Polyline>> Polyline::_batch{};
 bool Polyline::modified = true;
+uint32_t Polyline::max_depth = 2;
 
 
 Polyline::Polyline(Vertex::Vec _path,
@@ -210,7 +211,7 @@ uint8_t Polyline::path_meshing(Math::Gradient<float> gradient_thickness, Math::G
 
     glm::vec3 ortho = glm::vec3(0);
 
-    FuncPtr joint_type_func;
+    JointFunc joint_type_func;
     switch (jopt) {
     case JointType::MITER:
         joint_type_func = &Polyline::miter_joint;
@@ -225,7 +226,7 @@ uint8_t Polyline::path_meshing(Math::Gradient<float> gradient_thickness, Math::G
         throw std::exception("Unhandled JointType");
     }
 
-    FuncPtr term_type_func;
+    TermFunc term_type_func;
     switch (topt) {
     case TermType::BUTT:
         term_type_func = &Polyline::butt_ending;
@@ -255,7 +256,7 @@ uint8_t Polyline::path_meshing(Math::Gradient<float> gradient_thickness, Math::G
         }
         else {
             //Meshing along the line
-            (this->*joint_type_func)(static_cast<uint32_t>(i), mesh_last, ortho, define_line_thickness(g_thick.evaluate(t)), g_col.evaluate(t));
+            (this->*joint_type_func)(static_cast<uint32_t>(i), mesh_last, ortho, define_line_thickness(g_thick.evaluate(t)), g_col.evaluate(t), 0);
         }
     }
 
@@ -274,12 +275,14 @@ uint8_t Polyline::butt_ending(uint32_t index, Mesh_info& last,
     //Use the present and next point to calculate the direction of the vector
     //Ortho gives the vector that is perpendicular to the direction of the segment
     glm::vec3 direction;
+    
+    glm::vec3 const& pos = path[index].v_pos;
 
     //Use these vectors to calculate the coordinates of the points with the width and the antialliasing width 
 
     if (index == 0) {
-        direction = Math::direction_vector2D(path[static_cast<size_t>(index) + 1].v_pos, path[index].v_pos);
-        ortho = Math::ortho_vector(path[index].v_pos, path[static_cast<size_t>(index) + 1].v_pos);
+        direction = Math::direction_vector2D(path[static_cast<size_t>(index) + 1].v_pos, pos);
+        ortho = Math::ortho_vector(pos, path[static_cast<size_t>(index) + 1].v_pos);
 
         //Indexing the first anti_alliasing
         indices.reserve(indices.size() + 6);
@@ -287,7 +290,7 @@ uint8_t Polyline::butt_ending(uint32_t index, Mesh_info& last,
     }
     else {
         //Last point
-        direction = Math::direction_vector2D(path[index - 1].v_pos, path[index].v_pos);
+        direction = Math::direction_vector2D(path[index - 1].v_pos, pos);
         uint32_t et = static_cast<uint32_t>(mesh.size());
         Mesh_info cur(et, et + 1, et + 2, et + 3);
 
@@ -307,10 +310,10 @@ uint8_t Polyline::butt_ending(uint32_t index, Mesh_info& last,
     glm::vec4 aa_color = color * fade;
 
     mesh.reserve(mesh.size() + 4);
-    mesh.emplace_back(path[index].v_pos + p1, color);
-    mesh.emplace_back(path[index].v_pos - p1, color);
-    mesh.emplace_back(path[index].v_pos + p2 + p3, aa_color);
-    mesh.emplace_back(path[index].v_pos - p2 + p3, aa_color);
+    mesh.emplace_back(pos + p1, color);
+    mesh.emplace_back(pos - p1, color);
+    mesh.emplace_back(pos + p2 + p3, aa_color);
+    mesh.emplace_back(pos - p2 + p3, aa_color);
 
     return 0;
 }
@@ -320,16 +323,18 @@ uint8_t Polyline::square_ending(uint32_t index, Mesh_info& last,
 {
     glm::vec3 direction;
 
+    glm::vec3 const& pos = path[index].v_pos;
+
     if (index == 0) {
         indices.reserve(indices.size() + 2);
         quad_index(last.top, last.aa_top, last.aa_btm, last.btm);
 
-        direction = Math::direction_vector2D(path[static_cast<size_t>(index) + 1].v_pos, path[index].v_pos);
-        ortho = Math::ortho_vector(path[index].v_pos, path[static_cast<size_t>(index) + 1].v_pos);
+        direction = Math::direction_vector2D(path[static_cast<size_t>(index) + 1].v_pos, pos);
+        ortho = Math::ortho_vector(pos, path[static_cast<size_t>(index) + 1].v_pos);
     }
     else {
         //Last point
-        direction = Math::direction_vector2D(path[index - 1].v_pos, path[index].v_pos);
+        direction = Math::direction_vector2D(path[index - 1].v_pos, pos);
         uint32_t et = static_cast<uint32_t>(mesh.size());
         Mesh_info cur(et, et + 1, et + 2, et + 3);
 
@@ -352,12 +357,12 @@ uint8_t Polyline::square_ending(uint32_t index, Mesh_info& last,
 
     glm::vec4 aa_color = color * fade;
 
-    mesh.emplace_back(path[index].v_pos + p1 + p4, color);
-    mesh.emplace_back(path[index].v_pos - p1 + p4, color);
+    mesh.emplace_back(pos + p1 + p4, color);
+    mesh.emplace_back(pos - p1 + p4, color);
 
     //AA
-    mesh.emplace_back(path[index].v_pos + p2 + p3, aa_color);
-    mesh.emplace_back(path[index].v_pos - p2 + p3, aa_color);
+    mesh.emplace_back(pos + p2 + p3, aa_color);
+    mesh.emplace_back(pos - p2 + p3, aa_color);
 
     return 0;
 }
@@ -370,33 +375,35 @@ uint8_t Polyline::round_ending(uint32_t index, Mesh_info& last,
     glm::vec3 p1, p2, line, direction;
     glm::mat3 rotation;
 
+    glm::vec3 const& pos = path[index].v_pos;
+
     mesh.reserve(mesh.size() + 2 * count + 3);
     
     uint32_t pivot = static_cast<uint32_t>(mesh.size());
-    mesh.emplace_back(path[index].v_pos, color);
+    mesh.emplace_back(pos, color);
     Mesh_info cur(pivot + 1, pivot + 2 * count + 1, pivot + 2, pivot + 2 * count + 2);
 
 
     if (index == 0) {
         indices.reserve(indices.size() + 3 * count);
-        ortho = Math::ortho_vector(path[index].v_pos, path[static_cast<size_t>(index) + 1].v_pos);
+        ortho = Math::ortho_vector(pos, path[static_cast<size_t>(index) + 1].v_pos);
 
-        p1 = path[index].v_pos + ortho * thickness;
-        p2 = path[index].v_pos + ortho * (thickness + _aa_thickness);
+        p1 = pos + ortho * thickness;
+        p2 = pos + ortho * (thickness + _aa_thickness);
 
         mesh.emplace_back(p1, color);
         mesh.emplace_back(p2, color * fade);
 
-        direction = Math::direction_vector2D(path[index].v_pos, p1);
+        direction = Math::direction_vector2D(pos, p1);
 
         for (uint32_t j = 0; j < count; j++) {
             rotation = Math::rotation_matrix2D_ccw(M_PI / count_d * (static_cast<double>(j) + 1.0));
 
             line = thickness * direction * rotation;
-            mesh.emplace_back(path[index].v_pos + line, color);
+            mesh.emplace_back(pos + line, color);
 
-            line = (thickness + _aa_thickness ) * Math::direction_vector2D(path[index].v_pos, p1) * rotation;
-            mesh.emplace_back(path[index].v_pos + line, color * fade);
+            line = (thickness + _aa_thickness ) * Math::direction_vector2D(pos, p1) * rotation;
+            mesh.emplace_back(pos + line, color * fade);
 
 
             indices.emplace_back(pivot, cur.top + 2 * j, cur.top + 2 * j + 2);
@@ -408,23 +415,23 @@ uint8_t Polyline::round_ending(uint32_t index, Mesh_info& last,
     }
     else {
         indices.reserve(indices.size() + 3 * count + 6);
-        ortho = Math::ortho_vector(path[index - 1].v_pos, path[index].v_pos);
+        ortho = Math::ortho_vector(path[index - 1].v_pos, pos);
 
-        p1 = path[index].v_pos + ortho * thickness;
-        p2 = path[index].v_pos + ortho * (thickness + _aa_thickness);
+        p1 = pos + ortho * thickness;
+        p2 = pos + ortho * (thickness + _aa_thickness);
 
         mesh.emplace_back(p1, color);
         mesh.emplace_back(p2, color * fade);
 
-        direction = Math::direction_vector2D(path[index].v_pos, p1);
+        direction = Math::direction_vector2D(pos, p1);
 
         for (uint32_t j = 0; j < count; j++) {
             rotation = Math::rotation_matrix2D_cw(M_PI / count_d * (static_cast<double>(j) + 1.0));
 
             line = thickness * direction * rotation;
-            mesh.emplace_back(path[index].v_pos + line, color);
-            line = (thickness + _aa_thickness) * Math::direction_vector2D(path[index].v_pos, p1) * rotation;
-            mesh.emplace_back(path[index].v_pos + line, color * fade);
+            mesh.emplace_back(pos + line, color);
+            line = (thickness + _aa_thickness) * Math::direction_vector2D(pos, p1) * rotation;
+            mesh.emplace_back(pos + line, color * fade);
 
             indices.emplace_back(pivot, cur.top + 2 * j, cur.top + 2 * j + 2);
             quad_index(cur.top + 2 * j, cur.aa_top + 2 * j, cur.aa_top + 2 * j + 2, cur.top + 2 * j + 2);
@@ -444,16 +451,17 @@ uint8_t Polyline::connect_ending(uint32_t index, Mesh_info& last,
     glm::vec3& ortho, float thickness, glm::vec4 color)
 {
     if (index == 0) {
-        ortho = Math::ortho_vector(path[index].v_pos, path[static_cast<size_t>(index) + 1].v_pos);
+        glm::vec3 const& pos = path[index].v_pos;
+        ortho = Math::ortho_vector(pos, path[static_cast<size_t>(index) + 1].v_pos);
         path.reserve(path.size() + 2);
-        path.emplace_back(path[index].v_pos, color);
+        path.emplace_back(pos, color);
         path.emplace_back(path[static_cast<size_t>(index) + 1].v_pos, color);
 
         mesh.reserve(mesh.size() + 4);
-        mesh.emplace_back(path[index].v_pos, color);
-        mesh.emplace_back(path[index].v_pos, color);
-        mesh.emplace_back(path[index].v_pos, color * fade);
-        mesh.emplace_back(path[index].v_pos, color * fade);
+        mesh.emplace_back(pos, color);
+        mesh.emplace_back(pos, color);
+        mesh.emplace_back(pos, color * fade);
+        mesh.emplace_back(pos, color * fade);
     }
     else {
         //update the first 4 mesh points to connect with the 4 last calculated point
@@ -468,11 +476,17 @@ uint8_t Polyline::connect_ending(uint32_t index, Mesh_info& last,
 }
 
 uint8_t Polyline::miter_joint(uint32_t index, Mesh_info& last, 
-    glm::vec3& ortho, float thickness, glm::vec4 color)
+    glm::vec3& ortho, float thickness, glm::vec4 color, uint32_t depth)
 {
+    if (depth > max_depth)
+        return 1;
 
     indices.reserve(indices.size() + 2 * 3);
     mesh.reserve(mesh.size() + 2);
+
+    glm::vec3 const& pos_prev = path[static_cast<size_t>(index) - 1].v_pos,
+                     pos      = path[static_cast<size_t>(index)].v_pos,
+                     pos_next = path[static_cast<size_t>(index) + 1].v_pos;
 
     //path meshing + aa
     glm::vec3 p1, p2, p3, p4, ortho2, croisement, point;
@@ -480,29 +494,27 @@ uint8_t Polyline::miter_joint(uint32_t index, Mesh_info& last,
     Mesh_info cur(fp, fp + 1, fp + 2, fp + 3);
 
     //Ortho2 is used to compare the perpendicular vector (ortho) of the first segment with the second segment 
-    ortho2 = Math::ortho_vector(path[index].v_pos, path[static_cast<size_t>(index) + 1].v_pos);
+    ortho2 = Math::ortho_vector(pos, pos_next);
 
 
     //When the angle between the two segment is too steep use the bevel method as it can cause the point to reach infinity
-    if (Math::incidence_angle(ortho, ortho2) > MAX_MITER_ANGLE) {
-        bevel_joint(index, last, ortho, thickness, color);
-        return 0;
-    }
+    if (Math::incidence_angle(ortho, ortho2) > MAX_MITER_ANGLE)
+        return bevel_joint(index, last, ortho, thickness, color, depth + 1);
 
 
     //Then loop for the first points coordinates and the feathering points (anti alliasing)
     for (uint32_t i = 0; i < 2; i++) {
         //First loop for the filled core, second for AA
-        p1 = path[index - 1].v_pos  + ortho * (thickness + i * _aa_thickness);
-        p2 = path[index].v_pos      + ortho * (thickness + i * _aa_thickness);
-        p3 = path[index].v_pos      + ortho2 * (thickness + i * _aa_thickness);
-        p4 = path[index + static_cast<size_t>(1)].v_pos  + ortho2 * (thickness + i * _aa_thickness);
+        p1 = pos_prev + ortho  * (thickness + i * _aa_thickness);
+        p2 = pos      + ortho  * (thickness + i * _aa_thickness);
+        p3 = pos      + ortho2 * (thickness + i * _aa_thickness);
+        p4 = pos_next + ortho2 * (thickness + i * _aa_thickness);
 
         croisement = Math::intersection_point(p1, p2, p3, p4);
-        point = croisement - path[index].v_pos;
+        point = croisement - pos;
 
         mesh.emplace_back(croisement, color * glm::vec4(1, 1, 1, 1 - i));
-        mesh.emplace_back(path[index].v_pos - point, color * glm::vec4(1, 1, 1, 1 - i));
+        mesh.emplace_back(pos - point, color * glm::vec4(1, 1, 1, 1 - i));
     }
 
     //IBO
@@ -520,48 +532,54 @@ uint8_t Polyline::miter_joint(uint32_t index, Mesh_info& last,
 }
 
 uint8_t Polyline::bevel_joint(uint32_t index, Mesh_info& last, 
-    glm::vec3& ortho, float thickness, glm::vec4 color)
+    glm::vec3& ortho, float thickness, glm::vec4 color, uint32_t depth)
 {
+    if (depth > max_depth)
+        return 1;
+
     indices.reserve(indices.size() + 2 * 4 + 1);
     mesh.reserve(mesh.size() + 6);
 
+    glm::vec3 const& pos_prev = path[static_cast<size_t>(index) - 1].v_pos,
+                     pos      = path[static_cast<size_t>(index)].v_pos,
+                     pos_next = path[static_cast<size_t>(index) + 1].v_pos;
+
     Mesh_info cur;
     glm::vec3 p1, p2, p3, p4, bevel_correction;
-    float angle = Math::incidence_angle(path[index].v_pos - path[index - 1].v_pos, path[static_cast<size_t>(index) + 1].v_pos - path[index].v_pos);
+    float angle = Math::incidence_angle(pos - pos_prev, pos_next - pos);
 
-    glm::vec3 ortho2 = Math::ortho_vector(path[index].v_pos, path[static_cast<size_t>(index) + 1].v_pos);
+    glm::vec3 ortho2 = Math::ortho_vector(pos, pos_next);
     
     //Give the relative orientation between the two vectors
     //Use the determinant sign to determine if the next segment is above or below the current segment
     //If determinant is 0, the two segments are colinear
-    float det = static_cast<float>(Math::signum(glm::determinant(glm::mat2(path[index].v_pos - path[index - 1].v_pos, path[static_cast<size_t>(index) + 1].v_pos - path[index].v_pos))));
+
+    float const det = static_cast<float>(Math::signum(glm::determinant(glm::mat2(pos - pos_prev, pos_next - pos))));
 
 
     //When the two segments are near colinear is the miter joint function
-    if ((det == 0) || (Math::incidence_angle(ortho2, ortho) < MINIMUM_BEVEL_ANGLE)) {
-        miter_joint(index, last, ortho, thickness, color);
-        return 0;
-    }
+    if ((det == 0) || -(Math::incidence_angle(ortho2, ortho) < MINIMUM_BEVEL_ANGLE))
+        return miter_joint(index, last, ortho, thickness, color, depth + 1);
 
 
     //for first point
     uint32_t fp = static_cast<uint32_t>(mesh.size());
     for (float i = 0; i < 2; i++) {
         //Two bevel points
-        bevel_correction = Math::direction_vector2D(path[index - 1].v_pos, path[index].v_pos) * glm::sin(angle * 0.5f) * _aa_thickness;
-        p2 = path[index].v_pos - det * ortho * (thickness + i * _aa_thickness) + i * bevel_correction;
+        bevel_correction = Math::direction_vector2D(pos_prev, pos) * glm::sin(angle * 0.5f) * _aa_thickness;
+        p2 = pos - det * ortho  * (thickness + i * _aa_thickness) + i * bevel_correction;
 
-        bevel_correction = Math::direction_vector2D(path[index].v_pos, path[static_cast<size_t>(index) + 1].v_pos) * glm::sin(angle * 0.5f) * _aa_thickness;
-        p3 = path[index].v_pos - det * ortho2 * (thickness + i * _aa_thickness) - i * bevel_correction;
+        bevel_correction = Math::direction_vector2D(pos, pos_next) * glm::sin(angle * 0.5f) * _aa_thickness;
+        p3 = pos - det * ortho2 * (thickness + i * _aa_thickness) - i * bevel_correction;
 
         mesh.emplace_back(p2, color * glm::vec4(1, 1, 1, 1 - i));
         mesh.emplace_back(p3, color * glm::vec4(1, 1, 1, 1 - i));
 
         //pivot
-        p1 = path[index - 1].v_pos  + det * ortho * (thickness + i * _aa_thickness);
-        p2 = path[index].v_pos      + det * ortho * (thickness + i * _aa_thickness);
-        p3 = path[index].v_pos      + det * ortho2 * (thickness + i * _aa_thickness);
-        p4 = path[static_cast<size_t>(index) + 1].v_pos  + det * ortho2 * (thickness + i * _aa_thickness);
+        p1 = pos_prev  + det * ortho  * (thickness + i * _aa_thickness);
+        p2 = pos       + det * ortho  * (thickness + i * _aa_thickness);
+        p3 = pos       + det * ortho2 * (thickness + i * _aa_thickness);
+        p4 = pos_next  + det * ortho2 * (thickness + i * _aa_thickness);
 
         mesh.emplace_back(Math::intersection_point(p1, p2, p3, p4), color * glm::vec4(1, 1, 1, 1 - i));
 
@@ -596,28 +614,33 @@ uint8_t Polyline::bevel_joint(uint32_t index, Mesh_info& last,
 
 
 uint8_t Polyline::fan_joint( uint32_t index, Mesh_info& last, 
-    glm::vec3& ortho, float thickness, glm::vec4 color)
+    glm::vec3& ortho, float thickness, glm::vec4 color, uint32_t depth)
 {
+    if (depth > max_depth)
+        return 1;
+
+    glm::vec3 const& pos_prev = path[static_cast<size_t>(index) - 1].v_pos,
+                     pos      = path[static_cast<size_t>(index)].v_pos,
+                     pos_next = path[static_cast<size_t>(index) + 1].v_pos;
+
     glm::vec3 ortho2, position, line, direction;
     glm::vec3 p1, p2, p3, p4, pivot;
     glm::mat3 rotation;
 
     //Give the angle between the previous and next segment
-    double angle = Math::incidence_angle(path[index].v_pos - path[index - 1].v_pos, path[index + static_cast<size_t>(1)].v_pos - path[index].v_pos);
+    double angle = Math::incidence_angle(pos - pos_prev, pos_next - pos);
     double const count_d = floor((angle) / MINIMUM_FAN_ANGLE);
     uint32_t const count = static_cast<uint32_t>(count_d);
     uint32_t fp;
 
 
-    ortho2 = Math::ortho_vector(path[index].v_pos, path[static_cast<size_t>(index) + 1].v_pos);
+    ortho2 = Math::ortho_vector(pos, path[static_cast<size_t>(index) + 1].v_pos);
 
     //Give the relative orientation between the two vectors
-    float det = static_cast<float>(Math::signum(glm::determinant(glm::mat2(path[index].v_pos - path[index - 1].v_pos, path[static_cast<size_t>(index) + 1].v_pos - path[index].v_pos))));
+    float det = static_cast<float>(Math::signum(glm::determinant(glm::mat2(pos - pos_prev, path[static_cast<size_t>(index) + 1].v_pos - pos))));
 
-    if ((det == 0) || (Math::incidence_angle(ortho2, ortho) < MINIMUM_FAN_ANGLE)) {
-        miter_joint(index, last, ortho, thickness, color);
-        return 0;
-    }
+    if ((det == 0) || (Math::incidence_angle(ortho2, ortho) < MINIMUM_FAN_ANGLE))
+        return miter_joint(index, last, ortho, thickness, color, depth + 1);
 
     indices.reserve(indices.size() + 3 * (static_cast<size_t>(count) + 2) + 1);
     mesh.reserve(mesh.size() + 2 * (static_cast<size_t>(count) + 2));
@@ -627,7 +650,7 @@ uint8_t Polyline::fan_joint( uint32_t index, Mesh_info& last,
     Mesh_info cur;
 
     fp = static_cast<uint32_t>(mesh.size());
-    position = path[index].v_pos;
+    position = pos;
 
     if (det > 0) {
         //give the indice of the first vertice
@@ -638,8 +661,8 @@ uint8_t Polyline::fan_joint( uint32_t index, Mesh_info& last,
         quad_index(last.btm, last.aa_btm, cur.aa_btm, cur.btm);
 
         //IBO
-        p1 = path[index].v_pos - det * ortho * thickness;
-        p2 = path[index].v_pos - det * ortho * (thickness + _aa_thickness);
+        p1 = pos - det * ortho * thickness;
+        p2 = pos - det * ortho * (thickness + _aa_thickness);
         mesh.emplace_back(p1, color);
         mesh.emplace_back(p2, color * fade);
 
@@ -668,8 +691,8 @@ uint8_t Polyline::fan_joint( uint32_t index, Mesh_info& last,
         quad_index(last.btm, last.aa_btm, cur.aa_btm, cur.btm);
 
         //IBO
-        p1 = path[index].v_pos - det * ortho * thickness;
-        p2 = path[index].v_pos - det * ortho * (thickness + _aa_thickness);
+        p1 = pos - det * ortho * thickness;
+        p2 = pos - det * ortho * (thickness + _aa_thickness);
         mesh.emplace_back(p1, color);
         mesh.emplace_back(p2, color * fade);
 
@@ -693,9 +716,9 @@ uint8_t Polyline::fan_joint( uint32_t index, Mesh_info& last,
 
     //Intersection between the two segments to add the pivot
     for (uint16_t i = 0; i < 2; i++) {
-        p1 = path[index - 1].v_pos  + det * ortho * (thickness + i * _aa_thickness);
-        p2 = path[index].v_pos      + det * ortho * (thickness + i * _aa_thickness);
-        p3 = path[index].v_pos      + det * ortho2 * (thickness + i * _aa_thickness);
+        p1 = pos_prev  + det * ortho * (thickness + i * _aa_thickness);
+        p2 = pos      + det * ortho * (thickness + i * _aa_thickness);
+        p3 = pos      + det * ortho2 * (thickness + i * _aa_thickness);
         p4 = path[static_cast<size_t>(index) + 1].v_pos  + det * ortho2 * (thickness + i * _aa_thickness);
 
         pivot = Math::intersection_point(p1, p2, p3, p4);

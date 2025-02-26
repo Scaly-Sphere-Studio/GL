@@ -90,6 +90,8 @@ public:
         float thickness = 10.0f, glm::vec4 color = glm::vec4(0,0,0,1),
         JointType jopt = JointType::BEVEL, TermType topt = TermType::BUTT);
 
+    static inline void setMaxDepth(uint32_t depth) noexcept { max_depth = depth; };
+    static inline uint32_t getMaxDepth() noexcept { return max_depth; };
 
     uint32_t update(Math::Gradient<float> gradient_thickness, Math::Gradient<glm::vec4> gradient_color);
 
@@ -107,6 +109,7 @@ private:
     // State of the batch, information about when the buffer has been
     // modified and should be regenerated
     static bool modified;
+    static uint32_t max_depth;
 
     struct Mesh_info {
         Mesh_info();
@@ -156,12 +159,12 @@ private:
     uint8_t connect_ending(uint32_t index, Mesh_info& last, glm::vec3& ortho, float thickness, glm::vec4 color);
 
     //joint functions
-    uint8_t miter_joint(uint32_t index, Mesh_info& last, glm::vec3& ortho, float thickness, glm::vec4 color);
-    uint8_t bevel_joint(uint32_t index, Mesh_info& last, glm::vec3& ortho, float thickness, glm::vec4 color);
-    uint8_t fan_joint(uint32_t index, Mesh_info& last, glm::vec3& ortho, float thickness, glm::vec4 color);
+    uint8_t miter_joint(uint32_t index, Mesh_info& last, glm::vec3& ortho, float thickness, glm::vec4 color, uint32_t depth);
+    uint8_t bevel_joint(uint32_t index, Mesh_info& last, glm::vec3& ortho, float thickness, glm::vec4 color, uint32_t depth);
+    uint8_t fan_joint(uint32_t index, Mesh_info& last, glm::vec3& ortho, float thickness, glm::vec4 color, uint32_t depth);
     
-    //termination / joint function ptr
-    using FuncPtr = uint8_t(Polyline::*)(uint32_t index, Mesh_info&, glm::vec3& pos, float thickness, glm::vec4 color);
+    using JointFunc = uint8_t(Polyline::*)(uint32_t, Mesh_info&, glm::vec3&, float, glm::vec4, uint32_t);
+    using TermFunc = uint8_t(Polyline::*)(uint32_t, Mesh_info&, glm::vec3&, float, glm::vec4);
 };
 
 #pragma warning(pop)
