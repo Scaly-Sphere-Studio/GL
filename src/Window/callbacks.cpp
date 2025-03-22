@@ -249,7 +249,7 @@ void Window::key_callback(GLFWwindow* ptr, int key, int scancode, int action, in
             Area::resetFocus();
             break;
         case GLFW_KEY_ENTER:
-            Area::cursorAddText("\n");
+            Area::cursorAddChar('\n');
             break;
         case GLFW_KEY_LEFT:
             Area::cursorMove(ctrl ? Move::CtrlLeft : Move::Left);
@@ -275,6 +275,35 @@ void Window::key_callback(GLFWwindow* ptr, int key, int scancode, int action, in
         case GLFW_KEY_DELETE:
             Area::cursorDeleteText(ctrl ? Delete::CtrlRight : Delete::Right);
             break;
+        case GLFW_KEY_Q: {
+            if (ctrl)
+                Area::getFocused()->selectAll();
+            break;
+        }
+        case GLFW_KEY_W: {
+            if (ctrl)
+                Area::history.undo();
+        }   break;
+        case GLFW_KEY_Y: {
+            if (ctrl)
+                Area::history.redo();
+        }   break;
+        case GLFW_KEY_C: {
+            if (ctrl) {
+                std::string const str = SSS::str32ToStr(Area::cursorGetText());
+                LOG_MSG(str)
+                    glfwSetClipboardString(nullptr, str.c_str());
+            }
+            break;
+        }
+        case GLFW_KEY_V: {
+            if (ctrl) {
+                const char* text = glfwGetClipboardString(nullptr);
+                if (text)
+                    Area::cursorAddText(text);
+            }
+            break;
+        }
         }
     }
 
@@ -297,8 +326,7 @@ void Window::char_callback(GLFWwindow* ptr, unsigned int codepoint)
     if (window->_block_inputs)
         return;
 
-    std::u32string str(1, static_cast<char32_t>(codepoint));
-    TR::Area::cursorAddText(str);
+    TR::Area::cursorAddChar(static_cast<char32_t>(codepoint));
 
     // Call user defined callback, if needed
     if (window->_char_callback != nullptr) {
