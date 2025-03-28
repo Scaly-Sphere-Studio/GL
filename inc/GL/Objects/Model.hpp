@@ -19,7 +19,7 @@ SSS_GL_BEGIN;
 /** Abstract base class for %Model matrix.
  *  @sa Plane
  */
-class SSS_GL_API ModelBase {
+class SSS_GL_API ModelBase : public Subject {
 public:
     ModelBase();
     /** Virtual destructor, default.*/
@@ -41,7 +41,7 @@ public:
     void translate(glm::vec3 translation);
 
 protected:
-    virtual void _computeModelMat4();
+    void _computeModelMat4();
     virtual inline glm::mat4 _getScalingMat4() const { return _scaling; };
     virtual inline glm::mat4 _getRotationMat4() const { return _rotation; };
     virtual inline glm::mat4 _getTranslationMat4() const { return _translation; };

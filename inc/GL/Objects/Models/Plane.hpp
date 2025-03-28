@@ -17,17 +17,20 @@ SSS_GL_BEGIN;
 #pragma warning(disable: 4275)
 
 /** 2D plane derived from Model.*/
-class SSS_GL_API PlaneBase : public ModelBase {
+class SSS_GL_API PlaneBase : public Observer, public ModelBase {
     friend class PlaneRenderer;
     friend class Window;
-    friend class Texture;
     friend SSS_GL_API void pollEverything();
 
 public:
-    using RawSet = std::set<PlaneBase*>;
+    enum Event {
+        Model = 0,
+        Alpha,
+        TexOffset
+    };
 
 private:
-    static RawSet _instances;
+    static std::set<std::reference_wrapper<PlaneBase>> _instances;
 
 protected:
     PlaneBase();
@@ -43,22 +46,7 @@ public:
     virtual ~PlaneBase();
 
 protected:
-    static struct _Modified {
-        std::array<RawSet, 3> all;
-        RawSet& models = all[0];
-        RawSet& alphas = all[1];
-        RawSet& tex_offsets  = all[2];
-    } _modified;
-
-public:
-    static inline RawSet const& getModifiedModels() { return _modified.models; };
-    static inline RawSet const& getModifiedAlphas() { return _modified.alphas; };
-    static inline RawSet const& getModifiedTexOffsets() { return _modified.tex_offsets; };
-
-protected:
-    virtual void _computeModelMat4() override final;
     virtual glm::mat4 _getScalingMat4() const override;
-
 public:
     virtual void getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles,
         glm::vec3& translation) const override;
@@ -125,6 +113,8 @@ private:
     glm::vec3 _tex_scaling{ 1 };
 
     void _updateTexScaling();
+
+    virtual void _subjectUpdate(Subject const& subject, int event_id) override;
 
     // Type of hitbox
     Hitbox _hitbox{ Hitbox::None };

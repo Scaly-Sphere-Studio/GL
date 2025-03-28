@@ -14,7 +14,6 @@ SSS_GL_BEGIN;
 
 class SSS_GL_API LineRenderer : public Renderer<LineRenderer> {
     friend class SharedClass;
-    friend class Window;
 
 private:
     LineRenderer();

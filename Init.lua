@@ -49,7 +49,7 @@ print("  > Window created")
 
 do
     local demo_str = 
-[[{{"effect":"Waves", "effect_offset": 50}}Versatile,{{}} {{"effect":"Vibrate", "effect_offset": 1, "font": "CALIBRIB.TTF", "outline_size": 2}}robust,{{}} and {{"font": "SEGOEPR.TTF", "has_shadow": true}}optimised
+[[{{"effect":"None", "effect_offset": 50}}Versatile,{{}} {{"effect":"None", "effect_offset": 1, "font": "CALIBRIB.TTF", "outline_size": 2}}robust,{{}} and {{"font": "SEGOEPR.TTF", "has_shadow": true}}optimised
 {{}}{{"font": "INKFREE.TTF", "outline_size": 2, "charsize": 60}} Text Rendering {{}}
 for video games and applications!]]
 
@@ -105,8 +105,7 @@ do
     plane_png:translate(vec3.new(300, 0, 1))
     plane.hitbox = GL.PlaneHitbox.Full
 
-    --plane_renderer.planes:add(plane)
-    --plane_renderer.planes = {plane, plane_png}
+    plane_renderer.planes = {plane, plane_png}
     
     --plane_renderer:forEach(function(p)
     --    p:setTextureCallback(function(p)

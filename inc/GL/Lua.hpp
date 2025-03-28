@@ -72,8 +72,6 @@ inline void lua_setup_GL(sol::state& lua)
         sol::resolve<Texture::Shared(TR::Area::Shared)>(Texture::create)
     ),  sol::base_classes, sol::bases<::SSS::Base>());
     texture["resource_folder"] = sol::property(&Texture::getResourceFolder, &Texture::setResourceFolder);
-    texture["hasRunningThread"] = &Texture::hasRunningThread;
-    texture["wasJustUpdated"] = &Texture::wasJustUpdated;
     texture["setUpdateCallback"] = &Texture::setUpdateCallback;
     texture["type"] = sol::property(&Texture::getType, &Texture::setType);
     texture["loadImage"] = &Texture::loadImage;

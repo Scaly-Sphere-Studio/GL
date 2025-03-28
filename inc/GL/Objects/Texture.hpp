@@ -41,11 +41,8 @@ INTERNAL_END;
  *  internal Basic::Texture.
  *  @sa Window::createTexture()
  */
-class SSS_GL_API Texture : public InstancedClass<Texture> {
-
-    friend SharedClass<Texture>;
-    friend SSS_GL_API void pollEverything();
-    friend class Window;
+class SSS_GL_API Texture : public Observer, public Subject, public InstancedClass<Texture> {
+    friend SharedClass;
 
 private:
     Texture();
@@ -53,6 +50,11 @@ private:
 public:
     /** Destructor, can log but otherwise default.*/
     ~Texture();
+
+    enum Event {
+        Content,
+        Resize,
+    };
 
     using InstancedClass::create;
     static Shared create(std::string const& filepath);
@@ -69,11 +71,18 @@ public:
     };
 
     struct Frame {
-        using Vector = std::vector<Frame>;
         // Pixel array
         RGBA32::Vector pixels;
         // Delay, in ns for precision. 40ms would be 25FPS
         std::chrono::nanoseconds delay;
+        // Vector
+        class Vector : public std::vector<Frame> {
+        public:
+            using vector::vector;
+            std::chrono::nanoseconds total_time;
+            int w{ 0 };
+            int h{ 0 };
+        };
     };
 
     inline static void setResourceFolder(std::string const& path) { _resource_folder = path; };
@@ -85,20 +94,11 @@ private:
     Basic::Texture _raw_texture;    // OpenGL texture
     Type _type{ Type::Raw };        // Texture type
     Frame::Vector _frames{ 1 };     // Vector of frames (is used for images AND animations)
-    std::chrono::nanoseconds _total_frames_time{ 0 }; // Total time for current animation to loop
-    int _raw_w{ 0 }, _raw_h{ 0 };   // Raw dimensions
-    int _text_w{ 0 }, _text_h{ 0 }; // Last TR dimensions (stored for scaling update)
     TR::Area::Shared _area;         // TR::Area
     std::string _filepath;          // Image filepath
-    bool _has_running_thread{ false };  // Whether the texture will soon be updated
-    bool _was_just_updated{ false };    // Whether the texture just got an update
     std::function<void(Texture&)> _callback_f;
-    void _callback();
 
 public:
-
-    inline bool hasRunningThread() const noexcept { return _has_running_thread; };
-    inline bool wasJustUpdated() const noexcept { return _was_just_updated; };
     inline void setUpdateCallback(std::function<void(Texture&)> f) noexcept { _callback_f = f; };
 
     /** Explicitly sets the Texture::Type.
@@ -125,13 +125,8 @@ public:
      *  @sa loadImage(), editRawPixels(), getRawDimensions()
      */
     inline auto const& getRawPixels(size_t id = 0) const noexcept { return _frames.at(id).pixels; };
-    /** Copies the internal raw pixels' dimensions in given parameters.
-     *  @sa loadImage(), editRawPixels(), getRawPixels()
-     */
-    inline void getRawDimensions(int& w, int& h) const noexcept { w = _raw_w; h = _raw_h; };
 
     inline auto const& getFrames() const noexcept { return _frames; };
-    inline auto getTotalFramesTime() const noexcept { return _total_frames_time; };
 
     /** Sets the TR::Area to be used when type is set to Type::Text.
      *  As for loadImage(), TR::Area work asynchronously. Whenever the
@@ -163,22 +158,19 @@ public:
 
 private:
 
+    virtual void _subjectUpdate(Subject const& subject, int event_id) override;
+
     // Async class which fills _raw_pixels using stb_image
-    class _AsyncLoading : public AsyncBase <std::string, std::string> {
-        friend SSS_GL_API void pollEverything();
+    class _AsyncLoading : public Async<std::string, std::string> {
+        friend Texture;
     protected:
         virtual void _asyncFunction(std::string folder, std::string filepath);
     private:
         Frame::Vector _frames;
-        std::chrono::nanoseconds _total_frames_time;
-        int _w{ 0 };
-        int _h{ 0 };
     } _loading_thread;
 
-    // Update the texture scaling & offset of all Planes using this texture
-    void _updatePlanes();
     // Simple internal edit based on set type
-    void _internalEdit(void const* pixels, int w, int h);
+    void _internalEdit(Type type);
 };
 
 #pragma warning(pop)

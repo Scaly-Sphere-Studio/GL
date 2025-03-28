@@ -99,7 +99,7 @@ void Window::_loadPresetShaders() try
         // Retrieve shader pointer
         auto& shader = _main._preset_shaders[id];
         // Allocate new shader
-        shader.reset(new Shaders());
+        shader = Shaders::create();
         // Retrieve shader data
         _planeShadersData(vertex_data, fragment_data);
         // Load shader
@@ -112,7 +112,7 @@ void Window::_loadPresetShaders() try
         // Retrieve shader pointer
         auto& shader = _main._preset_shaders[id];
         // Allocate new shader
-        shader.reset(new Shaders());
+        shader = Shaders::create();
         // Retrieve shader data
         _lineShadersData(vertex_data, fragment_data);
         // Load shader

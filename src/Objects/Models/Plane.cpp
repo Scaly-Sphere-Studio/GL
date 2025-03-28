@@ -2,28 +2,22 @@
 
 SSS_GL_BEGIN;
 
-PlaneBase::RawSet PlaneBase::_instances{};
-PlaneBase::_Modified PlaneBase::_modified{};
+std::strong_ordering operator<=>(std::reference_wrapper<PlaneBase> const& a, std::reference_wrapper<PlaneBase> const& b)
+{
+    return &a.get() <=> &b.get();
+}
+
+std::set<std::reference_wrapper<PlaneBase>> PlaneBase::_instances{};
 
 PlaneBase::PlaneBase() try
 {
-    _instances.emplace(this);
-    for (auto& set : _modified.all)
-        set.emplace(this);
+    _instances.emplace(*this);
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
 PlaneBase::~PlaneBase()
 {
-    _instances.erase(this);
-    for (auto& set : _modified.all)
-        set.emplace(this);
-}
-
-void PlaneBase::_computeModelMat4()
-{
-    ModelBase::_computeModelMat4();
-    _modified.models.emplace(this);
+    _instances.erase(*this);
 }
 
 glm::mat4 PlaneBase::_getScalingMat4() const
@@ -39,7 +33,7 @@ void PlaneBase::getAllTransformations(glm::vec3& scaling, glm::vec3& rot_angles,
 
 void PlaneBase::setTexture(Texture::Shared texture)
 {
-    _texture = texture;
+    _set(_texture, texture);
     _updateTexScaling();
 }
 
@@ -48,7 +42,7 @@ void PlaneBase::setAlpha(float alpha) noexcept
     float const new_alpha = std::clamp(alpha, 0.f, 1.f);
     if (_alpha != new_alpha) {
         _alpha = new_alpha;
-        _modified.alphas.emplace(this);
+        _notifyObservers(Event::Alpha);
     }
 }
 
@@ -56,28 +50,28 @@ void PlaneBase::_setTextureOffset(uint32_t offset)
 {
     if (_texture_offset != offset) {
         _texture_offset = offset;
-        _modified.tex_offsets.emplace(this);
+        _notifyObservers(Event::TexOffset);
     }
 }
 
 void PlaneBase::_updateTextureOffset()
 {
-    if (!_texture || _texture->getTotalFramesTime() == std::chrono::nanoseconds(0)) {
+    if (!_texture || _texture->getFrames().total_time == std::chrono::nanoseconds(0)) {
         _setTextureOffset(0);
         return;
     }
     auto const& frames = _texture->getFrames();
 
     // If loop disabled & animation completed, stop playing
-    if (!_looping && _animation_duration >= _texture->getTotalFramesTime()) {
+    if (!_looping && _animation_duration >= _texture->getFrames().total_time) {
         _is_playing = false;
         _animation_duration = std::chrono::nanoseconds(0);
         _setTextureOffset(static_cast<uint32_t>(frames.size()) - 1);
     }
 
     // Remove excess time
-    while (_animation_duration >= _texture->getTotalFramesTime()) {
-        _animation_duration -= _texture->getTotalFramesTime();
+    while (_animation_duration >= _texture->getFrames().total_time) {
+        _animation_duration -= _texture->getFrames().total_time;
     }
 
     // Find current texture offset
@@ -126,6 +120,21 @@ void PlaneBase::_updateTexScaling()
     }
     if (_texture_size_callback)
         _texture_size_callback(*this);
+}
+
+void PlaneBase::_subjectUpdate(Subject const& subject, int event_id)
+{
+    switch (event_id) {
+    case Texture::Content:
+        if (_texture_callback)
+            _texture_callback(*this);
+        break;
+    case Texture::Resize:
+        _updateTexScaling();
+        _animation_duration = std::chrono::nanoseconds(0);
+        _setTextureOffset(0);
+        break;
+    }
 }
 
 bool PlaneBase::_hoverTriangle(glm::mat4 const& mvp, glm::vec3 const& A,

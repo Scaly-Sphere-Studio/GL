@@ -54,10 +54,10 @@ namespace Basic {
         glTexParameteri(_target, pname, param);
     }
 
-    void Texture::editSettings(int width, int height, int depth) try
+    bool Texture::editSettings(int width, int height, int depth) try
     {
         if (_width == width && _height == height && _depth == depth) {
-            return;
+            return false;
         }
 
         bind();
@@ -83,6 +83,8 @@ namespace Basic {
         default:
             throw_exc(METHOD_MSG("Given target is NOT handled by SSS/GL."));
         }
+
+        return true;
     }
     CATCH_AND_RETHROW_METHOD_EXC;
 

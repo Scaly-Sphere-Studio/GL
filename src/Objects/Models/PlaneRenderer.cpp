@@ -99,16 +99,19 @@ void PlaneRenderer::_renderPart(Shaders& shader, uint32_t& count, uint32_t& offs
     }
 }
 
-bool PlaneRenderer::_containsOneOf(PlaneBase::RawSet const& set) const noexcept
+void PlaneRenderer::_subjectUpdate(Subject const& subject, int event_id)
 {
-    return std::any_of(set.cbegin(), set.cend(),
-        [this](PlaneBase* modif) {
-            for (std::shared_ptr<PlaneBase> const& plane : _planes)
-                if (plane.get() == modif)
-                    return true;
-            return false;
-        }
-    );
+    switch (event_id) {
+    case Plane::Event::Model:
+        _model_vbo.needs_edit = true;
+        break;
+    case Plane::Event::Alpha:
+        _alpha_vbo.needs_edit = true;
+        break;
+    case Plane::Event::TexOffset:
+        _tex_offset_vbo.needs_edit = true;
+        break;
+    }
 }
 
 template <typename T>
@@ -119,6 +122,7 @@ void PlaneRenderer::_updateVBO(T(PlaneBase::* getMember)() const, Basic::VBO& vb
         vec.push_back(((*plane).*getMember)());
     }
     vbo.edit(vec, GL_DYNAMIC_DRAW);
+    vbo.needs_edit = false;
 };
 
 void PlaneRenderer::render() try
@@ -143,13 +147,13 @@ void PlaneRenderer::render() try
         glm::value_ptr(camera ? camera->getVP() : glm::mat4(1)));
 
     // Edit VBOs if needed
-    if (_update_vbos || _containsOneOf(PlaneBase::getModifiedModels()))
+    if (_update_vbos || _model_vbo.needs_edit)
         _updateVBO(&PlaneBase::getModelMat4, _model_vbo);
 
-    if (_update_vbos || _containsOneOf(PlaneBase::getModifiedAlphas()))
+    if (_update_vbos || _alpha_vbo.needs_edit)
         _updateVBO(&PlaneBase::getAlpha, _alpha_vbo);
 
-    if (_update_vbos || _containsOneOf(PlaneBase::getModifiedTexOffsets()))
+    if (_update_vbos || _tex_offset_vbo.needs_edit)
         _updateVBO(&PlaneBase::getTexOffset, _tex_offset_vbo);
 
     _update_vbos = false;
@@ -177,20 +181,26 @@ CATCH_AND_RETHROW_METHOD_EXC;
 
 void PlaneRenderer::addPlane(std::shared_ptr<PlaneBase> plane)
 {
-    _planes.push_back(plane);
-    _update_vbos = true;
+    if (plane) {
+        _planes.push_back(plane);
+        _observe(*plane);
+        _update_vbos = true;
+    }
 }
 
 void PlaneRenderer::removePlane(std::shared_ptr<PlaneBase> plane)
 {
-    _planes.erase(std::remove_if(
-        _planes.begin(),
-        _planes.end(),
-        [plane](auto p1) {
-            return p1.get() == plane.get();
-        }
-    ));
-    _update_vbos = true;
+    if (plane) {
+        _planes.erase(std::remove_if(
+            _planes.begin(),
+            _planes.end(),
+            [plane](auto&& p1) {
+                return p1.get() == plane.get();
+            }
+        ));
+        _ignore(*plane);
+        _update_vbos = true;
+    }
 }
 
 bool PlaneRenderer::_findNearestModel(double x, double y)

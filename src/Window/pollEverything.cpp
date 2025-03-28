@@ -67,6 +67,10 @@ void pollEverything() try
 
     // Poll events
     glfwPollEvents();
+
+    // Poll threads
+    pollAsync();
+
     // Update every Text Area (this won't do anything if nothing is needed)
     TR::Area::updateAll();
 
@@ -75,63 +79,14 @@ void pollEverything() try
     for (auto& [ptr, win] : Window::_main._subs)
         win->_poll();
 
-    // Loop over each Texture instance
-    for (Texture::Shared const texture : Texture::getInstances()) {
-        if (!texture)
-            continue;
-        texture->_has_running_thread = false;
-        texture->_was_just_updated = false;
-        // Handle file loading threads, or text area threads
-        if (texture->_type == Texture::Type::Raw) {
-            // Skip if no thread is pending, or nothing was parsed
-            auto& thread = texture->_loading_thread;
-            if (thread.isRunning())
-                texture->_has_running_thread = true;
-            else if (thread.isPending() && !thread._frames.empty()) {
-                // Move pixels from thread to texture instance, so that future
-                // threads can run without affecting those pixels.
-                texture->_frames = std::move(thread._frames);
-                texture->_total_frames_time = thread._total_frames_time;
-                // Update dimensions if needed, edit OpenGL texture
-                texture->_raw_w = thread._w;
-                texture->_raw_h = thread._h;
-                texture->_updatePlanes();
-                texture->_raw_texture.editSettings(thread._w, thread._h,
-                    static_cast<uint32_t>(texture->_frames.size()));
-                for (uint32_t i = 0; i < texture->_frames.size(); ++i) {
-                    texture->_raw_texture.editPixels(texture->_frames[i].pixels.data(), i);
-                }
-                thread.setAsHandled();
-                texture->_callback();
-            }
-        }
-        else if (texture->_type == Texture::Type::Text) {
-            TR::Area::Shared text_area = texture->getTextArea();
-            // Skip if no Area is set or if no new pixels
-            if (text_area) {
-                texture->_has_running_thread = text_area->hasRunningThread();
-                if (text_area->pixelsWereChanged()) {
-                    // Retrieve dimensions
-                    int new_w, new_h;
-                    text_area->pixelsGetDimensions(new_w, new_h);
-                    // Update dimensions if needed, edit OpenGL texture
-                    texture->_internalEdit(text_area->pixelsGet(), new_w, new_h);
-                }
-            }
-        }
-
-    }
-
     // Loop over each Plane instance
-    for (PlaneBase* plane : PlaneBase::_instances) {
-        if (plane->isPlaying()) {
-            plane->_animation_duration += time_since_last_poll;
-            plane->_updateTextureOffset();
+    for (auto& ref : PlaneBase::_instances) {
+        PlaneBase& plane = ref.get();
+        if (plane.isPlaying()) {
+            plane._animation_duration += time_since_last_poll;
+            plane._updateTextureOffset();
         }
     }
-
-    // Set all Area threds as handled, now that all textures are updated
-    TR::Area::notifyAll();
 
     last_poll = now;
 }

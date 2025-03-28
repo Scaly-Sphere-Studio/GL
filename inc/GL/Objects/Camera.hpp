@@ -23,8 +23,8 @@ class Window;
  *  @sa create()
  */
 class SSS_GL_API Camera : public InstancedClass<Camera> {
-    friend class SharedClass;
-    friend class Window;
+    friend SharedClass;
+    friend Window;
 private:
     Camera();
 public:

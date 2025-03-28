@@ -22,6 +22,8 @@ Texture::Texture() try
     _raw_texture.parameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     _raw_texture.parameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     
+    _observe(_loading_thread);
+
     // Log
     if (Log::GL::Texture::query(Log::GL::Texture::get().life_state)) {
         LOG_GL_MSG("Texture -> created");
@@ -51,75 +53,31 @@ Texture::Shared Texture::create(TR::Area::Shared area)
     return ret;
 }
 
-void Texture::_callback()
-{
-    _was_just_updated = true;
-    if (_callback_f)
-        _callback_f(*this);
-    for (auto const& plane : PlaneBase::_instances) {
-        if (plane->getTexture().get() == this && plane->_texture_callback)
-            plane->_texture_callback(*plane);
-    }
-}
-
 void Texture::setType(Type type) noexcept
 {
-    if (type == _type) {
-        return;
-    }
-    _type = type;
-    if (type == Type::Raw) {
-        auto pixels = getRawPixels();
-        if (pixels.empty()) {
-            return;
-        }
-        _updatePlanes();
-        _raw_texture.editSettings(_raw_w, _raw_h, static_cast<uint32_t>(_frames.size()));
-        _raw_texture.editPixels(pixels.data());
-    }
-    else if (type == Type::Text) {
-        TR::Area::Shared text_area = getTextArea();
-        if (text_area) {
-            text_area->pixelsGetDimensions(_text_w, _text_h);
-            _updatePlanes();
-            _raw_texture.editSettings(_text_w, _text_h);
-            _raw_texture.editPixels(text_area->pixelsGet());
-        }
-        else {
-            _text_w = 0;
-            _text_h = 0;
-            _updatePlanes();
-        }
-    }
+    if (_type != type)
+        _internalEdit(type);
 }
 
 void Texture::loadImage(std::string const& filepath)
 {
     _loading_thread.run(_resource_folder, filepath);
     _filepath = filepath;
-    _has_running_thread = true;
 }
 
 void Texture::editRawPixels(void const* pixels, int width, int height) try
 {
-    // Update size info
-    _raw_w = width;
-    _raw_h = height;
-    // Give the image to the OpenGL texture
-    _raw_texture.editSettings(width, height);
-    _raw_texture.editPixels(pixels);
     if (_frames.size() != 1) {
         _frames.resize(1);
     }
+    _frames.w = width;
+    _frames.h = height;
     // Replace previous pixel storage
     uint32_t const* ptr = reinterpret_cast<uint32_t const*>(pixels);
-    _frames[0].pixels = RGBA32::Vector(ptr, ptr + (_raw_w * _raw_h));
+    _frames[0].pixels = RGBA32::Vector(ptr, ptr + (width * height));
 
     // Update plane type and scaling
-    _type = Type::Raw;
-    _updatePlanes();
-
-    _callback();
+    _internalEdit(Type::Raw);
 
     // Log
     if (Log::GL::Texture::query(Log::GL::Texture::get().edit)) {
@@ -130,24 +88,23 @@ CATCH_AND_RETHROW_METHOD_EXC;
 
 void Texture::setTextArea(TR::Area::Shared area)
 {
-    _area = area;
-    if (area) {
-        _type = Type::Text;
-        int w, h;
-        area->pixelsGetDimensions(w, h);
-        _internalEdit(area->pixelsGet(), w, h);
-    }
+    _set(_area, area);
+    _internalEdit(Type::Text);
 }
 
 void Texture::getCurrentDimensions(int& w, int& h) const noexcept
 {
     if (_type == Type::Raw) {
-        w = _raw_w;
-        h = _raw_h;
+        w = _frames.w;
+        h = _frames.h;
     }
     else if (_type == Type::Text) {
-        w = _text_w;
-        h = _text_h;
+        if (_area)
+            _area->pixelsGetDimensions(w, h);
+        else {
+            w = 0;
+            h = 0;
+        }
     }
 }
 
@@ -163,7 +120,7 @@ void Texture::savePNG() const
     int w, h;
     getCurrentDimensions(w, h);
     std::vector<uint8_t> pixels(4 * w * h);
-    
+
     glGetTextureImage(_raw_texture.id, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels.size(), &pixels[0]);
 
     std::string time = std::format("{:%Y-%m-%d_%H-%M-%S}", std::chrono::system_clock::now());
@@ -176,12 +133,24 @@ void Texture::savePNG() const
     stbi_write_png(name.c_str(), w, h, 4, &pixels[0], 0);
 }
 
+void Texture::_subjectUpdate(Subject const& subject, int event_id)
+{
+    if (subject.is<_AsyncLoading>()) {
+        _frames = std::move(_loading_thread._frames);
+        _internalEdit(Type::Raw);
+    }
+    else if (subject.is<TR::Area>()) {
+        _internalEdit(Type::Text);
+    }
+}
+
 void Texture::_AsyncLoading::_asyncFunction(std::string folder, std::string filepath)
 {
     _frames.clear();
-    _total_frames_time = std::chrono::nanoseconds(0);
-    _w = 0;
-    _h = 0;
+    _frames.total_time = std::chrono::nanoseconds(0);
+    _frames.w = 0;
+    _frames.h = 0;
+
     std::string path;
     if (path = folder + filepath; folder.empty() || !pathIsFile(path)) {
         if (path = pathWhich(filepath); !pathIsFile(path)) {
@@ -202,8 +171,8 @@ void Texture::_AsyncLoading::_asyncFunction(std::string folder, std::string file
         }
         // Copy data
         if (!apng_frames.empty()) {
-            _w = apng_frames[0].w;
-            _h = apng_frames[0].h;
+            _frames.w = apng_frames[0].w;
+            _frames.h = apng_frames[0].h;
             _frames.reserve(apng_frames.size());
             // Copy each frame one by one
             for (auto& apng_frame : apng_frames) {
@@ -211,7 +180,7 @@ void Texture::_AsyncLoading::_asyncFunction(std::string folder, std::string file
                 // Copy pixels and compute delay
                 auto& frame = _frames.emplace_back();
                 uint32_t const* p = reinterpret_cast<uint32_t const*>(apng_frame.vec.data());
-                frame.pixels = RGBA32::Vector(p, p + (_w * _h));
+                frame.pixels = RGBA32::Vector(p, p + (_frames.w * _frames.h));
                 if (apng_frame.delay_den > 0) {
                     frame.delay = std::chrono::nanoseconds(static_cast<int64_t>(1e9
                         * static_cast<double>(apng_frame.delay_num)
@@ -220,7 +189,7 @@ void Texture::_AsyncLoading::_asyncFunction(std::string folder, std::string file
                 }
                 else
                     frame.delay = std::chrono::milliseconds(16);
-                _total_frames_time += frame.delay;
+                _frames.total_time += frame.delay;
                 // Free raw pixels early
                 apng_frame.vec.clear();
                 apng_frame.rows.clear();
@@ -233,8 +202,8 @@ void Texture::_AsyncLoading::_asyncFunction(std::string folder, std::string file
         SSS::C_Ptr <uint32_t, void(*)(void*), stbi_image_free>
             raw_pixels(reinterpret_cast<uint32_t*>(stbi_load(
                 path.c_str(),   // Filepath to picture
-                &_w,            // Width, to query
-                &_h,            // Height, to query
+                &_frames.w,     // Width, to query
+                &_frames.h,     // Height, to query
                 nullptr,        // Byte composition, to query if not requested
                 4               // Byte composition, to request (here RGBA32)
             )));
@@ -245,41 +214,34 @@ void Texture::_AsyncLoading::_asyncFunction(std::string folder, std::string file
         // Fill vector
         if (_beingCanceled()) return;
         _frames.emplace_back().pixels =
-            RGBA32::Vector(raw_pixels.get(), raw_pixels.get() + (_w * _h));
+            RGBA32::Vector(raw_pixels.get(), raw_pixels.get() + (_frames.w * _frames.h));
     }
 }
 
-void Texture::_updatePlanes()
+void Texture::_internalEdit(Type type)
 {
-    // Update texture scaling of all planes & buttons matching this texture
-    for (PlaneBase* plane : PlaneBase::_instances) {
-        if (plane->_texture.get() == this) {
-            plane->_updateTexScaling();
-            plane->_animation_duration = std::chrono::nanoseconds(0);
-            plane->_setTextureOffset(0);
-        }
-    }
-}
-
-void Texture::_internalEdit(void const* pixels, int w, int h)
-{
+    _type = type;
     if (_type == Type::Raw) {
-        if (w != _raw_w || h != _raw_h) {
-            _raw_w = w;
-            _raw_h = h;
-            _updatePlanes();
+        if (_raw_texture.editSettings(_frames.w, _frames.h, static_cast<int>(_frames.size())))
+            _notifyObservers(Event::Resize);
+        for (uint32_t i = 0; i < _frames.size(); ++i) {
+            _raw_texture.editPixels(_frames[i].pixels.data(), i);
         }
     }
     else if (_type == Type::Text) {
-        if (w != _text_w || h != _text_h) {
-            _text_w = w;
-            _text_h = h;
-            _updatePlanes();
-        }
+        int w = 0, h = 0;
+        if (_area)
+            _area->pixelsGetDimensions(w, h);
+        if (_raw_texture.editSettings(w, h))
+            _notifyObservers(Event::Resize);
+        if (_area)
+            _raw_texture.editPixels(_area->pixelsGet());
     }
-    _raw_texture.editSettings(w, h);
-    _raw_texture.editPixels(pixels);
-    _callback();
+
+    if (_callback_f)
+        _callback_f(*this);
+
+    _notifyObservers(Event::Content);
     
     // Log
     if (Log::GL::Texture::query(Log::GL::Texture::get().edit)) {

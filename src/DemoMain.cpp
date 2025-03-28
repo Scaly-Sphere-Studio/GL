@@ -33,6 +33,8 @@ void scroll_callback(GLFWwindow* win, double x, double y)
 
 int main() try
 {
+    Log::Async::louden(true);
+
     Log::GL::Callbacks::get().window_resize = true;
     // Setup Lua
     sol::state lua;

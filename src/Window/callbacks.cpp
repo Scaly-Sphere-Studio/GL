@@ -224,7 +224,7 @@ void Window::key_callback(GLFWwindow* ptr, int key, int scancode, int action, in
         if ((mods & GLFW_MOD_SHIFT) != 0)
             area->lockSelection();
         else if (auto plane = window->getHeld<PlaneBase>(); !plane || !plane->_texture
-            || plane->_texture->_type != Texture::Type::Text || plane->_texture->getTextArea() != area)
+            || plane->_texture->getType() != Texture::Type::Text || plane->_texture->getTextArea() != area)
             area->unlockSelection();
     }
     window->_key_mods = mods;

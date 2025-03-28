@@ -20,9 +20,6 @@ void Window::drawObjects()
                 continue;
             renderer->render();
         }
-        // Reset list of modified Planes
-        for (auto& set : PlaneBase::_modified.all)
-            set.clear();
     }
 }
 

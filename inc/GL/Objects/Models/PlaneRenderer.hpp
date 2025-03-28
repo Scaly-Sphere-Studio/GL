@@ -21,14 +21,15 @@ SSS_GL_BEGIN;
  *  This is useful to enforce specific orders of chunks without
  *  having to worry about their depth (Background, Scene, Text, UI...).
  */
-class SSS_GL_API PlaneRenderer : public Renderer<PlaneRenderer> {
+class SSS_GL_API PlaneRenderer : public Observer, public Renderer<PlaneRenderer> {
     friend class SharedClass;
     friend class Window;
 
 private:
     PlaneRenderer();
     void _renderPart(Shaders& shader, uint32_t& count, uint32_t& offset) const;
-    bool _containsOneOf(PlaneBase::RawSet const& set) const noexcept;
+
+    virtual void _subjectUpdate(Subject const& subject, int event_id) override;
 
     template <typename T>
     void _updateVBO(T(PlaneBase::* getMember)() const, Basic::VBO& vbo);
@@ -50,6 +51,9 @@ public:
     template <std::derived_from<PlaneBase> _Plane>
     void setPlanes(std::vector<std::shared_ptr<_Plane>> planes)
     {
+        for (auto const& plane : _planes)
+            if (plane)
+                _ignore(*plane);
         _planes.clear();
         addPlanes(planes);
     }
@@ -61,6 +65,9 @@ public:
     void addPlanes(std::vector<std::shared_ptr<_Plane>> planes)
     {
         _planes.insert(_planes.end(), planes.cbegin(), planes.cend());
+        for (auto const& plane : planes)
+            if (plane)
+                _observe(*plane);
         _update_vbos = true;
     }
     
@@ -80,6 +87,8 @@ public:
                 }
             ), _planes.end()
         );
+        for (auto const& plane : planes)
+            _ignore(*plane);
         _update_vbos = true;
     }
 

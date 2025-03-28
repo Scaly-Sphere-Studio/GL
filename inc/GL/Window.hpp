@@ -309,7 +309,7 @@ public:
     inline void saveScreenshot() noexcept { take_screenshot = true; };
 
 private:
-    class AsyncScreenshot : public AsyncBase
+    class AsyncScreenshot : public Async
         < int, int, std::vector<uint8_t>, std::string >
     {
         void _asyncFunction(int w, int h, std::vector<uint8_t> pixels,

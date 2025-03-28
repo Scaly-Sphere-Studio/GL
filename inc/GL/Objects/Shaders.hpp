@@ -27,8 +27,7 @@ SSS_GL_BEGIN;
  *  @sa Window::createShaders(), Renderer::setShadersID()
  */
 class SSS_GL_API Shaders : public InstancedClass<Shaders> {
-    friend class SharedClass;
-    friend class Window;
+    friend SharedClass;
 
 private:
     // Constructor 

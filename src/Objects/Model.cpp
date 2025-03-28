@@ -57,6 +57,7 @@ void ModelBase::translate(glm::vec3 translation)
 void ModelBase::_computeModelMat4()
 {
     _model_mat4 = _getTranslationMat4() * _getRotationMat4() * _getScalingMat4();
+    _notifyObservers();
 }
 
 void ModelBase::getAllTransformations(glm::vec3 & scaling, glm::vec3 & rot_angles, glm::vec3 & translation) const
