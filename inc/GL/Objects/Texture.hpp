@@ -91,6 +91,7 @@ public:
 private:
     static std::string _resource_folder;
 
+    //static Basic::Texture 
     Basic::Texture _raw_texture;    // OpenGL texture
     Type _type{ Type::Raw };        // Texture type
     Frame::Vector _frames{ 1 };     // Vector of frames (is used for images AND animations)
@@ -121,9 +122,9 @@ public:
      *  @sa getRawPixels, getRawDimensions()
      */
     void editRawPixels(void const* pixels, int width, int height);
-    /** Returns the raw pixels of this instance.
-     *  @sa loadImage(), editRawPixels(), getRawDimensions()
-     */
+
+    void setColor(RGBA32 color);
+
     inline auto const& getRawPixels(size_t id = 0) const noexcept { return _frames.at(id).pixels; };
 
     inline auto const& getFrames() const noexcept { return _frames; };

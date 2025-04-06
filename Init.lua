@@ -83,7 +83,10 @@ end
 do
     camera = GL.Camera.new()
     plane = GL.Plane.new(area)
-    plane_png = GL.Plane.new(GL.Texture.new("C:\\Users\\lanto\\Pictures\\splash_3.png"))
+    --plane_png = GL.Plane.new(GL.Texture.new("C:\\Users\\lanto\\Pictures\\splash_3.png"))
+    texture = GL.Texture.new()
+    texture:setColor(RGBA.new(255, 0, 180, 100))
+    plane_png = GL.Plane.new(texture)
     plane_png:play()
     plane_png.loop = true
 

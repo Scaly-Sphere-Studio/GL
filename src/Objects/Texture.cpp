@@ -86,6 +86,11 @@ void Texture::editRawPixels(void const* pixels, int width, int height) try
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
+void Texture::setColor(RGBA32 color)
+{
+    editRawPixels(&color, 1, 1);
+}
+
 void Texture::setTextArea(TR::Area::Shared area)
 {
     _set(_area, area);

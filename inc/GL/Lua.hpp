@@ -76,6 +76,7 @@ inline void lua_setup_GL(sol::state& lua)
     texture["type"] = sol::property(&Texture::getType, &Texture::setType);
     texture["loadImage"] = &Texture::loadImage;
     texture["edit"] = &Texture::editRawPixels;
+    texture["setColor"] = &Texture::setColor;
     texture["text_area"] = sol::property(&Texture::getTextArea, &Texture::setTextArea);
     texture["getDimensions"] = sol::resolve<std::tuple<int, int>() const>(&Texture::getCurrentDimensions);
     
