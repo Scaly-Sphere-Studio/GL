@@ -2,7 +2,9 @@
 #define SSS_GL_TEXTURE_HPP
 
 #include <SSS/Text-Rendering.hpp>
+#include <SSS/Commons/eventList.hpp>
 #include "Basic.hpp"
+
 
 /** @file
  *  Defines class SSS::GL::Texture.
@@ -50,11 +52,6 @@ private:
 public:
     /** Destructor, can log but otherwise default.*/
     ~Texture();
-
-    enum Event {
-        Content,
-        Resize,
-    };
 
     using InstancedClass::create;
     static Shared create(std::string const& filepath);

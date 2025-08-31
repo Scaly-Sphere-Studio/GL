@@ -3,6 +3,7 @@
 
 #include "../Model.hpp"
 #include "../Texture.hpp"
+#include <SSS/Commons/eventList.hpp>
 #include <set>
 
 /** @file
@@ -21,13 +22,6 @@ class SSS_GL_API PlaneBase : public Observer, public ModelBase {
     friend class PlaneRenderer;
     friend class Window;
     friend SSS_GL_API void pollEverything();
-
-public:
-    enum Event {
-        Model = 0,
-        Alpha,
-        TexOffset
-    };
 
 private:
     static std::set<std::reference_wrapper<PlaneBase>> _instances;

@@ -42,7 +42,7 @@ void PlaneBase::setAlpha(float alpha) noexcept
     float const new_alpha = std::clamp(alpha, 0.f, 1.f);
     if (_alpha != new_alpha) {
         _alpha = new_alpha;
-        _notifyObservers(Event::Alpha);
+        _notifyObservers(SSS::EventList::Alpha);
     }
 }
 
@@ -50,7 +50,7 @@ void PlaneBase::_setTextureOffset(uint32_t offset)
 {
     if (_texture_offset != offset) {
         _texture_offset = offset;
-        _notifyObservers(Event::TexOffset);
+        _notifyObservers(SSS::EventList::TexOffset);
     }
 }
 
@@ -125,11 +125,11 @@ void PlaneBase::_updateTexScaling()
 void PlaneBase::_subjectUpdate(Subject const& subject, int event_id)
 {
     switch (event_id) {
-    case Texture::Content:
+    case SSS::EventList::Content:
         if (_texture_callback)
             _texture_callback(*this);
         break;
-    case Texture::Resize:
+    case SSS::EventList::Resize:
         _updateTexScaling();
         _animation_duration = std::chrono::nanoseconds(0);
         _setTextureOffset(0);
