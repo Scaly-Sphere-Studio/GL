@@ -1,5 +1,6 @@
 #include "GL/Objects/Shaders.hpp"
 
+
 SSS_GL_BEGIN;
 
 Shaders::Shaders() try
@@ -48,6 +49,7 @@ static void compileShader(GLuint shader_id, std::string const& shader_code)
 	}
 }
 
+// TODO OVERLAOD FOR MORE COMPLEXE SHADERS (COMPUTE...)
 static GLuint loadShaders(std::string const& vertex_data, std::string const& fragment_data)
 {
 	// Create the shaders
@@ -131,19 +133,104 @@ void Shaders::use() const
 }
 
 // Return the location of a uniform variable for this program
-GLint Shaders::getUniformLocation(std::string const& name)
+GLint Shaders::getUniformLocation(std::string const& name) const
 {
 	return glGetUniformLocation(_program_id, name.c_str());
 }
 
+// ------------------------------------------------------------------------
+// BASE TYPES
+// ------------------------------------------------------------------------
+void Shaders::setBool(const std::string& name, bool value) const
+{
+	glUniform1i(getUniformLocation(name), (int)value);
+}
+
+// ------------------------------------------------------------------------
+void Shaders::setInt(const std::string& name, int value) const
+{
+	glUniform1i(getUniformLocation(name), value);
+}
 void Shaders::setUniform1iv(std::string const& name, GLsizei count, const GLint* value)
 {
 	glUniform1iv(getUniformLocation(name), count, value);
 }
 
+// ------------------------------------------------------------------------
+void Shaders::setFloat(const std::string& name, float value) const
+{
+	glUniform1f(getUniformLocation(name), value);
+}
 void Shaders::setUniform1fv(std::string const& name, GLsizei count, const GLfloat* value)
 {
 	glUniform1fv(getUniformLocation(name), count, value);
+}
+
+
+// VEC
+
+// ------------------------------------------------------------------------
+// VEC2
+// ------------------------------------------------------------------------
+void Shaders::setVec2(const std::string& name, const glm::vec2& value) const
+{
+	glUniform2fv(getUniformLocation(name), 1, &value[0]);
+}
+void Shaders::setVec2(const std::string& name, float x, float y) const 
+{
+	glUniform2f(getUniformLocation(name), x, y);
+}
+
+// ------------------------------------------------------------------------
+// VEC3
+// ------------------------------------------------------------------------
+void Shaders::setVec3(const std::string& name, const glm::vec3& value) const
+{
+	glUniform3fv(getUniformLocation(name), 1, &value[0]);
+}
+void Shaders::setVec3(const std::string& name, float x, float y, float z) const
+{
+	glUniform3f(getUniformLocation(name), x, y, z);
+}
+
+// ------------------------------------------------------------------------
+// VEC4
+// ------------------------------------------------------------------------
+void Shaders::setVec4(const std::string& name, const glm::vec4& value) const
+{
+	glUniform4fv(getUniformLocation(name), 1, &value[0]);
+}
+void Shaders::setVec4(const std::string& name, float x, float y, float z, float w) const
+{
+	glUniform4f(getUniformLocation(name), x, y, z, w);
+}
+
+
+// MATRICES
+// ------------------------------------------------------------------------
+// MAT2
+// ------------------------------------------------------------------------
+void Shaders::setMat2(const std::string& name, const glm::mat2& mat) const
+{
+	glUniformMatrix2fv(getUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
+}
+
+
+// ------------------------------------------------------------------------
+// MAT3
+// ------------------------------------------------------------------------
+void Shaders::setMat3(const std::string& name, const glm::mat3& mat) const
+{
+	glUniformMatrix3fv(getUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
+}
+
+
+// ------------------------------------------------------------------------
+// MAT4
+// ------------------------------------------------------------------------
+void Shaders::setMat4(const std::string& name, const glm::mat4& mat) const
+{
+	glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
 }
 
 void Shaders::setUniformMat4fv(std::string const& name, GLsizei count,
@@ -151,5 +238,7 @@ void Shaders::setUniformMat4fv(std::string const& name, GLsizei count,
 {
 	glUniformMatrix4fv(getUniformLocation(name), count, transpose, value);
 }
+
+
 
 SSS_GL_END;

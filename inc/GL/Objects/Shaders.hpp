@@ -2,6 +2,7 @@
 #define SSS_GL_SHADERS_HPP
 
 #include "Basic.hpp"
+#include "glm/glm.hpp"
 
 /** @file
  *  Defines class SSS::GL::Shaders.
@@ -69,10 +70,16 @@ public:
      */
     void use() const;
 
+
+
+    /*
+        UNIFORMS HANDLING
+    */
+
     /** Simple handle to \c glGetUniformLocation().
      *  Context will always be accurately set.
      */
-    GLint getUniformLocation(std::string const& name);
+    GLint getUniformLocation(std::string const& name) const;
 
     /** Simple handle to \c glUniform1iv().
      *  Context will always be accurately set.
@@ -87,6 +94,37 @@ public:
      */
     void setUniformMat4fv(std::string const& name, GLsizei count,
         GLboolean transpose, GLfloat const* value);
+
+    /* Set bool uniform*/
+    void setBool(const std::string& name, bool value) const;
+    /* Set int uniform*/
+    void setInt(const std::string& name, int value) const;
+    /* Set float uniform*/
+    void setFloat(const std::string& name, float value) const;
+
+    /* VEC UNIFORMS*/
+    /* Set vec2 uniform*/
+    void setVec2(const std::string& name, const glm::vec2& value) const;  
+    /* Set vec2 uniform*/
+    void setVec2(const std::string& name, float x, float y) const;
+
+    /* Set vec3 uniform*/
+    void setVec3(const std::string& name, const glm::vec3& value) const;
+    /* Set vec3 uniform*/
+    void setVec3(const std::string& name, float x, float y, float z) const;
+
+    /* Set vec4 uniform*/
+    void setVec4(const std::string& name, const glm::vec4& value) const;
+    /* Set vec4 uniform*/
+    void setVec4(const std::string& name, float x, float y, float z, float w) const;
+
+    /* Set mat2 uniform*/
+    void setMat2(const std::string& name, const glm::mat2& mat) const;
+    /* Set mat3 uniform*/
+    void setMat3(const std::string& name, const glm::mat3& mat) const;
+    /* Set mat4 uniform*/
+    void setMat4(const std::string& name, const glm::mat4& mat) const;
+
 
 private:
     bool _loaded{ false };
