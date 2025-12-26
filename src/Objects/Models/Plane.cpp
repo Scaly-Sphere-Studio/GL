@@ -2,6 +2,12 @@
 
 SSS_GL_BEGIN;
 
+void PlaneBase::_register()
+{
+    REGISTER_EVENT("SSS_PLANE_ALPHA");
+    REGISTER_EVENT("SSS_PLANE_TEXTURE_OFFSET");
+}
+
 std::strong_ordering operator<=>(std::reference_wrapper<PlaneBase> const& a, std::reference_wrapper<PlaneBase> const& b)
 {
     return &a.get() <=> &b.get();
@@ -42,7 +48,7 @@ void PlaneBase::setAlpha(float alpha) noexcept
     float const new_alpha = std::clamp(alpha, 0.f, 1.f);
     if (_alpha != new_alpha) {
         _alpha = new_alpha;
-        _notifyObservers(SSS::EventList::Alpha);
+        EMIT_EVENT("SSS_PLANE_ALPHA");
     }
 }
 
@@ -50,7 +56,7 @@ void PlaneBase::_setTextureOffset(uint32_t offset)
 {
     if (_texture_offset != offset) {
         _texture_offset = offset;
-        _notifyObservers(SSS::EventList::TexOffset);
+        EMIT_EVENT("SSS_PLANE_TEXTURE_OFFSET");
     }
 }
 
@@ -124,16 +130,17 @@ void PlaneBase::_updateTexScaling()
 
 void PlaneBase::_subjectUpdate(Subject const& subject, int event_id)
 {
-    switch (event_id) {
-    case SSS::EventList::Content:
-        if (_texture_callback)
-            _texture_callback(*this);
-        break;
-    case SSS::EventList::Resize:
+    if (event_id == EVENT_ID("SSS_TEXTURE_RESIZE")) {
         _updateTexScaling();
         _animation_duration = std::chrono::nanoseconds(0);
         _setTextureOffset(0);
-        break;
+        return;
+    }
+
+    if (event_id == EVENT_ID("SSS_TEXTURE_CONTENT")) {
+        if (_texture_callback)
+            _texture_callback(*this);
+        return;
     }
 }
 

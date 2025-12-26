@@ -4,6 +4,7 @@
 #include "Basic.hpp"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_decompose.hpp>
+#include <SSS/Commons/eventList.hpp>
 
 /** @file
  *  Defines abstract class SSS::GL::ModelBase.
@@ -19,7 +20,8 @@ SSS_GL_BEGIN;
 /** Abstract base class for %Model matrix.
  *  @sa Plane
  */
-class SSS_GL_API ModelBase : public Subject {
+class SSS_GL_API ModelBase : public Subject, public _EventRegistry<ModelBase> {
+    friend _EventRegistry<ModelBase>;
 public:
     ModelBase();
     /** Virtual destructor, default.*/
@@ -69,6 +71,8 @@ private:
     glm::mat4 _translation;
     /** %Model matrix, computed by getModelMat4().*/
     glm::mat4 _model_mat4;
+
+    static void _register();
 };
 
 #pragma warning(pop)

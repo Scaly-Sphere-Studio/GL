@@ -43,8 +43,9 @@ INTERNAL_END;
  *  internal Basic::Texture.
  *  @sa Window::createTexture()
  */
-class SSS_GL_API Texture : public Observer, public Subject, public InstancedClass<Texture> {
+class SSS_GL_API Texture : public Observer, public Subject, public InstancedClass<Texture>, public _EventRegistry<Texture> {
     friend SharedClass;
+    friend _EventRegistry<Texture>;
 
 private:
     Texture();
@@ -169,6 +170,8 @@ private:
 
     // Simple internal edit based on set type
     void _internalEdit(Type type);
+
+    static void _register();
 };
 
 #pragma warning(pop)

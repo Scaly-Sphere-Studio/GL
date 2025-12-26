@@ -18,9 +18,10 @@ SSS_GL_BEGIN;
 #pragma warning(disable: 4275)
 
 /** 2D plane derived from Model.*/
-class SSS_GL_API PlaneBase : public Observer, public ModelBase {
+class SSS_GL_API PlaneBase : public Observer, public ModelBase, public _EventRegistry<PlaneBase> {
     friend class PlaneRenderer;
     friend class Window;
+    friend _EventRegistry<PlaneBase>;
     friend SSS_GL_API void pollEverything();
 
 private:
@@ -123,6 +124,8 @@ private:
         double &z, bool& is_hovered);
     // Returns true and updates z if Plane is hovered
     bool _isHovered(glm::mat4 const& VP, double x, double y, double &z);
+
+    static void _register();
 };
 
 template<class Derived>

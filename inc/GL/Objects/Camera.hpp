@@ -92,7 +92,9 @@ public:
         /** Orthographic projection (2D) with a fixed pixel size.*/
         OrthoFixed,
         /** Perspective projection (3D).*/
-        Perspective
+        Perspective,
+        /** UI screen projection, with reverse Y axis (2D).*/
+        UI
     };
     /** Sets the Projection of the camera.
      *  @sa getProjectionType()
