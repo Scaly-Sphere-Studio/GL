@@ -13,6 +13,13 @@ SSS_GL_BEGIN;
 
 std::string Texture::_resource_folder;
 
+
+void Texture::_register()
+{
+    REGISTER_EVENT("SSS_TEXTURE_RESIZE"); 
+    REGISTER_EVENT("SSS_TEXTURE_CONTENT"); 
+}
+
 Texture::Texture() try
     : _raw_texture(GL_TEXTURE_2D_ARRAY)
 {
@@ -228,7 +235,9 @@ void Texture::_internalEdit(Type type)
     _type = type;
     if (_type == Type::Raw) {
         if (_raw_texture.editSettings(_frames.w, _frames.h, static_cast<int>(_frames.size())))
-            _notifyObservers(SSS::EventList::Resize);
+        {
+            EMIT_EVENT("SSS_TEXTURE_RESIZE");
+        }
         for (uint32_t i = 0; i < _frames.size(); ++i) {
             _raw_texture.editPixels(_frames[i].pixels.data(), i);
         }
@@ -238,7 +247,9 @@ void Texture::_internalEdit(Type type)
         if (_area)
             _area->pixelsGetDimensions(w, h);
         if (_raw_texture.editSettings(w, h))
-            _notifyObservers(SSS::EventList::Resize);
+        {
+            EMIT_EVENT("SSS_TEXTURE_RESIZE");
+        }
         if (_area)
             _raw_texture.editPixels(_area->pixelsGet());
     }
@@ -246,12 +257,12 @@ void Texture::_internalEdit(Type type)
     if (_callback_f)
         _callback_f(*this);
 
-    _notifyObservers(SSS::EventList::Content);
-    
+    EMIT_EVENT("SSS_TEXTURE_CONTENT"); 
     // Log
     if (Log::GL::Texture::query(Log::GL::Texture::get().edit)) {
         LOG_GL_MSG("Texture -> edit");
     }
 }
+
 
 SSS_GL_END;

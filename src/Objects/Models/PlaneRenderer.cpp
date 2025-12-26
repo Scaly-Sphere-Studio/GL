@@ -101,16 +101,19 @@ void PlaneRenderer::_renderPart(Shaders& shader, uint32_t& count, uint32_t& offs
 
 void PlaneRenderer::_subjectUpdate(Subject const& subject, int event_id)
 {
-    switch (event_id) {
-    case SSS::EventList::Model:
+    if (event_id == EVENT_ID("SSS_MODEL_UPDATE")) {
         _model_vbo.needs_edit = true;
-        break;
-    case SSS::EventList::Alpha:
+        return;
+    }
+
+    if (event_id == EVENT_ID("SSS_PLANE_ALPHA")) {
         _alpha_vbo.needs_edit = true;
-        break;
-    case SSS::EventList::TexOffset:
+        return;
+    }
+
+    if (event_id == EVENT_ID("SSS_PLANE_TEXTURE_OFFSET")) {
         _tex_offset_vbo.needs_edit = true;
-        break;
+        return;
     }
 }
 

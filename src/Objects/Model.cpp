@@ -9,7 +9,15 @@ ModelBase::ModelBase() try
     setRotation();
     setTranslation();
 }
+
+
 CATCH_AND_RETHROW_METHOD_EXC;
+
+void ModelBase::_register()
+{
+    REGISTER_EVENT("SSS_MODEL_UPDATE");
+}
+
 
 ModelBase::~ModelBase() = default;
 
@@ -58,6 +66,7 @@ void ModelBase::_computeModelMat4()
 {
     _model_mat4 = _getTranslationMat4() * _getRotationMat4() * _getScalingMat4();
     _notifyObservers();
+    EMIT_EVENT("SSS_MODEL_UPDATE");
 }
 
 void ModelBase::getAllTransformations(glm::vec3 & scaling, glm::vec3 & rot_angles, glm::vec3 & translation) const
