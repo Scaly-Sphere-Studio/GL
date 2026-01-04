@@ -6,6 +6,8 @@
 #include <array>
 #include <queue>
 
+#include <SSS/Commons/eventList.hpp>
+
 /** @file
  *  Defines class SSS::GL::Window and its bound class SSS::GL::Context.
  */
@@ -70,9 +72,11 @@ private:
 #pragma warning(disable: 4275)
 
 /** Abstractization of \c GLFWwindow logic.*/
-class SSS_GL_API Window : public Base, public std::enable_shared_from_this<Window> {
+class SSS_GL_API Window : public Base, public std::enable_shared_from_this<Window>, 
+    public Subject, public _EventRegistry<Window> {
     
     friend SSS_GL_API void pollEverything();
+    friend _EventRegistry<Window>;
 
 private:
     static void window_iconify_callback(GLFWwindow* ptr, int state);
@@ -245,6 +249,7 @@ public:
     inline auto getCursorPos() const noexcept { return std::make_tuple(_cursor_x, _cursor_y); };
     inline void getCursorDiff(int& x, int& y) const noexcept { x = _cursor_diff_x; y = _cursor_diff_y; };
     inline auto getCursorDiff() const noexcept { return std::make_tuple(_cursor_diff_x, _cursor_diff_y); };
+
 
 private:
     std::vector<std::shared_ptr<RendererBase>> _renderers; // Renderers
@@ -453,6 +458,7 @@ public:
      */
     static inline uint32_t maxGLSLTextureUnits() noexcept { return _main._max_glsl_tex_units; };
 
+    void emitEvent(const std::string& event_str) { EMIT_EVENT(event_str); };
 private:
 // --- Private variables ---
 
@@ -500,6 +506,7 @@ private:
 
     // Sets the window's main monitor
     void _setMainMonitor(int id);
+    static void _register();
 };
 
 #pragma warning(pop)

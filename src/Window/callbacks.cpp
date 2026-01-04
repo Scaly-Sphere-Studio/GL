@@ -35,6 +35,8 @@ void Window::window_resize_callback(GLFWwindow* ptr, int w, int h) try
     if (window->_resize_callback != nullptr) {
         window->_resize_callback(ptr, w, h);
     }
+
+    window->emitEvent("SSS_WINDOW_RESIZE");
 }
 CATCH_AND_RETHROW_FUNC_EXC;
 
@@ -141,6 +143,8 @@ void Window::window_iconify_callback(GLFWwindow* ptr, int state)
     if (window->_iconify_callback != nullptr) {
         window->_iconify_callback(ptr, state);
     }
+
+    window->emitEvent("SSS_WINDOW_ICONIFY");
 }
 
 // Used for clickable planes and such
@@ -192,6 +196,7 @@ void Window::mouse_button_callback(GLFWwindow* ptr, int button, int action, int 
     if (window->_mouse_button_callback != nullptr) {
         window->_mouse_button_callback(ptr, button, action, mods);
     }
+
 }
 CATCH_AND_RETHROW_FUNC_EXC;
 

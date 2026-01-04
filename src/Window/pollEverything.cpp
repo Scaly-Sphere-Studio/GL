@@ -29,8 +29,21 @@ static void processInputs(  std::queue<std::pair<int, bool>>& queue,
 void Window::_poll()
 {
     // Process inputs
+
+    bool emitIptKey = !_key_queue.empty();
+    bool emitMse    = !_click_queue.empty();
+
     processInputs(_key_queue, _key_inputs, _input_stack_time);
+    if (emitIptKey) {
+        EMIT_EVENT("SSS_WINDOW_KEY_INPUT");
+        LOG_MSG("KEY INPUT");
+    }
+
     processInputs(_click_queue, _click_inputs, _input_stack_time);
+    if (emitMse) {
+        EMIT_EVENT("SSS_WINDOW_MOUSE_INPUT");
+        LOG_MSG("MOUSE INPUT");
+    }
     // Mouse position (no queue because it's only x & y)
     if (!_block_inputs) {
         double x, y;

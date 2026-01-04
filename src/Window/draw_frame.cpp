@@ -110,6 +110,7 @@ void Window::_updateHoveredModelIfNeeded(std::chrono::steady_clock::time_point c
     // Bypass threshold if cursor just stopped moving
     if (_cursor_diff_x != 0 || _cursor_diff_y != 0) {
         _cursor_is_moving = true;
+        EMIT_EVENT("SSS_WINDOW_MOUSE_POSITION");
     }
     else if (_cursor_is_moving && _hover_waiting_time >= std::chrono::milliseconds(10)) {
         _cursor_is_moving = false;
@@ -196,6 +197,7 @@ void Window::_saveScreenshot()
 
     // Reset state
     take_screenshot = false;
+    EMIT_EVENT("SSS_WINDOW_SCREENSHOT_TAKEN");
 }
 
 // Renders back buffer, clears front buffer, polls events.

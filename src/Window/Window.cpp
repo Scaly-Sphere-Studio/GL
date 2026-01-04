@@ -8,6 +8,17 @@ Window::MainPtr Window::_main;
 
 std::function<void()> _internal::gladLoader;
 
+void Window::_register()
+{
+    REGISTER_EVENT("SSS_WINDOW_RESIZE");
+    REGISTER_EVENT("SSS_WINDOW_ICONIFY");
+    REGISTER_EVENT("SSS_WINDOW_KEY_INPUT");
+    REGISTER_EVENT("SSS_WINDOW_MOUSE_INPUT");
+    REGISTER_EVENT("SSS_WINDOW_MOUSE_POSITION");
+    REGISTER_EVENT("SSS_WINDOW_POSITION_CHANGED");
+    REGISTER_EVENT("SSS_WINDOW_SCREENSHOT_TAKEN");
+}
+
 // Constructor, creates a window
 Window::Window(CreateArgs const& args) try
     : _is_main(!_main)
