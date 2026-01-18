@@ -3,8 +3,6 @@
 #include <SSS/Math.hpp>
 #include <SSS/Commons.hpp>
 
-//#include "SSS/GL.hpp"
-
 #include "../GL.hpp"
 #include "../GL/Objects/Models/Shapes.hpp"
 
