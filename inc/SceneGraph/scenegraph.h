@@ -3,8 +3,10 @@
 #include <SSS/Math.hpp>
 #include <SSS/Commons.hpp>
 
-#include "SSS/GL.hpp"
-#include "SSS/GL/Objects/Models/Shapes.hpp"
+//#include "SSS/GL.hpp"
+
+#include "../GL.hpp"
+#include "../GL/Objects/Models/Shapes.hpp"
 
 #include <nlohmann/json.hpp>
 
@@ -16,7 +18,7 @@ SSS_BEGIN
 
 class SceneGraph;
 
-class Node : public SSS::Observer, public SSS::Subject, public SSS::_EventRegistry<Node>
+class SSS_GL_API Node : public SSS::Observer, public SSS::Subject, public SSS::_EventRegistry<Node>
 {
 public:
 	friend _EventRegistry;
@@ -69,7 +71,7 @@ private:
 };
 
 
-class SceneGraph
+class SSS_GL_API SceneGraph
 {
 public:
 	SceneGraph();
