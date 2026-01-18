@@ -1,31 +1,58 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="inc">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
-    <Filter Include="src">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
     <Filter Include="vcpkg_scripts">
       <UniqueIdentifier>{2e9304bf-d336-4a17-b008-b6aeacc0770b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\Window">
-      <UniqueIdentifier>{9172fe3e-970e-4380-a793-7f81ed53221b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\Objects">
+    <Filter Include="Objects">
       <UniqueIdentifier>{3d7dd7f3-2a8e-462d-8928-c8a057522211}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\Objects\Models">
+    <Filter Include="Objects\Models">
       <UniqueIdentifier>{8bf49805-4cfd-40ff-b542-a00f6b524d11}</UniqueIdentifier>
     </Filter>
-    <Filter Include="inc\Objects">
-      <UniqueIdentifier>{7fe84c3e-7ee5-4e8f-a770-f624ee3a9dfb}</UniqueIdentifier>
+    <Filter Include="Objects\Models\src">
+      <UniqueIdentifier>{4cd04e3c-115b-4f73-9c04-3c8685cc3822}</UniqueIdentifier>
     </Filter>
-    <Filter Include="inc\Objects\Models">
-      <UniqueIdentifier>{9d8398b3-26dc-4d5f-9d23-f8605a965410}</UniqueIdentifier>
+    <Filter Include="Objects\Models\inc">
+      <UniqueIdentifier>{bafd25c2-6301-44f2-8f91-bb278ebed601}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Objects\inc">
+      <UniqueIdentifier>{6d6971e8-1b2f-447c-88e0-bb5b7b8206d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Objects\src">
+      <UniqueIdentifier>{ba14970f-bf50-44fb-b970-50a206fccac8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Window">
+      <UniqueIdentifier>{9172fe3e-970e-4380-a793-7f81ed53221b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Window\src">
+      <UniqueIdentifier>{b7322128-d72a-456a-bce3-219e22f45ba2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Window\inc">
+      <UniqueIdentifier>{961c0c6c-1529-46da-8edb-0d359a1369d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_src">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="_inc">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Scenegraph">
+      <UniqueIdentifier>{fb2a6f21-9079-4b92-bf67-40a41b523efd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenegraph\Nodes">
+      <UniqueIdentifier>{22181f42-c966-45ee-8fd4-58b5e385b3a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenegraph\Nodes\src">
+      <UniqueIdentifier>{f95a973c-5bb4-4f2a-a099-4e73fcb769c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenegraph\Nodes\inc">
+      <UniqueIdentifier>{8b70cb3f-b76a-447d-bc46-8a65cdbdc175}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Settings">
+      <UniqueIdentifier>{46af3035-27f4-40da-9ac6-15de654b407c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -43,100 +70,130 @@
     <None Include="RenderDoc.cap" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Window\Window.cpp">
-      <Filter>src\Window</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Window\handle_objects.cpp">
-      <Filter>src\Window</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Window\draw_frame.cpp">
-      <Filter>src\Window</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Objects\Camera.cpp">
-      <Filter>src\Objects</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Objects\Shaders.cpp">
-      <Filter>src\Objects</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Objects\Texture.cpp">
-      <Filter>src\Objects</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Objects\Models\Plane.cpp">
-      <Filter>src\Objects\Models</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Objects\Models\PlaneRenderer.cpp">
-      <Filter>src\Objects\Models</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Window\preset_shaders.cpp">
-      <Filter>src\Window</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Objects\Basic.cpp">
-      <Filter>src\Objects</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Window\pollEverything.cpp">
-      <Filter>src\Window</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Objects\Models\Line.cpp">
-      <Filter>src\Objects\Models</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Objects\Models\LineRenderer.cpp">
-      <Filter>src\Objects\Models</Filter>
-    </ClCompile>
     <ClCompile Include="src\DemoMain.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Window\callbacks.cpp">
-      <Filter>src\Window</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Objects\Texture_APNG.cpp">
-      <Filter>src\Objects</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Objects\Model.cpp">
-      <Filter>src\Objects</Filter>
+      <Filter>_src</Filter>
     </ClCompile>
     <ClCompile Include="src\Window\Context.cpp">
-      <Filter>src</Filter>
+      <Filter>_src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Objects\Models\Line.cpp">
+      <Filter>Objects\Models\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Objects\Models\LineRenderer.cpp">
+      <Filter>Objects\Models\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Objects\Models\Plane.cpp">
+      <Filter>Objects\Models\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Objects\Models\PlaneRenderer.cpp">
+      <Filter>Objects\Models\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Objects\Basic.cpp">
+      <Filter>Objects\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Objects\Camera.cpp">
+      <Filter>Objects\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Objects\Model.cpp">
+      <Filter>Objects\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Objects\Shaders.cpp">
+      <Filter>Objects\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Objects\Texture.cpp">
+      <Filter>Objects\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Objects\Texture_APNG.cpp">
+      <Filter>Objects\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Window\callbacks.cpp">
+      <Filter>Window\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Window\draw_frame.cpp">
+      <Filter>Window\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Window\handle_objects.cpp">
+      <Filter>Window\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Window\pollEverything.cpp">
+      <Filter>Window\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Window\preset_shaders.cpp">
+      <Filter>Window\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Window\Window.cpp">
+      <Filter>Window\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SceneGraph\scenegraph.cpp">
+      <Filter>Scenegraph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SceneGraph\Node_Input.cpp">
+      <Filter>Scenegraph\Nodes\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SceneGraph\Node_Primitive.cpp">
+      <Filter>Scenegraph\Nodes\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SceneGraph\Node_UI.cpp">
+      <Filter>Scenegraph\Nodes\src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="inc\GL\Window.hpp">
-      <Filter>inc</Filter>
-    </ClInclude>
     <ClInclude Include="inc\GL.hpp">
-      <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\GL\Objects\Camera.hpp">
-      <Filter>inc\Objects</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\GL\Objects\Model.hpp">
-      <Filter>inc\Objects</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\GL\Objects\Shaders.hpp">
-      <Filter>inc\Objects</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\GL\Objects\Texture.hpp">
-      <Filter>inc\Objects</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\GL\Objects\Renderer.hpp">
-      <Filter>inc\Objects</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\GL\Objects\Models\Plane.hpp">
-      <Filter>inc\Objects\Models</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\GL\Objects\Models\PlaneRenderer.hpp">
-      <Filter>inc\Objects\Models</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\GL\Objects\Basic.hpp">
-      <Filter>inc\Objects</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\GL\Objects\Models\LineRenderer.hpp">
-      <Filter>inc\Objects\Models</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\GL\Objects\Models\Line.hpp">
-      <Filter>inc\Objects\Models</Filter>
+      <Filter>_inc</Filter>
     </ClInclude>
     <ClInclude Include="inc\GL\Lua.hpp">
-      <Filter>inc</Filter>
+      <Filter>_inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\GL\Objects\Models\Line.hpp">
+      <Filter>Objects\Models\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\GL\Objects\Models\LineRenderer.hpp">
+      <Filter>Objects\Models\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\GL\Objects\Models\Plane.hpp">
+      <Filter>Objects\Models\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\GL\Objects\Models\PlaneRenderer.hpp">
+      <Filter>Objects\Models\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\GL\Objects\Basic.hpp">
+      <Filter>Objects\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\GL\Objects\Camera.hpp">
+      <Filter>Objects\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\GL\Objects\Model.hpp">
+      <Filter>Objects\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\GL\Objects\Renderer.hpp">
+      <Filter>Objects\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\GL\Objects\Shaders.hpp">
+      <Filter>Objects\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\GL\Objects\Texture.hpp">
+      <Filter>Objects\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\GL\Window.hpp">
+      <Filter>Window\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\GL\Objects\Models\Shapes.hpp">
+      <Filter>Objects\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\Settings\Theme.h">
+      <Filter>Settings</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\SceneGraph\scenegraph.h">
+      <Filter>Scenegraph</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\SceneGraph\Node_Input.h">
+      <Filter>Scenegraph\Nodes\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\SceneGraph\Node_Primitive.h">
+      <Filter>Scenegraph\Nodes\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\SceneGraph\Node_UI.h">
+      <Filter>Scenegraph\Nodes\inc</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

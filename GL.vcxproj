@@ -47,6 +47,7 @@
   <ItemGroup>
     <ClInclude Include="inc\GL.hpp" />
     <ClInclude Include="inc\GL\Lua.hpp" />
+    <ClInclude Include="inc\GL\Objects\Models\Shapes.hpp" />
     <ClInclude Include="inc\GL\Objects\Models\Line.hpp" />
     <ClInclude Include="inc\GL\Objects\Renderer.hpp" />
     <ClInclude Include="inc\GL\Objects\Camera.hpp" />
@@ -58,6 +59,11 @@
     <ClInclude Include="inc\GL\Objects\Models\PlaneRenderer.hpp" />
     <ClInclude Include="inc\GL\Objects\Basic.hpp" />
     <ClInclude Include="inc\GL\Objects\Models\LineRenderer.hpp" />
+    <ClInclude Include="inc\SceneGraph\Node_Input.h" />
+    <ClInclude Include="inc\SceneGraph\Node_Primitive.h" />
+    <ClInclude Include="inc\SceneGraph\Node_UI.h" />
+    <ClInclude Include="inc\SceneGraph\scenegraph.h" />
+    <ClInclude Include="inc\Settings\Theme.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Objects\Basic.cpp" />
@@ -70,6 +76,10 @@
     <ClCompile Include="src\Objects\Models\PlaneRenderer.cpp" />
     <ClCompile Include="src\Objects\Models\Line.cpp" />
     <ClCompile Include="src\Objects\Models\LineRenderer.cpp" />
+    <ClCompile Include="src\SceneGraph\Node_Input.cpp" />
+    <ClCompile Include="src\SceneGraph\Node_Primitive.cpp" />
+    <ClCompile Include="src\SceneGraph\Node_UI.cpp" />
+    <ClCompile Include="src\SceneGraph\scenegraph.cpp" />
     <ClCompile Include="src\Window\Context.cpp" />
     <ClCompile Include="src\Window\Window.cpp" />
     <ClCompile Include="src\Window\callbacks.cpp" />
