@@ -34,8 +34,8 @@ public:
 	Node_Block(SceneGraph* p_Sg);
 	std::string name() const { return "Block"; };
 
-	glm::vec3 _pos;		// Node position and translations
-	glm::vec3 _size;	// Node bounding box
+	glm::vec3 _pos	= glm::vec3(0.f);		// Node position and translations
+	glm::vec3 _size = glm::vec3(0.f);		// Node bounding box
 	int _type = 1;
 
 	float rotation = 0.f;
