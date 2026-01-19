@@ -13,11 +13,7 @@ glm::mat4 TextPlane::_getTranslationMat4() const {
 	return glm::translate(ModelBase::_getTranslationMat4(), offset);
 }
 
-Node_Block::Node_Block(SceneGraph* p_Sg): Node(p_Sg)
-{
-	_pos = glm::vec3{ 0, 0, 0 };
-	_size = glm::vec3{ 0, 0, 0 };
-}
+Node_Block::Node_Block(SceneGraph* p_Sg): Node(p_Sg) {}
 
 glm::mat4 Node_Block::getLocalTransform() const
 {
@@ -60,7 +56,7 @@ glm::vec3 Node_Block::getPosition() const
 
 glm::mat4 Node_Block::getGlobalTransform() const
 {
-	if (_inherited_transform == false || _parent == 0)
+	if (_inherited_transform == false || _parent == -1)
 		return getLocalTransform();
 
 	Node_Block* p_pNode = (Node_Block*)_sg->at(_parent);

@@ -29,7 +29,7 @@ public:
 	bool _inherited_transform	= true;
 	bool hide					= false;
 
-	int _parent;
+	int _parent = -1;
 	std::unordered_map<std::string, int> _children;
 
 

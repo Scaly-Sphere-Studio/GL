@@ -11,7 +11,7 @@ SSS_BEGIN
 
 // Utility for Text Nodes
 // TODO AFTER INTEGRATION
-class SSS_GL_API TextPlane : public SSS::GL::PlaneTemplate<TextPlane> {
+class TextPlane : public SSS::GL::PlaneTemplate<TextPlane> {
 	friend class SharedClass;
 protected:
 	virtual glm::mat4 _getTranslationMat4() const override;
