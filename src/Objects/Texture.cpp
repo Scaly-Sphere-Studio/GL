@@ -18,6 +18,7 @@ void Texture::_register()
 {
     REGISTER_EVENT("SSS_TEXTURE_RESIZE"); 
     REGISTER_EVENT("SSS_TEXTURE_CONTENT"); 
+    REGISTER_EVENT("SSS_TEXTURE_LOADED"); 
 }
 
 Texture::Texture() try
@@ -150,6 +151,7 @@ void Texture::_subjectUpdate(Subject const& subject, int event_id)
     if (subject.is<_AsyncLoading>()) {
         _frames = std::move(_loading_thread._frames);
         _internalEdit(Type::Raw);
+        EMIT_EVENT("SSS_TEXTURE_LOADED");
     }
     else if (subject.is<TR::Area>()) {
         _internalEdit(Type::Text);

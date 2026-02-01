@@ -120,7 +120,6 @@ private:
 	void _size_update();
 };
 
-
 class  SSS_GL_API Node_Slider : public Node_UI
 {
 public:
@@ -178,7 +177,6 @@ private:
 	void _size_update() {};
 };
 
-
 class  SSS_GL_API Node_CheckBox : public Node_UI
 {
 public:
@@ -200,7 +198,6 @@ private:
 	float _radius = 0;
 	void _size_update() {};
 };
-
 
 class  SSS_GL_API Node_RadioButton : public Node_UI, public SSS::_EventRegistry<Node_RadioButton>
 {

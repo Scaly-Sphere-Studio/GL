@@ -41,6 +41,7 @@ void PlaneBase::setTexture(Texture::Shared texture)
 {
     _set(_texture, texture);
     _updateTexScaling();
+    _observe(*texture);
 }
 
 void PlaneBase::setAlpha(float alpha) noexcept
@@ -141,6 +142,16 @@ void PlaneBase::_subjectUpdate(Subject const& subject, int event_id)
         if (_texture_callback)
             _texture_callback(*this);
         return;
+    }
+
+    if (event_id == EVENT_ID("SSS_TEXTURE_LOADED"))
+    {
+        SSS::GL::Texture& tex = (SSS::GL::Texture&)subject;
+        int w, h;
+        tex.getCurrentDimensions(w, h);
+
+        float min = std::min(w, h);
+        setScaling(glm::vec3(min, min, 1.f));
     }
 }
 
