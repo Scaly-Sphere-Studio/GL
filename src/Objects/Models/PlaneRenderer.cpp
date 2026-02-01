@@ -122,6 +122,8 @@ void PlaneRenderer::_updateVBO(T(PlaneBase::* getMember)() const, Basic::VBO& vb
     std::vector<T> vec;
     vec.reserve(_planes.size());
     for (std::shared_ptr<PlaneBase> const& plane : _planes) {
+        if (plane->isHidden())
+            continue;
         vec.push_back(((*plane).*getMember)());
     }
     vbo.edit(vec, GL_DYNAMIC_DRAW);
@@ -165,6 +167,9 @@ void PlaneRenderer::render() try
     // Loop over each plane
     for (std::shared_ptr<PlaneBase> const& plane : _planes) {
         // Check if we can't cache more instances and need to make a draw call.
+        if (plane->isHidden())
+            continue;
+
         if (count == Window::maxGLSLTextureUnits()) {
             _renderPart(*shader, count, offset);
         }

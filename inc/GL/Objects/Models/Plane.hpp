@@ -26,6 +26,7 @@ class SSS_GL_API PlaneBase : public Observer, public ModelBase, public _EventReg
 
 private:
     static std::set<std::reference_wrapper<PlaneBase>> _instances;
+    bool hidden = false;
 
 protected:
     PlaneBase();
@@ -39,7 +40,8 @@ protected:
 public:
     /** Destructor, default.*/
     virtual ~PlaneBase();
-
+    void Hide(const bool& hide) { hidden = hide; };
+    bool isHidden() const  { return hidden; };
 protected:
     virtual glm::mat4 _getScalingMat4() const override;
 public:
