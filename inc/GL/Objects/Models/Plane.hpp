@@ -57,6 +57,8 @@ public:
     void setTextureCallback(std::function<void(PlaneBase&)> func) { _texture_callback = func; };
     void setTextureSizeCallback(std::function<void(PlaneBase&)> func) { _texture_size_callback = func; };
 
+    inline void setAnimationFrame(const int i) noexcept { _setTextureOffset(i % _texture->getFrames().size()); };
+
     inline void play() noexcept { _is_playing = true; };
     inline void pause() noexcept { _is_playing = false; };
     inline void stop() noexcept { _is_playing = false; _animation_duration = std::chrono::nanoseconds(0); };
