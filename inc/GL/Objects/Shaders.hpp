@@ -3,6 +3,7 @@
 
 #include "Basic.hpp"
 #include "glm/glm.hpp"
+#include <filesystem>
 
 /** @file
  *  Defines class SSS::GL::Shaders.
@@ -51,6 +52,10 @@ public:
     using InstancedClass::create;
     static Shared create(std::string const& vert_file, std::string const& frag_file);
 
+    // Hot reloading
+    void reload();
+    void watch();
+
     /** Loads shaders from raw strings (useful for Preset shaders).
      *  Context will always be accurately set.
      *  @sa loadFromFiles()
@@ -60,7 +65,7 @@ public:
      *  Context will always be accurately set.
      *  @sa loadFromStrings()
      */
-    void loadFromFiles(std::string const& vertex_fp, std::string const& fragment_fp);
+    void loadFromFiles(std::filesystem::path const& vertex_fp, std::filesystem::path const& fragment_fp);
 
     inline std::string getVertexData() const noexcept { return _vertex_data; };
     inline std::string getFragmentData() const noexcept { return _fragment_data; };
@@ -132,6 +137,12 @@ private:
     GLuint _program_id{ 0 };
     // Shaders data
     std::string _vertex_data, _fragment_data;
+
+    // Files, watch and hot reloading
+    std::filesystem::file_time_type _vert_last_write;
+    std::filesystem::file_time_type _frag_last_write;
+    std::filesystem::path _vertex_fp;
+    std::filesystem::path _frag_fp;
 };
 
 #pragma warning(pop)

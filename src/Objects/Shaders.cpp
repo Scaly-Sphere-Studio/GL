@@ -49,30 +49,40 @@ static void compileShader(GLuint shader_id, std::string const& shader_code)
 	}
 }
 
+GLuint attachShader(const GLuint &pID, const GLenum type, std::string const& data) {
+	// Create the shaders
+	GLuint shader_id = glCreateShader(type);
+	if (shader_id == 0) {
+		throw_exc(CONTEXT_MSG("Could not create vertex shader", glGetError()));
+	}
+	// Compile the shaders
+	compileShader(shader_id, data);
+	glAttachShader(pID, shader_id);
+
+	return shader_id;
+}
+
+void freeShader(const GLuint& pID, const GLuint& shader_id) {
+	// Free shaders
+	glDetachShader(pID, shader_id);
+	glDeleteShader(shader_id);
+}
+
+
 // TODO OVERLAOD FOR MORE COMPLEXE SHADERS (COMPUTE...)
 static GLuint loadShaders(std::string const& vertex_data, std::string const& fragment_data)
 {
-	// Create the shaders
-	GLuint vertex_shader_id = glCreateShader(GL_VERTEX_SHADER);
-	if (vertex_shader_id == 0) {
-		throw_exc(CONTEXT_MSG("Could not create vertex shader", glGetError()));
-	}
-	GLuint fragment_shader_id = glCreateShader(GL_FRAGMENT_SHADER);
-	if (fragment_shader_id == 0) {
-		throw_exc(CONTEXT_MSG("Could not create fragment shader", glGetError()));
-	}
-	// Compile the shaders
-	compileShader(vertex_shader_id, vertex_data);
-	compileShader(fragment_shader_id, fragment_data);
-
 	// Link the program
 	GLuint program_id = glCreateProgram();
 	if (program_id == 0) {
 		throw_exc(CONTEXT_MSG("Could not create program", glGetError()));
 	}
-	glAttachShader(program_id, vertex_shader_id);
-	glAttachShader(program_id, fragment_shader_id);
+
+	GLuint vertex_shader_id		= attachShader(program_id, GL_VERTEX_SHADER, vertex_data);
+	GLuint fragment_shader_id	= attachShader(program_id, GL_FRAGMENT_SHADER, fragment_data);
+
 	glLinkProgram(program_id);
+
 	// Throw if failed
 	GLint res;
 	glGetProgramiv(program_id, GL_LINK_STATUS, &res);
@@ -86,15 +96,15 @@ static GLuint loadShaders(std::string const& vertex_data, std::string const& fra
 		throw_exc(FUNC_MSG(CONTEXT_MSG("Could not link program", &msg[0])));
 	}
 
-	// Free shaders
-	glDetachShader(program_id, vertex_shader_id);
-	glDetachShader(program_id, fragment_shader_id);
-	glDeleteShader(vertex_shader_id);
-	glDeleteShader(fragment_shader_id);
+	freeShader(program_id, vertex_shader_id);
+	freeShader(program_id, fragment_shader_id);
 
 	// Return newly created & linked program
 	return program_id;
 }
+
+
+
 
 Shaders::Shared Shaders::create(std::string const& vertex_fp, std::string const& fragment_fp)
 {
@@ -103,11 +113,27 @@ Shaders::Shared Shaders::create(std::string const& vertex_fp, std::string const&
 	return shader;
 }
 
+void Shaders::reload()
+{
+	_vertex_data	= readFile(_vertex_fp); 
+	_fragment_data	= readFile(_frag_fp);
+
+	GLuint vertex_shader_id		= attachShader(_program_id, GL_VERTEX_SHADER, _vertex_data);
+	GLuint fragment_shader_id	= attachShader(_program_id, GL_FRAGMENT_SHADER, _fragment_data);
+
+	glLinkProgram(_program_id);
+
+	freeShader(_program_id, vertex_shader_id);
+	freeShader(_program_id, fragment_shader_id);
+}
+
 void Shaders::loadFromStrings(std::string const& vertex_data, std::string const& fragment_data) try
 {
-	_program_id = loadShaders(vertex_data, fragment_data);
-	_vertex_data = vertex_data;
-	_fragment_data = fragment_data;
+	_program_id		= loadShaders(vertex_data, fragment_data);
+	_vertex_data	= vertex_data;
+	_fragment_data	= fragment_data;
+
+
 	_loaded = true;
 
 	// Log
@@ -117,11 +143,52 @@ void Shaders::loadFromStrings(std::string const& vertex_data, std::string const&
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
-void Shaders::loadFromFiles(std::string const& vertex_fp, std::string const& fragment_fp) try
+void Shaders::loadFromFiles(std::filesystem::path const& vertex_fp, std::filesystem::path const& fragment_fp) try
 {
 	loadFromStrings(readFile(vertex_fp), readFile(fragment_fp));
+	_vertex_fp			= std::filesystem::path(vertex_fp);
+	_frag_fp			= std::filesystem::path(fragment_fp);
+	_vert_last_write	= std::filesystem::last_write_time(vertex_fp);
+	_frag_last_write	= std::filesystem::last_write_time(fragment_fp);
 }
 CATCH_AND_RETHROW_METHOD_EXC;
+
+void Shaders::watch() try
+{
+	if (_vertex_fp.empty() || _frag_fp.empty()) return;
+
+	bool changed = false;
+	try {
+		auto vt = std::filesystem::last_write_time(_vertex_fp);
+		auto ft = std::filesystem::last_write_time(_frag_fp);
+		if (vt != _vert_last_write || ft != _frag_last_write) {
+			_vert_last_write = vt;
+			_frag_last_write = ft;
+			changed = true;
+			LOG_GL_MSG("Shaders -> Changes found(id: " + toString(_program_id) + ")")
+		}
+	}
+	catch (std::filesystem::filesystem_error const&) {
+		// File temporarily missing mid-save, skip this tick
+		return;
+	}
+
+	if (!changed) { 
+		LOG_GL_MSG("No changes found, returns");
+		return; }
+
+	// Small delay so the writer finishes flushing
+	std::this_thread::sleep_for(std::chrono::milliseconds(50));
+	reload();
+
+	// Log
+	if (Log::GL::Shaders::query(Log::GL::Shaders::get().loading)) {
+		LOG_GL_MSG("Shaders -> hot-reloaded (id: " + toString(_program_id) + ")");
+	}
+
+}
+CATCH_AND_RETHROW_METHOD_EXC;
+
 
 void Shaders::use() const
 {
