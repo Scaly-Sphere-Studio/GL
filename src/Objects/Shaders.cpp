@@ -300,6 +300,22 @@ void Shaders::setMat4(const std::string& name, const glm::mat4& mat) const
 	glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
 }
 
+void Shaders::setUniform(const std::string& name, const UniformValue& val)
+{
+	std::visit([&](auto&& v) {
+		using T = std::decay_t<decltype(v)>;
+		if		constexpr (std::is_same_v<T, glm::vec2>)  setVec2(name, v);
+		else if constexpr (std::is_same_v<T, glm::vec3>)  setVec3(name, v);
+		else if constexpr (std::is_same_v<T, glm::vec4>)  setVec4(name, v);
+		else if constexpr (std::is_same_v<T, glm::mat4>)  setMat4(name, v);
+		else if constexpr (std::is_same_v<T, float>)      setFloat(name, v);
+		else if constexpr (std::is_same_v<T, glm::mat2>)  setMat2(name, v);
+		else if constexpr (std::is_same_v<T, glm::mat3>)  setMat3(name, v);
+		else if constexpr (std::is_same_v<T, int>)        setInt(name, v);
+		else if constexpr (std::is_same_v<T, bool>)       setBool(name, v);
+		}, val);
+}
+
 void Shaders::setUniformMat4fv(std::string const& name, GLsizei count,
 	GLboolean transpose, GLfloat const* value)
 {

@@ -3,7 +3,7 @@
 
 #include "Basic.hpp"
 #include "glm/glm.hpp"
-#include <filesystem>
+#include <variant>
 
 /** @file
  *  Defines class SSS::GL::Shaders.
@@ -30,6 +30,8 @@ SSS_GL_BEGIN;
  */
 class SSS_GL_API Shaders : public InstancedClass<Shaders> {
     friend SharedClass;
+
+    using UniformValue = std::variant<float, int, bool, glm::vec2, glm::vec3, glm::vec4, glm::mat2, glm::mat3, glm::mat4 > ;
 
 private:
     // Constructor 
@@ -76,10 +78,11 @@ public:
     void use() const;
 
 
-
     /*
         UNIFORMS HANDLING
     */
+    void setUniform(const std::string& name, const UniformValue& val);
+
 
     /** Simple handle to \c glGetUniformLocation().
      *  Context will always be accurately set.
@@ -99,6 +102,8 @@ public:
      */
     void setUniformMat4fv(std::string const& name, GLsizei count,
         GLboolean transpose, GLfloat const* value);
+private:
+
 
     /* Set bool uniform*/
     void setBool(const std::string& name, bool value) const;
