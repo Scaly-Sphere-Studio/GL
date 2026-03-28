@@ -136,6 +136,9 @@
     <ClCompile Include="src\SceneGraph\Node_UI.cpp">
       <Filter>Scenegraph\Nodes\src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Objects\Materials.cpp">
+      <Filter>Objects\src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\GL.hpp">
@@ -194,6 +197,9 @@
     </ClInclude>
     <ClInclude Include="inc\SceneGraph\Node_UI.h">
       <Filter>Scenegraph\Nodes\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\GL\Objects\Materials.hpp">
+      <Filter>Objects\inc</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
