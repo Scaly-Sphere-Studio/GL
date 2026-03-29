@@ -31,13 +31,13 @@ SSS_GL_BEGIN;
 class SSS_GL_API Shaders : public InstancedClass<Shaders> {
     friend SharedClass;
 
-    using UniformValue = std::variant<float, int, bool, glm::vec2, glm::vec3, glm::vec4, glm::mat2, glm::mat3, glm::mat4 > ;
 
 private:
     // Constructor 
     Shaders();
 
 public:
+    using UniformValue = std::variant<float, int, bool, glm::vec2, glm::vec3, glm::vec4, glm::mat2, glm::mat3, glm::mat4> ;
     /** Destructor, unloads internal glProgram if needed.
      *  @sa Window::removeShaders()
      */
