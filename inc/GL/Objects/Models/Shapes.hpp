@@ -25,6 +25,7 @@ enum SDF_Shapes {
 	sdCross,
 	sdPentagon,
 	sdHexagon,
+	sdBezierCubic
 };
 
 // ! ordre important !
