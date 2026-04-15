@@ -30,6 +30,12 @@ Texture::Texture() try
     _raw_texture.parameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     _raw_texture.parameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     
+    // Ensure frames vector has a default single frame (previously initialized inline)
+    _frames.resize(1);
+    _frames.total_time = std::chrono::nanoseconds(0);
+    _frames.w = 0;
+    _frames.h = 0;
+
     _observe(_loading_thread);
 
     // Log
@@ -51,6 +57,13 @@ Texture::Shared Texture::create(std::string const& filepath)
 {
     Shared ret = create();
     ret->loadImage(filepath);
+    return ret;
+}
+
+Texture::Shared Texture::create(std::filesystem::path const& filepath)
+{
+    Shared ret = create();
+    ret->loadImage(filepath.string());
     return ret;
 }
 
