@@ -50,9 +50,10 @@ Window::Window(CreateArgs const& args) try
     _title = args.title;
 
     // If in Debug mode, set the Debug hint
-    if constexpr (DEBUGMODE) {
+#ifndef NDEBUG
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-    }
+#endif // !NDEBUG
+
     // Hints
     glfwWindowHint(GLFW_VISIBLE, args.hidden ? GLFW_FALSE : GLFW_TRUE);
     // Create window
