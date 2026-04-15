@@ -56,6 +56,7 @@ public:
 
     using InstancedClass::create;
     static Shared create(std::string const& filepath);
+    static Shared create(std::filesystem::path const& filepath);
     static Shared create(TR::Area::Shared area);
 
     /** The Texture type, mainly to know which pixels to use (internal or TR).
@@ -76,7 +77,9 @@ public:
         // Vector
         class Vector : public std::vector<Frame> {
         public:
-            using vector::vector;
+            using std::vector<Frame>::vector;
+            // explicit fallback constructor to avoid MSVC ambiguity with brace-init
+            Vector(size_t n = 0) : std::vector<Frame>(n), total_time(0), w(0), h(0) {}
             std::chrono::nanoseconds total_time;
             int w{ 0 };
             int h{ 0 };
@@ -92,7 +95,7 @@ private:
     //static Basic::Texture 
     Basic::Texture _raw_texture;    // OpenGL texture
     Type _type{ Type::Raw };        // Texture type
-    Frame::Vector _frames{ 1 };     // Vector of frames (is used for images AND animations)
+    Frame::Vector _frames;     // Vector of frames (is used for images AND animations). Default constructed to avoid MSVC ambiguity with int -> Frame::Vector conversion
     TR::Area::Shared _area;         // TR::Area
     std::string _filepath;          // Image filepath
     std::function<void(Texture&)> _callback_f;
