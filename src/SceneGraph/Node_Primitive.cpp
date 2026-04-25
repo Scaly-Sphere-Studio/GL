@@ -13,8 +13,6 @@ glm::mat4 TextPlane::_getTranslationMat4() const {
 	return glm::translate(ModelBase::_getTranslationMat4(), offset);
 }
 
-Node_Block::Node_Block(SceneGraph* p_Sg): Node(p_Sg) {}
-
 glm::mat4 Node_Block::getLocalTransform() const
 {
 	//Rotation along the z axis with _pos translation
@@ -59,7 +57,7 @@ glm::mat4 Node_Block::getGlobalTransform() const
 	if (_inherited_transform == false || _parent == -1)
 		return getLocalTransform();
 
-	Node_Block* p_pNode = (Node_Block*)_sg->at(_parent);
+	Node_Block* p_pNode = (Node_Block*)SceneGraph::at(_parent);
 	return p_pNode->getGlobalTransform() * getLocalTransform();
 }
 SSS_END

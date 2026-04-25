@@ -15,15 +15,7 @@ Node::Node()
 	std::mt19937 rng(unsigned int(std::chrono::steady_clock::now().time_since_epoch().count()));
 	_key = rng();
 
-	//std::call_once(_RegistryDone, [&]() { _register(); });
-}
-
-Node::Node(SceneGraph* p_Sg)
-{
-	// Seed with a real random value, if available
-	std::mt19937 rng((unsigned int)std::chrono::steady_clock::now().time_since_epoch().count());
-	_key = rng();
-	_sg = p_Sg;
+	SceneGraph::emplace(this);
 }
 
 Node::~Node()
@@ -42,13 +34,13 @@ void Node::pop()
 	_parent = 0;
 	for (const auto& cKey : _children)
 	{
-		if (_sg->contains(cKey.second)) 
+		if (SceneGraph::contains(cKey.second)) 
 		{
-			_sg->pop(cKey.second);
+			SceneGraph::pop(cKey.second);
 		}
 	}
 
-	_sg->pop(_key);
+	SceneGraph::pop(_key);
 }
 
 void Node::pop_child(const int& keyNode)
@@ -58,7 +50,7 @@ void Node::pop_child(const int& keyNode)
 
 void Node::detach_parent(const int& keyNode)
 {
-	_sg[keyNode];
+	SceneGraph::at(keyNode);
 }
 
 std::string Node::to_string() const
@@ -78,7 +70,7 @@ std::string Node::to_string() const
 	if (!_children.empty()) {
 		res += "\tchildren :\n";
 		for (const auto &node : _children) {
-			res += "\t" + _sg->at(node.second)->to_string() + "\n";
+			res += "\t" + SceneGraph::at(node.second)->to_string() + "\n";
 		}
 	}
 
@@ -101,77 +93,48 @@ SceneGraph::SceneGraph()
 
 }
 
-void SceneGraph::init()
-{
-	_cam = SSS::GL::Camera::create();
-	_cam->setPosition({ 0, 0, 20.f });
-	_cam->setZFar(40.f);
-	//_cam->setProjectionType(SSS::GL::Camera::Projection::UI);
-
-	_rd = SSS::GL::PlaneRenderer::create();
-	_rd->camera = SSS::GL::Camera::create();
-	_rd->camera->setPosition({ 0, 0, 20.f });
-	_rd->camera->setZFar(40.f);
-	_rd->camera->setProjectionType(SSS::GL::Camera::Projection::OrthoFixed);
-
-}
+void SceneGraph::init(){}
 
 void SceneGraph::update()
 {
 	// Clear the delete node queue
-	while(!_deleteNode.empty())
+	while(!get()._deleteNode.empty())
 	{
-		int key = _deleteNode.front();
+		int key = get()._deleteNode.front();
 		
 		//remove elem if not already removed
-		if (_nodeList.contains(key)) 
+		if (get()._nodeList.contains(key))
 		{
-			delete _nodeList[key];
-			_nodeList.erase(key);
-			list.erase(std::remove(list.begin(), list.end(), key), list.end());
+			delete get()._nodeList[key];
+			get()._nodeList.erase(key);
+			get().list.erase(std::remove(get().list.begin(), get().list.end(), key), get().list.end());
 		}
 
-		_deleteNode.pop();
+		get()._deleteNode.pop();
 	}
 }
 
 void SceneGraph::push(Node* n)
 {
 	emplace(n);
-	list.push_back(n->_key);
+	get().list.push_back(n->_key);
 }
 
 void SceneGraph::emplace(Node* n)
 {
-	_nodeList.emplace(n->_key, n);
+	get()._nodeList.emplace(n->_key, n);
 }
-
-//int SceneGraph::Text(const std::string& s, const SSS::GUI_Layout& lyt)
-//{
-//	//Node_Text* node = new Node_Text{ this, s, lyt };
-//	return node->_key;
-//}
-//
-//int SceneGraph::Block(const glm::vec3& pos)
-//{
-//	//Node_Block* node = new Node_Block{this};
-//	return node->_key;
-//}
 
 
 Node* SceneGraph::at(const int& keyNode)
 {
-	if (_nodeList.contains(keyNode))
-		return _nodeList.at(keyNode);
+	if (get()._nodeList.contains(keyNode))
+		return get()._nodeList.at(keyNode);
 
 	return nullptr;
 }
 
-void SceneGraph::setCamera(SSS::GL::Camera::Shared pCam)
-{
-	_cam = pCam;
-	_rd->camera = _cam;
-}
+
 
 std::string SceneGraph::to_string() const
 {

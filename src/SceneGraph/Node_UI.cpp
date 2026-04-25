@@ -49,7 +49,7 @@ void Node_UI::setColor(const std::string& hex)
 void Node_UI::setVerticalOffset(const int& keyVO)
 {
 	_vOffset = keyVO;
-	Node_Block* UIelem = static_cast<Node_Block*>(_sg->at(_vOffset));
+	Node_Block* UIelem = static_cast<Node_Block*>(SceneGraph::at(_vOffset));
 	_pos.y += UIelem->_pos.y;
 	_pos.y -= UIelem->_size.y;
 
@@ -59,7 +59,7 @@ void Node_UI::setVerticalOffset(const int& keyVO)
 void Node_UI::setHorizontalOffset(const int& keyHO)
 {
 	_hOffset = keyHO;
-	Node_Block* UIelem = static_cast<Node_Block*>(_sg->at(_hOffset));
+	Node_Block* UIelem = static_cast<Node_Block*>(SceneGraph::at(_hOffset));
 	_pos = UIelem->_pos;
 	_pos.x += UIelem->_size.x;
 
@@ -69,7 +69,7 @@ void Node_UI::setHorizontalOffset(const int& keyHO)
 void Node_UI::setDepthOffset(const int& keyDO)
 {
 	_dOffset = keyDO;
-	Node_Block* UIelem = static_cast<Node_Block*>(_sg->at(_dOffset));
+	Node_Block* UIelem = static_cast<Node_Block*>(SceneGraph::at(_dOffset));
 	_pos.z += UIelem->_pos.z;
 	_pos.z += UIelem->_size.z;
 
@@ -121,8 +121,8 @@ void Node_Text::_register()
 	REGISTER_EVENT("NODE_TEXT_CONTENT_UPDATE");
 }
 
-Node_Text::Node_Text(SceneGraph* p_Sg, const std::string& s, const SSS::GUI_Layout& lyt)
-	:Node_UI(p_Sg)
+Node_Text::Node_Text(const std::string& s, const SSS::GUI_Layout& lyt)
+	:Node_UI()
 {
 	SSS::TR::Format fmt = lyt._fmt;
 	fmt.charsize = 58;
@@ -156,8 +156,8 @@ Node_Text::Node_Text(SceneGraph* p_Sg, const std::string& s, const SSS::GUI_Layo
 
 	_size_update();
 
-	_sg->_rd->addPlane(plane);
-	_sg->emplace(this);
+	SceneGraph::getCurrentRenderer()->addPlane(plane);
+	SceneGraph::emplace(this);
 }
 
 void Node_Text::_subjectUpdate(SSS::Subject const& subject, int event_id)
@@ -197,7 +197,7 @@ Node_Text::~Node_Text()
 
 void Node_Text::clear()
 {
-	_sg->_rd->removePlane(model);
+	SceneGraph::getCurrentRenderer()->removePlane(model);
 	model.reset();
 	EMIT_EVENT("NODE_TEXT_CONTENT_UPDATE");
 }
@@ -285,7 +285,8 @@ Node_Slider::~Node_Slider()
 {
 }
 
-Node_Slider::Node_Slider(const int &min, const int &max, int* cur, const glm::vec3& pos)
+Node_Slider::Node_Slider(const int &min, const int &max, int* cur, const glm::vec3& pos) 
+	:Node_UI()
 {
 	_pos = pos;
 	_radius = 15.0/2.0;
@@ -425,6 +426,7 @@ void Node_Slider::_subjectUpdate(SSS::Subject const& subject, int event_id)
 
 
 Node_Toggle::Node_Toggle(bool* b, const glm::vec3& pos)
+	:Node_UI()
 {
 	_active = b;
 	_pos = pos;
@@ -538,6 +540,7 @@ void Node_Toggle::_subjectUpdate(SSS::Subject const& subject, int event_id) {
 
 
 Node_CheckBox::Node_CheckBox(bool* b, const glm::vec3& pos)
+	:Node_UI()
 {
 	_active = b;
 	_pos = pos;
@@ -661,7 +664,9 @@ void Node_RadioButton::_register()
 	REGISTER_EVENT("SSS_RADIO_TOOK_FOCUS");
 }
 
-Node_RadioButton::Node_RadioButton(bool* b, const glm::vec3& pos) {
+Node_RadioButton::Node_RadioButton(bool* b, const glm::vec3& pos)
+	:Node_UI() 
+{
 	_pos = pos;
 	_radius = 15*0.5;
 	_borderWidth = 4.0;

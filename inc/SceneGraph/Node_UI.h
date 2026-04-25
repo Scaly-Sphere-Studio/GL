@@ -15,8 +15,7 @@ class SSS_GL_API Node_UI : public Node_Block, public SSS::_EventRegistry<Node_UI
 {
 public:
 	friend _EventRegistry<Node_UI>;
-	Node_UI() = default;
-	Node_UI(SceneGraph* p_Sg) :Node_Block(p_Sg) {};
+	Node_UI() :Node_Block() {};
 	std::string name() const { return "UI"; };
 	int _type = 2;
 
@@ -55,6 +54,7 @@ public:
 
 
 
+	std::string _label;
 protected:
 	SSS::RGBA_f _color;
 	float _borderWidth;
@@ -97,7 +97,7 @@ public:
 
 	Node_Text() = default;
 	~Node_Text();
-	Node_Text(SceneGraph* p_Sg, const std::string& s, const SSS::GUI_Layout& lyt = SSS::GUI_Layout{});
+	Node_Text(const std::string& s, const SSS::GUI_Layout& lyt = SSS::GUI_Layout{});
 	std::string name() const { return "Text"; };
 
 	TextPlane::Shared model;

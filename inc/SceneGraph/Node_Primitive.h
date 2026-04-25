@@ -30,8 +30,7 @@ public:
 class SSS_GL_API Node_Block : public Node
 {
 public:
-	Node_Block() = default;
-	Node_Block(SceneGraph* p_Sg);
+	Node_Block() :Node() {};
 	std::string name() const { return "Block"; };
 
 	glm::vec3 _pos	= glm::vec3(0.f);		// Node position and translations

@@ -20,8 +20,8 @@ class SSS_GL_API Node : public SSS::Observer, public SSS::Subject, public SSS::_
 {
 public:
 	friend _EventRegistry;
+
 	Node();
-	Node(SceneGraph* p_Sg);
 	~Node();
 
 	unsigned int _key			= 0;
@@ -51,7 +51,6 @@ public:
 
 	virtual std::string name() const  { return "Node"; };
 	
-	SceneGraph* _sg;
 	SSS::GL::PlaneRenderer::Weak _rd;
 
 	std::string getLabel() { return _label; };
@@ -72,37 +71,57 @@ private:
 class SSS_GL_API SceneGraph
 {
 public:
+	static SceneGraph& get() {
+		static SceneGraph instance;
+		return instance;
+	}
+
+
+	// delete copy/move to prevent duplicates
+	SceneGraph(const SceneGraph&) = delete;
+	SceneGraph& operator=(const SceneGraph&) = delete;
+
+private:
 	SceneGraph();
 	~SceneGraph() {};
+public:
 
-	void init();
-	void update();
+	static void init();
+	static void update();
 	//Add the node to the nodelist and add it to the arborescence, to be used on free nodes
-	void push(Node* n);	
-	void emplace(Node* n);	// Add the node to the nodelist
+	static void push(Node* n);	
+	static void emplace(Node* n);	// Add the node to the nodelist
 
 	//int Text(const std::string& s, const SSS::GUI_Layout& lyt = SSS::GUI_Layout{});
 	//int Block(const glm::vec3 &pos = glm::vec3(0));
 
-	void pop(const int& key) { _deleteNode.push(key); };
-	bool contains(const int& key) { return _nodeList.contains(key); };
-	Node* at(const int & keyNode);
+	static void pop(const int& key) { get()._deleteNode.push(key); };
+	static bool contains(const int& key) { return get()._nodeList.contains(key); };
+	static Node* at(const int & keyNode);
 
-	void setCamera(SSS::GL::Camera::Shared pCam);
 
+	// Current renderers for the scenegraph, to be used in nodes and for rendering
+	static void setCurrentRenderer(SSS::GL::PlaneRenderer::Shared pRenderer) { get()._currentRenderer = pRenderer; };
+	static SSS::GL::PlaneRenderer::Shared getCurrentRenderer() { return get()._currentRenderer; };
+	// UI renderer, used for UI elements on specific render pass
+	static void setUIRenderer(std::shared_ptr<SSS::GL::RendererBase> pUIRenderer) { get()._uiRenderer = pUIRenderer; };
+	static std::shared_ptr<SSS::GL::RendererBase> getUIRenderer() { return get()._uiRenderer; };
+	
+	
 	//to_string
 	std::string to_string() const;
 	operator std::string() const;
-	
-	Node* operator[](const int &keyNode);
-	std::vector<int> list;
 
-	SSS::GL::PlaneRenderer::Shared _rd;
+	Node* operator[](const int &keyNode);
+	std::vector<int> list; // Node tree first level
+
 protected:
 
 	std::unordered_map<int, Node*> _nodeList;
-	SSS::GL::Camera::Shared _cam;
 	std::queue<int> _deleteNode;
+
+	SSS::GL::PlaneRenderer::Shared _currentRenderer;
+	std::shared_ptr<SSS::GL::RendererBase> _uiRenderer;
 
 	//std::unordered_map<std::string, SSS::GL::PlaneRenderer::Shared> _rdList;
 
