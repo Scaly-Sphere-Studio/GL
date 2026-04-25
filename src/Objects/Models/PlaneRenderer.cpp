@@ -148,8 +148,7 @@ void PlaneRenderer::render() try
     }
 
     // Set VP
-    shader->setUniformMat4fv("u_VP", 1, GL_FALSE,
-        glm::value_ptr(camera ? camera->getVP() : glm::mat4(1)));
+    shader->setUniform("u_VP", (camera ? camera->getVP() : glm::mat4(1)));
 
     // Edit VBOs if needed
     if (_update_vbos || _model_vbo.needs_edit)

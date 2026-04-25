@@ -116,7 +116,7 @@ void LineRenderer::render()
     }
     glm::mat4 const mvp = camera ? camera->getVP() : glm::mat4(1);
     shader->use();
-    shader->setUniformMat4fv("u_MVP", 1, GL_FALSE, &mvp[0][0]);
+    shader->setUniform("u_MVP", mvp);
 
     glDrawElements(GL_TRIANGLES, 3 * static_cast<GLsizei>(size), GL_UNSIGNED_INT, (void*)0);
 
