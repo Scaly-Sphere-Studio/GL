@@ -3,14 +3,13 @@
 
 SSS_GL_BEGIN;
 
-Shaders::Shaders() try
+Shaders::Shaders()
 {
 	// Log
 	if (Log::GL::Shaders::query(Log::GL::Shaders::get().life_state)) {
 		LOG_GL_MSG("Shaders -> created");
 	}
 }
-CATCH_AND_RETHROW_METHOD_EXC;
 
 Shaders::~Shaders()
 {
@@ -21,6 +20,8 @@ Shaders::~Shaders()
 		}
 		return;
 	}
+
+	
 	glDeleteProgram(_program_id);
 
 	// Log
@@ -41,15 +42,16 @@ static void compileShader(GLuint shader_id, std::string const& shader_code)
 	if (res != GL_TRUE) {
 		// Get error message
 		int log_length;
-		glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &log_length);
+      glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &log_length);
 		std::vector<char> msg(log_length + 1);
 		glGetShaderInfoLog(shader_id, log_length, NULL, &msg[0]);
 		// Throw
-		throw_exc(FUNC_MSG(CONTEXT_MSG("Could not compile shader", &msg[0])));
+      LOG_ERR(std::string("Shader compile failed: ") + &msg[0]);
 	}
 }
 
-GLuint attachShader(const GLuint &pID, const GLenum type, std::string const& data) {
+// (Old attachShader removed, see new version above)
+GLuint attachShader(const GLuint& pID, const GLenum type, std::string const& data) {
 	// Create the shaders
 	GLuint shader_id = glCreateShader(type);
 	if (shader_id == 0) {
@@ -61,6 +63,7 @@ GLuint attachShader(const GLuint &pID, const GLenum type, std::string const& dat
 
 	return shader_id;
 }
+
 
 void freeShader(const GLuint& pID, const GLuint& shader_id) {
 	// Free shaders
@@ -127,11 +130,20 @@ void Shaders::reload()
 	freeShader(_program_id, fragment_shader_id);
 }
 
-void Shaders::loadFromStrings(std::string const& vertex_data, std::string const& fragment_data) try
+void Shaders::loadFromStrings(std::string const& vertex_data, std::string const& fragment_data)
 {
-	_program_id		= loadShaders(vertex_data, fragment_data);
-	_vertex_data	= vertex_data;
-	_fragment_data	= fragment_data;
+	try 
+	{
+		_program_id		= loadShaders(vertex_data, fragment_data);
+		_vertex_data	= vertex_data;
+		_fragment_data	= fragment_data;
+	}
+	catch (...) 
+	{
+		EMIT_EVENT("SSS_SHADERS_ERROR");
+		LOG_ERR("Error while loading shaders : " +_vertex_fp.string());
+		return;
+	}
 
 
 	_loaded = true;
@@ -141,7 +153,6 @@ void Shaders::loadFromStrings(std::string const& vertex_data, std::string const&
 		LOG_GL_MSG("Shaders -> loaded");
 	}
 }
-CATCH_AND_RETHROW_METHOD_EXC;
 
 void Shaders::loadFromFiles(std::filesystem::path const& vertex_fp, std::filesystem::path const& fragment_fp) try
 {
@@ -153,7 +164,7 @@ void Shaders::loadFromFiles(std::filesystem::path const& vertex_fp, std::filesys
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
-void Shaders::watch() try
+void Shaders::watch()
 {
 	if (_vertex_fp.empty() || _frag_fp.empty()) return;
 
@@ -165,7 +176,7 @@ void Shaders::watch() try
 			_vert_last_write = vt;
 			_frag_last_write = ft;
 			changed = true;
-			LOG_GL_MSG("Shaders -> Changes found(id: " + toString(_program_id) + ")")
+			LOG_GL_MSG("Shaders -> Changes found(id: " + toString(_program_id) + ")");
 		}
 	}
 	catch (std::filesystem::filesystem_error const&) {
@@ -173,21 +184,18 @@ void Shaders::watch() try
 		return;
 	}
 
-	if (!changed) { 
+	if (!changed) {
 		LOG_GL_MSG("No changes found, returns");
-		return; }
+		return;
+	}
 
-	// Small delay so the writer finishes flushing
 	std::this_thread::sleep_for(std::chrono::milliseconds(50));
 	reload();
 
-	// Log
 	if (Log::GL::Shaders::query(Log::GL::Shaders::get().loading)) {
 		LOG_GL_MSG("Shaders -> hot-reloaded (id: " + toString(_program_id) + ")");
 	}
-
 }
-CATCH_AND_RETHROW_METHOD_EXC;
 
 
 void Shaders::use() const
@@ -228,12 +236,6 @@ void Shaders::setFloat(const std::string& name, float value) const
 {
 	glUniform1f(getUniformLocation(name), value);
 }
-void Shaders::setUniform1fv(std::string const& name, GLsizei count, const GLfloat* value)
-{
-	glUniform1fv(getUniformLocation(name), count, value);
-}
-
-
 // VEC
 
 // ------------------------------------------------------------------------
@@ -315,13 +317,6 @@ void Shaders::setUniform(const std::string& name, const UniformValue& val)
 		else if constexpr (std::is_same_v<T, bool>)       setBool(name, v);
 		}, val);
 }
-
-void Shaders::setUniformMat4fv(std::string const& name, GLsizei count,
-	GLboolean transpose, GLfloat const* value)
-{
-	glUniformMatrix4fv(getUniformLocation(name), count, transpose, value);
-}
-
 
 
 SSS_GL_END;

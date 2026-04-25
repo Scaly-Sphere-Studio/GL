@@ -28,8 +28,9 @@ SSS_GL_BEGIN;
 /** Non-exhaustive abstractization of \b OpenGL shaders.
  *  @sa Window::createShaders(), Renderer::setShadersID()
  */
-class SSS_GL_API Shaders : public InstancedClass<Shaders> {
+class SSS_GL_API Shaders : public InstancedClass<Shaders>, public Subject, public _EventRegistry<Shaders> {
     friend SharedClass;
+    friend _EventRegistry<Shaders>;
 
 
 private:
@@ -77,6 +78,7 @@ public:
      */
     void use() const;
 
+    
 
     /*
         UNIFORMS HANDLING
@@ -96,14 +98,13 @@ public:
     /** Simple handle to \c glUniform1fv().
      *  Context will always be accurately set.
      */
-    void setUniform1fv(std::string const& name, GLsizei count, const GLfloat* value);
-    /** Simple handle to \c glUniformMatrix4fv().
-     *  Context will always be accurately set.
-     */
-    void setUniformMat4fv(std::string const& name, GLsizei count,
-        GLboolean transpose, GLfloat const* value);
-private:
 
+private:
+    /* Registring events*/
+    static void _register() 
+    {
+        REGISTER_EVENT("SSS_SHADERS_ERROR");
+    };
 
     /* Set bool uniform*/
     void setBool(const std::string& name, bool value) const;
