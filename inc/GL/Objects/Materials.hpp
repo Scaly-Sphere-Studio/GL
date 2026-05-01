@@ -50,13 +50,17 @@ public:
     void bind();
     void unbind() const;
 
-    //Debugging and hot reloading
+    void setTexture(const std::string& name, const std::filesystem::path path);
+    void setTexture(const std::string& name, Texture::Shared tex);
+
+    // Debugging and hot reloading
     void watch() const;
+    Shaders::Shared getShader() const noexcept { return _shader; }
     RenderState state;
 private:
     Shaders::Shared _shader;
     std::unordered_map<std::string, UniformValue>   _uniforms;
-    //std::unordered_map<std::string, Texture>        _texSlots;
+    std::unordered_map<std::string, Texture::Shared>_texSlots;
 };
 
 

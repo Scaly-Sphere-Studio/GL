@@ -8,18 +8,18 @@ ModelBase::ModelBase() try
     setScaling();
     setRotation();
     setTranslation();
+	setMaterial("default");
 }
 
 
 CATCH_AND_RETHROW_METHOD_EXC;
 
-void ModelBase::_register()
-{
-    REGISTER_EVENT("SSS_MODEL_UPDATE");
-}
+
 
 
 ModelBase::~ModelBase() = default;
+
+
 
 void ModelBase::setScaling(glm::vec3 scaling)
 {

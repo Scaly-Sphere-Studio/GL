@@ -3,6 +3,7 @@
 
 #include "Shaders.hpp"
 #include "Materials.hpp"
+#include <unordered_map>
 
 /** @file
  *  Defines abstract class SSS::GL::Renderer.
@@ -25,13 +26,35 @@ public:
     /** Your rendering logic here.*/
     virtual void render() = 0;
 
-private:
+protected:
     Shaders::Shared _shaders;
+    std::unordered_map<std::string, Material> _materials;
 public:
     /** Sets the Shaders to be used in render().*/
     inline void setShaders(Shaders::Shared shaders) noexcept { _shaders = shaders; };
     /** Retrieves the set Shaders to be used in render().*/
     inline Shaders::Shared getShaders() const noexcept { return _shaders; };
+
+
+    /** Adds or replaces a named Material for this renderer.*/
+    inline void addMaterial(const std::string& name, const Material& material) {
+        if (!_materials.contains(name))
+            _materials.emplace(name, material);
+    };
+
+    /** Removes a named Material and returns true if it existed.*/
+    inline bool removeMaterial(const std::string& name) noexcept {
+        return _materials.erase(name) > 0;
+    };
+
+    inline Material& swapMaterial(const std::string& name) {
+    auto it = _materials.find(name);
+    if (it == _materials.end()) {
+        return _materials.at("default");
+    }
+    it->second.bind();
+    return it->second;
+    }
 
 private:
     bool _is_active{ true };
@@ -57,6 +80,8 @@ public:
     Renderer& operator=(const Renderer&)    = delete;   // Copy assignment
     Renderer& operator=(Renderer&&)         = delete;   // Move assignment
     /** \endcond*/
+
+    virtual void listenContext() {};
 
     virtual std::shared_ptr<RendererBase> getSharedBase() noexcept final {
         return SharedClass<Derived>::shared_from_this();

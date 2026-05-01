@@ -6,7 +6,8 @@ SSS_GL_BEGIN;
 
 PlaneRenderer::PlaneRenderer() try
 {
-    setShaders(Window::getPresetShaders(static_cast<uint32_t>(Shaders::Preset::Plane)));
+    auto shader = Window::getPresetShaders(static_cast<uint32_t>(Shaders::Preset::Plane));
+    addMaterial("default", Material(shader));    
 
     // Edit VBO
     constexpr float vertices[] = {
@@ -136,10 +137,15 @@ void PlaneRenderer::render() try
         return;
     }
 
-    Shaders::Shared shader = getShaders();
-    if (!shader)
+	Material mat = _materials.at("default");
+    mat.bind();
+    auto shader = mat.getShader();
+    if (!shader) {
         return;
-    shader->use();
+    }
+
+    mat.set("u_VP", (camera ? camera->getVP() : glm::mat4(1)));
+
     _vao.bind();
 
     // Check if we need to reset the depth buffer before rendering
@@ -147,8 +153,6 @@ void PlaneRenderer::render() try
         glClear(GL_DEPTH_BUFFER_BIT);
     }
 
-    // Set VP
-    shader->setUniform("u_VP", (camera ? camera->getVP() : glm::mat4(1)));
 
     // Edit VBOs if needed
     if (_update_vbos || _model_vbo.needs_edit)

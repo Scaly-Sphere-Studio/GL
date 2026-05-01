@@ -2,6 +2,8 @@
 #define SSS_GL_MODEL_HPP
 
 #include "Basic.hpp"
+#include "Materials.hpp"
+#include <memory>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_decompose.hpp>
 #include <SSS/Commons/eventList.hpp>
@@ -58,6 +60,10 @@ public:
     glm::vec3 getRotation();
     glm::vec3 getTranslation();
 
+    void setMaterial(const std::string& material) {_material = material;};
+    std::string getMaterial() const noexcept {return _material;};
+
+
     bool isHovered() const noexcept;
     bool isClicked() const noexcept;
     bool isHeld() const noexcept;
@@ -72,7 +78,13 @@ private:
     /** %Model matrix, computed by getModelMat4().*/
     glm::mat4 _model_mat4;
 
-    static void _register();
+    std::string _material;
+
+    static void _register()
+    {
+        REGISTER_EVENT("SSS_MODEL_UPDATE");
+        REGISTER_EVENT("SSS_MODEL_SWAPPED_MATERIAL");
+    }
 };
 
 #pragma warning(pop)

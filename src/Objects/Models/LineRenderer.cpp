@@ -5,7 +5,8 @@ SSS_GL_BEGIN;
 
 LineRenderer::LineRenderer()
 {
-    setShaders(Window::getPresetShaders(static_cast<uint32_t>(Shaders::Preset::Line)));
+    auto shader = Window::getPresetShaders(static_cast<uint32_t>(Shaders::Preset::Line));
+    addMaterial("default", Material(shader));
 
     _vao.setup([this]() {
         _vbo.bind();
@@ -78,6 +79,10 @@ void LineRenderer::gen_batch(Polyline::Vertex::Vec& mesh, Polyline::Indices::Vec
 
 void LineRenderer::render()
 {
+    if (!isActive()) {
+        return;
+    }
+
     static size_t size;
 
     _vao.bind();
@@ -108,15 +113,8 @@ void LineRenderer::render()
         Polyline::modified = false;
     }
 
-
-    Shaders::Shared shader = getShaders();
-    if (!shader) {
-        LOG_METHOD_WRN("No shaders bound");
-        return;
-    }
-    glm::mat4 const mvp = camera ? camera->getVP() : glm::mat4(1);
-    shader->use();
-    shader->setUniform("u_MVP", mvp);
+    Material mat = swapMaterial("default"); 
+    mat.set("u_MVP", camera ? camera->getVP() : glm::mat4(1));
 
     glDrawElements(GL_TRIANGLES, 3 * static_cast<GLsizei>(size), GL_UNSIGNED_INT, (void*)0);
 
