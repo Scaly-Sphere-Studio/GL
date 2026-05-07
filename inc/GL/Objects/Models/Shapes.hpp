@@ -28,12 +28,21 @@ enum SDF_Shapes {
 	sdBezierCubic
 };
 
+
+enum SDF_ColorModes {
+	GRAYSCALE      = 1,
+	GRADIENT       = 2,
+	COLORMAP       = 4
+};
+
 // ! ordre important !
 struct UIPrimitive {
 	glm::vec2 pos		= glm::vec2{};	// 8 bytes
 	glm::vec2 size		= glm::vec2{};	// 8 bytes
 
 	glm::vec4 color		= glm::vec4{};	// 16 bytes
+	glm::vec4 color2	= glm::vec4{};	// 16 bytes
+
 	glm::vec4 border	= glm::vec4{};	// 16 bytes
 
 	float borderWidth	= 0.f;			// 4 bytes
@@ -50,8 +59,8 @@ struct UIPrimitive {
 
 	float rotation		= 0.f;			// 4 bytes
 	float scale			= 0.f;			// 4 bytes
-	float _pad			= 0.f;			// 4 bytes
-	float _pad1			= 0.f;			// 4 bytes
+	int   blendColor    = 0;			// 4 bytes
+	int   gradientID    = 0;			// 4 bytes
 };
 
 SSS_END;

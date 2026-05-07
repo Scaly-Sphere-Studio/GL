@@ -32,7 +32,6 @@ void Material::set(const std::string& name, UniformValue val)
    if (_uniforms.contains(name)) 
    {
 	   _uniforms.at(name) = val;
-       return;
    }
    else 
    {

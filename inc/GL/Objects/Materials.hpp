@@ -52,6 +52,10 @@ public:
 
     void setTexture(const std::string& name, const std::filesystem::path path);
     void setTexture(const std::string& name, Texture::Shared tex);
+    Texture::Shared getTexture(const std::string& name) const {
+        auto it = _texSlots.find(name);
+        return (it != _texSlots.end()) ? it->second : nullptr;
+    }
 
     // Debugging and hot reloading
     void watch() const;
