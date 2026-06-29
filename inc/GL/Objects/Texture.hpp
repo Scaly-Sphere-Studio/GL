@@ -160,7 +160,7 @@ public:
 
 private:
 
-    virtual void _subjectUpdate(Subject const& subject, int event_id) override;
+    virtual void _subjectUpdate(Subject const& subject, SSS::Event const& event) override;
 
     // Async class which fills _raw_pixels using stb_image
     class _AsyncLoading : public Async<std::string, std::string> {

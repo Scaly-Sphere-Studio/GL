@@ -159,7 +159,7 @@ void Texture::savePNG() const
     stbi_write_png(name.c_str(), w, h, 4, &pixels[0], 0);
 }
 
-void Texture::_subjectUpdate(Subject const& subject, int event_id)
+void Texture::_subjectUpdate(Subject const& subject, Event const& event)
 {
     if (subject.is<_AsyncLoading>()) {
         _frames = std::move(_loading_thread._frames);

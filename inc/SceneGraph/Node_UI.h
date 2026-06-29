@@ -103,7 +103,7 @@ public:
 	TextPlane::Shared model;
 	int _type = 4;
 
-	virtual void _subjectUpdate(SSS::Subject const& subject, int event_id) override;
+	virtual void _subjectUpdate(SSS::Subject const& subject, SSS::Event const& event) override;
 	virtual void setWrappingMin(const int& min);
 
 	void clear() override;
@@ -132,7 +132,7 @@ public:
 
 	void clear() override;
 
-	virtual void _subjectUpdate(SSS::Subject const& subject, int event_id) override;
+	virtual void _subjectUpdate(SSS::Subject const& subject, SSS::Event const& event) override;
 
 	void setMin(int min) {_min = min;};
 	void setMax(int max) {_max = max;};
@@ -166,7 +166,7 @@ public:
 
 	void build();
 
-	virtual void _subjectUpdate(SSS::Subject const& subject, int event_id) override;
+	virtual void _subjectUpdate(SSS::Subject const& subject, SSS::Event const& event) override;
 private:
 	Node_Toggle() = default;
 public:
@@ -188,7 +188,7 @@ public:
 
 	void build();
 
-	virtual void _subjectUpdate(SSS::Subject const& subject, int event_id) override;
+	virtual void _subjectUpdate(SSS::Subject const& subject, SSS::Event const& event) override;
 
 private:
 public:
@@ -211,7 +211,7 @@ public:
 
 	void build(const glm::vec2& begin);
 
-	virtual void _subjectUpdate(SSS::Subject const& subject, int event_id) override;
+	virtual void _subjectUpdate(SSS::Subject const& subject, SSS::Event const& event) override;
 	void observeRadio(Node_RadioButton& subject);
 private:
 	Node_RadioButton() = default;
