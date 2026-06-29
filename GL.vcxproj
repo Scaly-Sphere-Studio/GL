@@ -60,6 +60,7 @@
     <ClInclude Include="inc\GL\Objects\Models\PlaneRenderer.hpp" />
     <ClInclude Include="inc\GL\Objects\Basic.hpp" />
     <ClInclude Include="inc\GL\Objects\Models\LineRenderer.hpp" />
+    <ClInclude Include="inc\GL\Objects\Models\UIRenderer.hpp" />
     <ClInclude Include="inc\SceneGraph\Node_Input.h" />
     <ClInclude Include="inc\SceneGraph\Node_Primitive.h" />
     <ClInclude Include="inc\SceneGraph\Node_UI.h" />
@@ -78,6 +79,7 @@
     <ClCompile Include="src\Objects\Models\PlaneRenderer.cpp" />
     <ClCompile Include="src\Objects\Models\Line.cpp" />
     <ClCompile Include="src\Objects\Models\LineRenderer.cpp" />
+    <ClCompile Include="src\Objects\Models\UIRenderer.cpp" />
     <ClCompile Include="src\SceneGraph\Node_Input.cpp" />
     <ClCompile Include="src\SceneGraph\Node_Primitive.cpp" />
     <ClCompile Include="src\SceneGraph\Node_UI.cpp" />

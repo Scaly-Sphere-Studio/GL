@@ -4,6 +4,7 @@
 #include "GL/Window.hpp"
 #include "GL/Objects/Models/PlaneRenderer.hpp"
 #include "GL/Objects/Models/LineRenderer.hpp"
+#include "GL/Objects/Models/UIRenderer.hpp"
 #include "Settings/Theme.h"
 #ifdef SSS_LUA
 #include "GL/Lua.hpp"
