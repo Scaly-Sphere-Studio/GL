@@ -11,7 +11,7 @@
 
 SSS_GL_BEGIN;
 
-// Ignore warning about STL exports as they're private members
+// Ignore warning about STL exports as they're protected members
 #pragma warning(push, 2)
 #pragma warning(disable: 4251)
 #pragma warning(disable: 4275)
@@ -25,14 +25,14 @@ class SSS_GL_API PlaneRenderer : public Observer, public Renderer<PlaneRenderer>
     friend class SharedClass;
     friend class Window;
 
-private:
+protected:
     PlaneRenderer();
     void _renderPart(Shaders& shader, uint32_t& count, uint32_t& offset) const;
 
-    virtual void _subjectUpdate(Subject const& subject, int event_id) override;
+    virtual void _subjectUpdate(Subject const& subject, SSS::Event const& event) override;
 
-    template <typename T>
-    void _updateVBO(T(PlaneBase::* getMember)() const, Basic::VBO& vbo);
+    template <typename C, typename T>
+    void _updateVBO(T(C::* getMember)() const, Basic::VBO& vbo);
 
 public:
     virtual void render() override;
@@ -43,7 +43,7 @@ public:
     Camera::Shared camera;
     /** Specified Planes.*/
 
-private:
+protected:
     std::vector<std::shared_ptr<PlaneBase>> _planes;
 public:
     inline auto const& getPlanes() const noexcept { return _planes; };
@@ -135,7 +135,7 @@ public:
         return false;
     };
 
-private:
+protected:
     Basic::VAO _vao;
     // Static Plane vertices
     Basic::VBO _static_vbo;

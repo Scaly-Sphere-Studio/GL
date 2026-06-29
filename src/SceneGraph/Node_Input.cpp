@@ -130,7 +130,8 @@ void Node_MouseInput::build()
 
 
 
-void Node_MouseInput::_subjectUpdate(SSS::Subject const& subject, int event_id) {
+void Node_MouseInput::_subjectUpdate(SSS::Subject const& subject, SSS::Event const& event) {
+	int const event_id = event.id;
 	if (_hidden)
 		return;
 

@@ -129,8 +129,9 @@ void PlaneBase::_updateTexScaling()
         _texture_size_callback(*this);
 }
 
-void PlaneBase::_subjectUpdate(Subject const& subject, int event_id)
+void PlaneBase::_subjectUpdate(Subject const& subject, Event const& event)
 {
+    int const event_id = event.id;
     if (event_id == EVENT_ID("SSS_TEXTURE_RESIZE")) {
         _updateTexScaling();
         _animation_duration = std::chrono::nanoseconds(0);

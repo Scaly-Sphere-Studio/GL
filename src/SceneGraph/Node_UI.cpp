@@ -156,12 +156,13 @@ Node_Text::Node_Text(const std::string& s, const SSS::GUI_Layout& lyt)
 
 	_size_update();
 
-	SceneGraph::getCurrentRenderer()->addPlane(plane);
+	//SceneGraph::getCurrentRenderer()->addPlane(plane);
 	SceneGraph::emplace(this);
 }
 
-void Node_Text::_subjectUpdate(SSS::Subject const& subject, int event_id)
+void Node_Text::_subjectUpdate(SSS::Subject const& subject, SSS::Event const& event)
 {
+	int const event_id = event.id;
 	if (_hidden)
 		return;
 
@@ -369,8 +370,9 @@ bool Node_UI::checkCollision(const glm::vec3& pos)
 }
 
 
-void Node_Slider::_subjectUpdate(SSS::Subject const& subject, int event_id)
+void Node_Slider::_subjectUpdate(SSS::Subject const& subject, SSS::Event const& event)
 {
+	int const event_id = event.id;
 	if (_hidden)
 		return;
 
@@ -487,7 +489,8 @@ void Node_Toggle::build() {
 	//boundingBox();
 }
 
-void Node_Toggle::_subjectUpdate(SSS::Subject const& subject, int event_id) {
+void Node_Toggle::_subjectUpdate(SSS::Subject const& subject, SSS::Event const& event) {
+	int const event_id = event.id;
 	if (_hidden)
 		return;
 
@@ -608,7 +611,8 @@ void Node_CheckBox::build() {
 	//boundingBox();
 }
 
-void Node_CheckBox::_subjectUpdate(SSS::Subject const& subject, int event_id) {
+void Node_CheckBox::_subjectUpdate(SSS::Subject const& subject, SSS::Event const& event) {
+	int const event_id = event.id;
 	if (_hidden)
 		return;
 
@@ -725,7 +729,8 @@ void Node_RadioButton::build(const glm::vec2& begin) {
 	//boundingBox();
 }
 
-void Node_RadioButton::_subjectUpdate(SSS::Subject const& subject, int event_id) {
+void Node_RadioButton::_subjectUpdate(SSS::Subject const& subject, SSS::Event const& event) {
+	int const event_id = event.id;
 	if (_hidden)
 		return;
 

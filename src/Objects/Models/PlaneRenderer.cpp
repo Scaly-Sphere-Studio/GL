@@ -100,8 +100,9 @@ void PlaneRenderer::_renderPart(Shaders& shader, uint32_t& count, uint32_t& offs
     }
 }
 
-void PlaneRenderer::_subjectUpdate(Subject const& subject, int event_id)
+void PlaneRenderer::_subjectUpdate(Subject const& subject, Event const& event)
 {
+    int const event_id = event.id;
     if (event_id == EVENT_ID("SSS_MODEL_UPDATE")) {
         _model_vbo.needs_edit = true;
         return;
@@ -118,8 +119,8 @@ void PlaneRenderer::_subjectUpdate(Subject const& subject, int event_id)
     }
 }
 
-template <typename T>
-void PlaneRenderer::_updateVBO(T(PlaneBase::* getMember)() const, Basic::VBO& vbo) {
+template <typename C, typename T>
+void PlaneRenderer::_updateVBO(T(C::* getMember)() const, Basic::VBO& vbo) {
     std::vector<T> vec;
     vec.reserve(_planes.size());
     for (std::shared_ptr<PlaneBase> const& plane : _planes) {

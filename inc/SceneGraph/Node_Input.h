@@ -15,7 +15,7 @@ public:
 
 	void build();
 
-	virtual void _subjectUpdate(SSS::Subject const& subject, int event_id) override;
+	virtual void _subjectUpdate(SSS::Subject const& subject, SSS::Event const& event) override;
 
 private:
 	float _radius;

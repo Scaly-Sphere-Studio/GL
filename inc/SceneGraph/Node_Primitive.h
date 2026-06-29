@@ -40,7 +40,7 @@ public:
 	float rotation = 0.f;
 
 	//transforms
-	virtual void _subjectUpdate(SSS::Subject const& subject, int event_id) override {};
+	virtual void _subjectUpdate(SSS::Subject const& subject, SSS::Event const& event) override {};
 	virtual void update() {};
 	glm::mat4 getLocalTransform() const; // Rotation*Translation*Scale
 	glm::mat4 getGlobalTransform() const;

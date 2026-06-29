@@ -113,7 +113,7 @@ private:
 
     void _updateTexScaling();
 
-    virtual void _subjectUpdate(Subject const& subject, int event_id) override;
+    virtual void _subjectUpdate(Subject const& subject, SSS::Event const& event) override;
 
     // Type of hitbox
     Hitbox _hitbox{ Hitbox::None };
