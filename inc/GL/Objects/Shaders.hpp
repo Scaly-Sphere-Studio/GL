@@ -49,7 +49,9 @@ public:
         /** Plane shaders, used by Plane::Renderer by default.*/
         Plane,
         /** Line shaders, used by Line::Renderer by default.*/
-        Line
+        Line,
+        /** SDF plane shaders, used by Plane::Renderer for planes with sdf_mode != None.*/
+        PlaneSDF
     };
 
     using InstancedClass::create;

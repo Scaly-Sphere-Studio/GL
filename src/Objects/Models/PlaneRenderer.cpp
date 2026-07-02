@@ -74,6 +74,28 @@ PlaneRenderer::PlaneRenderer() try
         glVertexAttribDivisor(PLANE_TEX_OFFSET, 1);
         });
     _vao.unbind();
+
+    // SDF primitives SSBO, shared by all SDF planes (re-uploaded per draw)
+    glGenBuffers(1, &_sdf_ssbo);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, _sdf_ssbo);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, 1024 * sizeof(SSS::UIPrimitive), nullptr, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    // Non-instanced VAO for SDF planes: only a_Pos/a_UV, model & alpha are uniforms
+    _sdf_plane_vao.setup([this]() {
+        enum {
+            SDF_PLANE_POS,
+            SDF_PLANE_UV,
+        };
+
+        _static_vbo.bind();
+        _static_ibo.bind();
+        glEnableVertexAttribArray(SDF_PLANE_POS);
+        glVertexAttribPointer(SDF_PLANE_POS, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(SDF_PLANE_UV);
+        glVertexAttribPointer(SDF_PLANE_UV, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+        });
+    _sdf_plane_vao.unbind();
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
@@ -124,7 +146,7 @@ void PlaneRenderer::_updateVBO(T(C::* getMember)() const, Basic::VBO& vbo) {
     std::vector<T> vec;
     vec.reserve(_planes.size());
     for (std::shared_ptr<PlaneBase> const& plane : _planes) {
-        if (plane->isHidden())
+        if (plane->isHidden() || plane->sdf_mode != PlaneBase::SDFMode::None)
             continue;
         vec.push_back(((*plane).*getMember)());
     }
@@ -171,7 +193,7 @@ void PlaneRenderer::render() try
     // Loop over each plane
     for (std::shared_ptr<PlaneBase> const& plane : _planes) {
         // Check if we can't cache more instances and need to make a draw call.
-        if (plane->isHidden())
+        if (plane->isHidden() || plane->sdf_mode != PlaneBase::SDFMode::None)
             continue;
 
         if (count == Window::maxGLSLTextureUnits()) {
@@ -188,6 +210,43 @@ void PlaneRenderer::render() try
     }
     _renderPart(*shader, count, offset);
     _vao.unbind();
+
+    // SDF planes: one non-instanced draw call per plane
+    auto sdf_shader = Window::getPresetShaders(static_cast<uint32_t>(Shaders::Preset::PlaneSDF));
+    if (sdf_shader) {
+        sdf_shader->use();
+        sdf_shader->setUniform("u_VP", (camera ? camera->getVP() : glm::mat4(1)));
+        sdf_shader->setUniform("u_Texture", 0);
+
+        _sdf_plane_vao.bind();
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, _sdf_ssbo);
+
+        for (std::shared_ptr<PlaneBase> const& plane : _planes) {
+            if (plane->isHidden() || plane->sdf_mode == PlaneBase::SDFMode::None)
+                continue;
+            if (plane->sdf_prims.empty())
+                continue;
+
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, _sdf_ssbo);
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0,
+                plane->sdf_prims.size() * sizeof(SSS::UIPrimitive),
+                plane->sdf_prims.data());
+
+            sdf_shader->setUniform("u_Model",    plane->getModelMat4());
+            sdf_shader->setUniform("u_Alpha",    plane->getAlpha());
+            sdf_shader->setUniform("u_SDFMode",  static_cast<int>(plane->sdf_mode));
+            sdf_shader->setUniform("u_PrimSize", static_cast<int>(plane->sdf_prims.size()));
+
+            if (plane->sdf_mode == PlaneBase::SDFMode::Mask && plane->getTexture()) {
+                glActiveTexture(GL_TEXTURE0);
+                plane->getTexture()->bind();
+                sdf_shader->setUniform("u_TexOffset", static_cast<int>(plane->getTexOffset()));
+            }
+
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+        }
+        _sdf_plane_vao.unbind();
+    }
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 

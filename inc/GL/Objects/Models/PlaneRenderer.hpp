@@ -150,6 +150,11 @@ protected:
     // To update all dynamic vbos
     bool _update_vbos{ true };
 
+    // SDF primitives buffer, shared by all SDF planes (uploaded per-draw)
+    GLuint _sdf_ssbo{ 0 };
+    // Non-instanced quad VAO used to draw SDF planes (model/alpha passed as uniforms)
+    Basic::VAO _sdf_plane_vao;
+
     std::weak_ptr<PlaneBase> _hovered;
     double _hovered_z{ DBL_MAX };
     bool _findNearestModel(double x, double y);

@@ -41,6 +41,22 @@ UIRenderer::UIRenderer()
 
     // === Setup plane rendering ===
     _setupPlaneVAO();
+
+    // Non-instanced VAO for SDF planes: only a_Pos/a_UV, model & alpha are uniforms
+    _sdf_plane_vao.setup([this]() {
+        enum {
+            SDF_PLANE_POS,
+            SDF_PLANE_UV,
+        };
+
+        _plane_static_vbo.bind();
+        _plane_static_ibo.bind();
+        glEnableVertexAttribArray(SDF_PLANE_POS);
+        glVertexAttribPointer(SDF_PLANE_POS, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(SDF_PLANE_UV);
+        glVertexAttribPointer(SDF_PLANE_UV, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    });
+    _sdf_plane_vao.unbind();
 }
 
 void UIRenderer::_setupPlaneVAO()
@@ -109,7 +125,7 @@ void UIRenderer::_updatePlaneVBOs()
     std::vector<glm::mat4> models;
     models.reserve(_planes.size());
     for (auto const& plane : _planes) {
-        if (!plane || plane->isHidden()) continue;
+        if (!plane || plane->isHidden() || plane->sdf_mode != PlaneBase::SDFMode::None) continue;
         models.push_back(plane->getModelMat4());
     }
     _plane_model_vbo.edit(models, GL_DYNAMIC_DRAW);
@@ -117,7 +133,7 @@ void UIRenderer::_updatePlaneVBOs()
     std::vector<float> alphas;
     alphas.reserve(_planes.size());
     for (auto const& plane : _planes) {
-        if (!plane || plane->isHidden()) continue;
+        if (!plane || plane->isHidden() || plane->sdf_mode != PlaneBase::SDFMode::None) continue;
         alphas.push_back(plane->getAlpha());
     }
     _plane_alpha_vbo.edit(alphas, GL_DYNAMIC_DRAW);
@@ -125,7 +141,7 @@ void UIRenderer::_updatePlaneVBOs()
     std::vector<uint32_t> tex_offsets;
     tex_offsets.reserve(_planes.size());
     for (auto const& plane : _planes) {
-        if (!plane || plane->isHidden()) continue;
+        if (!plane || plane->isHidden() || plane->sdf_mode != PlaneBase::SDFMode::None) continue;
         tex_offsets.push_back(plane->getTexOffset());
     }
     _plane_tex_offset_vbo.edit(tex_offsets, GL_DYNAMIC_DRAW);
@@ -162,7 +178,7 @@ void UIRenderer::_renderPlanes()
 
     uint32_t count = 0;
     for (auto const& plane : _planes) {
-        if (!plane || plane->isHidden()) continue;
+        if (!plane || plane->isHidden() || plane->sdf_mode != PlaneBase::SDFMode::None) continue;
         if (count == 128) break;
 
         glActiveTexture(GL_TEXTURE0 + count);
@@ -179,6 +195,53 @@ void UIRenderer::_renderPlanes()
     }
 
     _plane_vao.unbind();
+}
+
+void UIRenderer::_renderPlaneSDF()
+{
+    auto sdf_shader = SSS::GL::Window::getPresetShaders(static_cast<uint32_t>(Shaders::Preset::PlaneSDF));
+    if (!sdf_shader) return;
+
+    // Bind the mask texture on the last hardware-guaranteed unit, away from the low units
+    // used by _renderPlanes()'s instanced batch and unit 0 (which uGradientTexture implicitly
+    // reads from in ui.frag, relying on whatever texture was last bound there).
+    // A hardcoded unit (e.g. 31) can exceed GL_MAX_TEXTURE_IMAGE_UNITS on some hardware/drivers,
+    // making glActiveTexture a no-op (GL_INVALID_ENUM) and leaving the sampler reading an
+    // incomplete texture (observed as solid white).
+    const int maskTexUnit = std::max(1, static_cast<int>(Window::maxGLSLTextureUnits()) - 1);
+
+    sdf_shader->use();
+    sdf_shader->setUniform("u_VP", _proj);
+    sdf_shader->setUniform("u_Texture", maskTexUnit);
+
+    _sdf_plane_vao.bind();
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, _sdf_ssbo);
+
+    for (auto const& plane : _planes) {
+        if (!plane || plane->isHidden() || plane->sdf_mode == PlaneBase::SDFMode::None)
+            continue;
+        if (plane->sdf_prims.empty())
+            continue;
+
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, _sdf_ssbo);
+        glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0,
+            plane->sdf_prims.size() * sizeof(SSS::UIPrimitive),
+            plane->sdf_prims.data());
+
+        sdf_shader->setUniform("u_Model",    plane->getModelMat4());
+        sdf_shader->setUniform("u_Alpha",    plane->getAlpha());
+        sdf_shader->setUniform("u_SDFMode",  static_cast<int>(plane->sdf_mode));
+        sdf_shader->setUniform("u_PrimSize", static_cast<int>(plane->sdf_prims.size()));
+
+        if (plane->sdf_mode == PlaneBase::SDFMode::Mask && plane->getTexture()) {
+            glActiveTexture(GL_TEXTURE0 + maskTexUnit);
+            plane->getTexture()->bind();
+            sdf_shader->setUniform("u_TexOffset", static_cast<int>(plane->getTexOffset()));
+        }
+
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+    }
+    _sdf_plane_vao.unbind();
 }
 
 void UIRenderer::_renderSDFShapes()
@@ -267,6 +330,7 @@ void UIRenderer::render()
     // Clear depth so the screen-space passes always render on top of world geometry.
     glClear(GL_DEPTH_BUFFER_BIT);
     _renderPlanes();
+    _renderPlaneSDF();
     _renderSDFShapes();
 }
 

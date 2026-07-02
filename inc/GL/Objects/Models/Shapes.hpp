@@ -25,7 +25,8 @@ enum SDF_Shapes {
 	sdCross,
 	sdPentagon,
 	sdHexagon,
-	sdBezierCubic
+	sdBezierCubic,
+	sdEllipse
 };
 
 

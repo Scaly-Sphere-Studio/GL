@@ -3,6 +3,7 @@
 
 #include "../Model.hpp"
 #include "../Texture.hpp"
+#include "Shapes.hpp"
 #include <SSS/Commons/eventList.hpp>
 #include <set>
 
@@ -95,6 +96,13 @@ public:
     inline void getRelativeCoords(int& x, int& y) const noexcept { x = _relative_x; y = _relative_y; };
 
     inline uint32_t getTexOffset() const noexcept { return _texture_offset; };
+
+    /** SDF rendering mode for this plane (see PlaneRenderer).*/
+    enum class SDFMode { None, Shape, Mask };
+    /** SDF primitives rendered in plane-local space ([-0.5, 0.5]) when sdf_mode != None.*/
+    std::vector<SSS::UIPrimitive> sdf_prims;
+    /** None: textured quad (default); Shape: SDF-only; Mask: SDF as alpha mask over texture.*/
+    SDFMode sdf_mode{ SDFMode::None };
 
 private:
     void _setTextureOffset(uint32_t offset);

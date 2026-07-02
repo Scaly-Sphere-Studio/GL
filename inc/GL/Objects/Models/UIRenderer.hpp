@@ -71,6 +71,9 @@ private:
     Basic::VBO _plane_tex_offset_vbo;
     bool _planes_update_vbos = true;
 
+    // Non-instanced quad VAO used to draw SDF planes (model/alpha passed as uniforms)
+    Basic::VAO _sdf_plane_vao;
+
     glm::vec2 _resolution;
     glm::mat4 _proj;
 
@@ -81,6 +84,7 @@ private:
     void _setupPlaneVAO();
     void _updatePlaneVBOs();
     void _renderPlanes();
+    void _renderPlaneSDF();
     void _renderSDFShapes();
     void _renderWorldSDFShapes();
 };
