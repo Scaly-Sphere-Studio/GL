@@ -230,6 +230,10 @@ void Shaders::setUniform1iv(std::string const& name, GLsizei count, const GLint*
 {
 	glUniform1iv(getUniformLocation(name), count, value);
 }
+void Shaders::setUniform2fv(std::string const& name, GLsizei count, const float* value)
+{
+	glUniform2fv(getUniformLocation(name), count, value);
+}
 
 // ------------------------------------------------------------------------
 void Shaders::setFloat(const std::string& name, float value) const

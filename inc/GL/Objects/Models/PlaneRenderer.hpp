@@ -27,7 +27,8 @@ class SSS_GL_API PlaneRenderer : public Observer, public Renderer<PlaneRenderer>
 
 protected:
     PlaneRenderer();
-    void _renderPart(Shaders& shader, uint32_t& count, uint32_t& offset) const;
+    void _renderPart(Shaders& shader, uint32_t& count, uint32_t& offset,
+        std::vector<GLint> const& uv_modes, std::vector<glm::vec2> const& uv_offsets) const;
 
     virtual void _subjectUpdate(Subject const& subject, SSS::Event const& event) override;
 

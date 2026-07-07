@@ -99,7 +99,8 @@ PlaneRenderer::PlaneRenderer() try
 }
 CATCH_AND_RETHROW_METHOD_EXC;
 
-void PlaneRenderer::_renderPart(Shaders& shader, uint32_t& count, uint32_t& offset) const
+void PlaneRenderer::_renderPart(Shaders& shader, uint32_t& count, uint32_t& offset,
+    std::vector<GLint> const& uv_modes, std::vector<glm::vec2> const& uv_offsets) const
 {
     static constexpr std::array<GLint, 128> texture_IDs = {
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
@@ -115,6 +116,9 @@ void PlaneRenderer::_renderPart(Shaders& shader, uint32_t& count, uint32_t& offs
     if (count != 0) {
         // Set Texture IDs & MVP uniforms
         shader.setUniform1iv("u_Textures", count, texture_IDs.data());
+        // Set per-Texture UV mode & polar offset uniforms
+        shader.setUniform1iv("u_UVModes", count, uv_modes.data());
+        shader.setUniform2fv("u_UVOffsets", count, &uv_offsets.data()[0].x);
         // Draw all required instances
         glDrawElementsInstancedBaseInstance(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr, count, offset);
         offset += count;
@@ -190,6 +194,10 @@ void PlaneRenderer::render() try
     _update_vbos = false;
 
     uint32_t count = 0, offset = 0;
+    std::vector<GLint> uv_modes;
+    std::vector<glm::vec2> uv_offsets;
+    uv_modes.reserve(Window::maxGLSLTextureUnits());
+    uv_offsets.reserve(Window::maxGLSLTextureUnits());
     // Loop over each plane
     for (std::shared_ptr<PlaneBase> const& plane : _planes) {
         // Check if we can't cache more instances and need to make a draw call.
@@ -197,7 +205,9 @@ void PlaneRenderer::render() try
             continue;
 
         if (count == Window::maxGLSLTextureUnits()) {
-            _renderPart(*shader, count, offset);
+            _renderPart(*shader, count, offset, uv_modes, uv_offsets);
+            uv_modes.clear();
+            uv_offsets.clear();
         }
         if (!plane || !plane->_texture)
             continue;
@@ -205,10 +215,12 @@ void PlaneRenderer::render() try
         // Bind another active texture (set uniform IDs later)
         glActiveTexture(GL_TEXTURE0 + count);
         plane->_texture->bind();
+        uv_modes.push_back(static_cast<GLint>(plane->_texture->getUVMode()));
+        uv_offsets.push_back(plane->_texture->getUVOffset());
 
         ++count;
     }
-    _renderPart(*shader, count, offset);
+    _renderPart(*shader, count, offset, uv_modes, uv_offsets);
     _vao.unbind();
 
     // SDF planes: one non-instanced draw call per plane
@@ -241,6 +253,8 @@ void PlaneRenderer::render() try
                 glActiveTexture(GL_TEXTURE0);
                 plane->getTexture()->bind();
                 sdf_shader->setUniform("u_TexOffset", static_cast<int>(plane->getTexOffset()));
+                sdf_shader->setUniform("u_UVMode", static_cast<int>(plane->getTexture()->getUVMode()));
+                sdf_shader->setUniform("u_UVOffset", plane->getTexture()->getUVOffset());
             }
 
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);

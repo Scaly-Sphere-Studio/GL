@@ -80,6 +80,44 @@ void Texture::setType(Type type) noexcept
         _internalEdit(type);
 }
 
+void Texture::setUVMode(UVMode mode) noexcept
+{
+    if (_uv_mode == mode) {
+        return;
+    }
+    _uv_mode = mode;
+    _updateWrapParams();
+}
+
+void Texture::setRepeat(bool repeat) noexcept
+{
+    if (_repeat == repeat) {
+        return;
+    }
+    _repeat = repeat;
+    _updateWrapParams();
+}
+
+void Texture::_updateWrapParams() noexcept
+{
+    if (_uv_mode == UVMode::Polar) {
+        // Angle (S) always wraps around the 0/1 seam to avoid a visible
+        // discontinuity. Radius (T) follows _repeat: clamping (default) avoids
+        // ring artifacts from polar mapping naturally pushing radius past 1.0
+        // in the UV square's corners; repeating lets an animated radius
+        // offset (radiate effect) tile seamlessly instead of clamping to the
+        // edge pixel once offset + radius exceeds 1.0 (which otherwise freezes
+        // most of the visible disk and warps the remainder toward the center).
+        _raw_texture.parameteri(GL_TEXTURE_WRAP_S, GL_REPEAT);
+        _raw_texture.parameteri(GL_TEXTURE_WRAP_T, _repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE);
+    }
+    else {
+        GLint const wrap = _repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE;
+        _raw_texture.parameteri(GL_TEXTURE_WRAP_S, wrap);
+        _raw_texture.parameteri(GL_TEXTURE_WRAP_T, wrap);
+    }
+}
+
 void Texture::loadImage(std::string const& filepath)
 {
     _loading_thread.run(_resource_folder, filepath);

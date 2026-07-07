@@ -39,10 +39,25 @@ in float Alpha;
 flat in int instanceID;
 
 uniform sampler2DArray u_Textures[gl_MaxTextureImageUnits];
+// Per-Texture UV mapping mode: 0 = Cartesian, 1 = Polar (matches Texture::UVMode)
+uniform int u_UVModes[gl_MaxTextureImageUnits];
+// Per-Texture UV offset. Cartesian: added directly to UV (pan). Polar: x = angle offset (turns), y = radius offset
+uniform vec2 u_UVOffsets[gl_MaxTextureImageUnits];
+
+#define _TWO_PI 6.28318530718
 
 void main()
 {
-    FragColor = texture(u_Textures[instanceID], UVW);
+    vec2 uv = UVW.xy;
+    if (u_UVModes[instanceID] == 1) {
+        vec2 c = uv - vec2(0.5);
+        float angle = atan(c.y, c.x) / _TWO_PI + 0.5 + u_UVOffsets[instanceID].x;
+        float radius = length(c) * 2.0 + u_UVOffsets[instanceID].y;
+        uv = vec2(angle, radius);
+    } else {
+        uv += u_UVOffsets[instanceID];
+    }
+    FragColor = texture(u_Textures[instanceID], vec3(uv, UVW.z));
     FragColor.w *= Alpha;
 }
 )";
@@ -81,6 +96,8 @@ uniform float u_Alpha;
 uniform float u_Progress;
 uniform int   u_TexOffset;         // APNG frame index, Mask mode only
 uniform sampler2DArray u_Texture;  // Mask mode only
+uniform int   u_UVMode;            // Texture::UVMode, Mask mode only: 0 = Cartesian, 1 = Polar
+uniform vec2  u_UVOffset;          // Mask mode only. Cartesian: added directly to UV (pan). Polar: x = angle offset (turns), y = radius offset
 
 in vec2 v_LocalXY;
 in vec2 v_UV;
@@ -579,7 +596,16 @@ void main()
     }
 
     if (u_SDFMode == 2) {
-        vec4 texColor = texture(u_Texture, vec3(v_UV, float(u_TexOffset)));
+        vec2 uv = v_UV;
+        if (u_UVMode == 1) {
+            vec2 c = uv - vec2(0.5);
+            float angle = atan(c.y, c.x) / (2.0 * _PI) + 0.5 + u_UVOffset.x;
+            float radius = length(c) * 2.0 + u_UVOffset.y;
+            uv = vec2(angle, radius);
+        } else {
+            uv += u_UVOffset;
+        }
+        vec4 texColor = texture(u_Texture, vec3(uv, float(u_TexOffset)));
         FragColor = vec4(texColor.rgb, texColor.a * col.a * u_Alpha);
     } else {
         FragColor = vec4(col.rgb, col.a * u_Alpha);

@@ -4,6 +4,7 @@
 #include <SSS/Text-Rendering.hpp>
 #include <SSS/Commons/eventList.hpp>
 #include "Basic.hpp"
+#include "glm/glm.hpp"
 
 
 /** @file
@@ -69,6 +70,19 @@ public:
         Text
     };
 
+    /** UV coordinate mapping mode used when sampling this Texture.
+     *  @sa setUVMode(), getUVMode()
+     */
+    enum class UVMode {
+        /** Default [0, 1] cartesian UV mapping.*/
+        Cartesian,
+        /** Remaps UV coordinates to polar coordinates (angle, radius)
+         *  around the texture's center.
+         *  @sa setUVOffset()
+         */
+        Polar
+    };
+
     struct Frame {
         // Pixel array
         RGBA32::Vector pixels;
@@ -95,6 +109,9 @@ private:
     //static Basic::Texture 
     Basic::Texture _raw_texture;    // OpenGL texture
     Type _type{ Type::Raw };        // Texture type
+    UVMode _uv_mode{ UVMode::Cartesian }; // UV coordinate mapping mode
+    glm::vec2 _uv_offset{ 0.f, 0.f };  // Offset applied to UV coordinates before sampling (meaning depends on _uv_mode)
+    bool _repeat{ false };                // Whether the texture wraps (GL_REPEAT) or clamps (GL_CLAMP_TO_EDGE)
     Frame::Vector _frames;     // Vector of frames (is used for images AND animations). Default constructed to avoid MSVC ambiguity with int -> Frame::Vector conversion
     TR::Area::Shared _area;         // TR::Area
     std::string _filepath;          // Image filepath
@@ -111,6 +128,41 @@ public:
      *  @sa setType()
      */
     inline Type getType() const noexcept { return _type; };
+
+    /** Sets the UVMode to be used when sampling this Texture (default: UVMode::Cartesian).
+     *  @sa getUVMode()
+     */
+    void setUVMode(UVMode mode) noexcept;
+    /** Returns the current UVMode.
+     *  @sa setUVMode()
+     */
+    inline UVMode getUVMode() const noexcept { return _uv_mode; };
+
+    /** Sets the offset applied to this Texture's UV coordinates before sampling.
+     *  Interpretation depends on the active UVMode:
+     *  - Cartesian: x/y are added directly to the UV coordinates, panning the
+     *    texture (e.g. x > 0 scrolls it left). Combine with setRepeat(true)
+     *    for the pan to wrap seamlessly instead of clamping at the edge.
+     *  - Polar: x is the angle offset, in normalized turns ([0, 1] mapping to
+     *    a full revolution); y is the radius offset, in normalized UV units.
+     *  @sa getUVOffset(), setUVMode()
+     */
+    inline void setUVOffset(glm::vec2 offset) noexcept { _uv_offset = offset; };
+    /** Returns the offset applied to this Texture's UV coordinates.
+     *  @sa setUVOffset()
+     */
+    inline glm::vec2 getUVOffset() const noexcept { return _uv_offset; };
+
+    /** Enables or disables texture wrapping (GL_REPEAT) instead of clamping
+     *  (GL_CLAMP_TO_EDGE) when sampling outside of the [0, 1] UV range.
+     *  Default: disabled (clamped).
+     *  @sa getRepeat()
+     */
+    void setRepeat(bool repeat) noexcept;
+    /** Returns whether texture wrapping (GL_REPEAT) is enabled.
+     *  @sa setRepeat()
+     */
+    inline bool getRepeat() const noexcept { return _repeat; };
 
     /** Asynchronously loads the image at given path (can be relative or absolute).
      *  Whenever the loading is completed, the next call to pollEverything() will
@@ -173,6 +225,11 @@ private:
 
     // Simple internal edit based on set type
     void _internalEdit(Type type);
+    // Applies GL_TEXTURE_WRAP_S/T based on current _uv_mode & _repeat.
+    // Polar mode needs the angle axis (S) to wrap independently of the
+    // radius axis (T), which must always clamp -- a single _repeat flag
+    // driving both axes can't express that.
+    void _updateWrapParams() noexcept;
 
     static void _register();
 };
