@@ -59,6 +59,12 @@ public:
     static Shared create(std::string const& filepath);
     static Shared create(std::filesystem::path const& filepath);
     static Shared create(TR::Area::Shared area);
+    /** Creates a Texture filled with cellular noise (via FastNoise2).
+     *  @param width, height Pixel dimensions of the generated texture.
+     *  @param frequency Noise frequency; smaller values produce larger cells.
+     *  @param seed Seed used for cell point placement.
+     */
+    static Shared createCellularNoise(int width, int height, float frequency = 0.02f, int seed = 1337);
 
     /** The Texture type, mainly to know which pixels to use (internal or TR).
      *  @sa setType(), getType()

@@ -1,5 +1,7 @@
 #define SSS_LUA
 #include "GL.hpp"
+#include <FastNoise/FastNoise.h>
+#include <algorithm>
 
 using namespace SSS;
 
@@ -46,8 +48,35 @@ int main() try
     // Create Window & set context
     lua.safe_script_file("Init.lua");
     GL::Window& window = lua["window"];
+    GL::PlaneRenderer& plane_renderer = lua["plane_renderer"];
 
     Log::GL::Window::get().fps = true;
+
+    // Noise texture demo
+    {
+        constexpr int noise_w = 256, noise_h = 256;
+        auto fnGenerator = FastNoise::New<FastNoise::Perlin>();
+        // Perlin defaults to Scale=100 (Frequency=0.01), which stacks with the
+        // xStepSize/yStepSize below and made the 0.02f step ~100x weaker than
+        // intended (a near-flat, uniform-gray result). Neutralize it here.
+        fnGenerator->SetScale(1.0f);
+        std::vector<float> noise(noise_w * noise_h);
+        fnGenerator->GenUniformGrid2D(noise.data(), 0, 0, noise_w, noise_h, 0.02f, 0.02f, 1337);
+
+        RGBA32::Vector pixels(noise.size());
+        for (size_t i = 0; i < noise.size(); ++i) {
+            uint8_t v = static_cast<uint8_t>(std::clamp((noise[i] * 0.5f + 0.5f) * 255.f, 0.f, 255.f));
+            pixels[i] = RGBA32(v, v, v, 255);
+        }
+
+        auto noise_texture = GL::Texture::create();
+        noise_texture->editRawPixels(pixels.data(), noise_w, noise_h);
+
+        auto noise_plane = GL::Plane::create(noise_texture);
+        noise_plane->scale(300.f);
+        noise_plane->translate(glm::vec3(0.f, -350.f, 1.f));
+        plane_renderer.addPlane(noise_plane);
+    }
 
     // GL::Window& win2 = GL::Window::create();
     // win2.setRenderers(window.getRenderers());

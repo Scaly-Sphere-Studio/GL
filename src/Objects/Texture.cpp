@@ -1,6 +1,9 @@
 #include "GL/Objects/Texture.hpp"
 #include "GL/Objects/Models/Plane.hpp"
 
+#include <FastNoise/FastNoise.h>
+#include <algorithm>
+
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #pragma warning(suppress : 4996)
 #include <stb_image_write.h>
@@ -71,6 +74,27 @@ Texture::Shared Texture::create(TR::Area::Shared area)
 {
     Shared ret = create();
     ret->setTextArea(area);
+    return ret;
+}
+
+Texture::Shared Texture::createCellularNoise(int width, int height, float frequency, int seed)
+{
+    auto fnGenerator = FastNoise::New<FastNoise::CellularValue>();
+    // CellularValue defaults to Scale=100 (Frequency=0.01), which would stack
+    // with the xStepSize/yStepSize below and make `frequency` ~100x weaker
+    // than expected. Neutralize it so `frequency` is the only frequency knob.
+    fnGenerator->SetScale(1.0f);
+    std::vector<float> noise(static_cast<size_t>(width) * static_cast<size_t>(height));
+    fnGenerator->GenUniformGrid2D(noise.data(), 0, 0, width, height, frequency, frequency, seed);
+
+    RGBA32::Vector pixels(noise.size());
+    for (size_t i = 0; i < noise.size(); ++i) {
+        uint8_t const v = static_cast<uint8_t>(std::clamp((noise[i] * 0.5f + 0.5f) * 255.f, 0.f, 255.f));
+        pixels[i] = RGBA32(v, v, v, 255);
+    }
+
+    Shared ret = create();
+    ret->editRawPixels(pixels.data(), width, height);
     return ret;
 }
 

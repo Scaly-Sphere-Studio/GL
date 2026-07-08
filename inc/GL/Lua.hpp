@@ -140,7 +140,7 @@ inline void lua_setup_GL(sol::state& lua)
         sol::resolve<Plane::Shared()>(Plane::create),
         [](Texture* texture) { return Plane::create(Texture::get(texture)); },
         [](TR::Area::Shared area) { return Plane::create(Texture::create(area)); },
-        [](char const* filepath) { return Plane::create(Texture::create(filepath)); },
+        [](char const* filepath) { return Plane::create(Texture::create(std::filesystem::path{filepath})); },
         [](Plane& plane) { return plane.duplicate(); }
     ), sol::base_classes, sol::bases<PlaneBase, ModelBase, ::SSS::Base>());
     plane["duplicate"] = &Plane::duplicate;
