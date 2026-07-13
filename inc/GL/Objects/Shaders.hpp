@@ -51,7 +51,9 @@ public:
         /** Line shaders, used by Line::Renderer by default.*/
         Line,
         /** SDF plane shaders, used by Plane::Renderer for planes with sdf_mode != None.*/
-        PlaneSDF
+        PlaneSDF,
+        /** UI SDF shape shaders, used by UIRenderer for Node_UI primitives.*/
+        UIShape
     };
 
     using InstancedClass::create;

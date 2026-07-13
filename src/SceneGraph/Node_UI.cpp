@@ -115,35 +115,31 @@ bool Node_UI::_checkPointCollision(glm::vec2 const& pt)
 ---------------------- TEXT NODES ------------------------
 --------------------------------------------------------*/
 
+const SSS::TR::Format Node_Text::defaultFmt = []() {
+	SSS::TR::Format f;
+	f.charsize = 15;
+	f.text_color = SSS::RGBA_f{ BLACK };
+	return f;
+}();
+
 void Node_Text::_register()
 {
 	REGISTER_EVENT("NODE_TEXT_RESIZE");
 	REGISTER_EVENT("NODE_TEXT_CONTENT_UPDATE");
 }
 
-Node_Text::Node_Text(const std::string& s, const SSS::GUI_Layout& lyt)
+Node_Text::Node_Text(const std::string& s, const SSS::TR::Format& fmt_in)
 	:Node_UI()
 {
-	SSS::TR::Format fmt = lyt._fmt;
-	fmt.charsize = 58;
+	SSS::TR::Format fmt = fmt_in;
 	auto area = SSS::TR::Area::create();
 	auto plane = TextPlane::create(SSS::GL::Texture::create(area));
 	//plane->setBox(nullptr);
 	_observe(*plane->getTexture());
 
-
-	glm::vec4 tex_col = SSS::RGBA_f(BLACK).to_HSL();
-	glm::vec4 bg_col = tex_col;
-
-	tex_col.b = 0.3f;
-	fmt.text_color = SSS::RGBA_f::from_HSL(tex_col);
-
-	bg_col.b -= 0.15f;
-	area->setClearColor(SSS::RGBA_f::from_HSL((bg_col)));
 	area->setClearColor(static_cast<SSS::RGBA32>(SSS::RGBA_f{ BLACK }));
 	area->setFocusable(true);
 	area->setWrapping(true);
-	area->setMargins(lyt._marginv, lyt._marginh);
 	area->setWrappingMaxWidth(_maxStrSize);
 	area->setFormat(fmt);
 	area->parseString(s);
@@ -272,9 +268,12 @@ void Node_Text::update()
 	model->setRotation(glm::degrees(rot));
 }
 
-void Node_Text::parseText(const std::string& str)
+void Node_Text::setText(const std::string& str, std::optional<SSS::TR::Format> fmt)
 {
+	if (fmt)
+		model->getTextArea()->setFormat(*fmt);
 	model->getTextArea()->parseString(str);
+	update();
 }
 
 

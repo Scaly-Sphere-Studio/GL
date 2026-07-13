@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include "Node_Primitive.h"
 #include "../GL/Objects/Models/Shapes.hpp"
 
@@ -95,9 +96,11 @@ class SSS_GL_API Node_Text : public Node_UI, SSS::_EventRegistry<Node_Text>
 public:
 	friend _EventRegistry<Node_Text>;
 
+	static const SSS::TR::Format defaultFmt;
+
 	Node_Text() = default;
 	~Node_Text();
-	Node_Text(const std::string& s, const SSS::GUI_Layout& lyt = SSS::GUI_Layout{});
+	Node_Text(const std::string& s, const SSS::TR::Format& fmt = defaultFmt);
 	std::string name() const { return "Text"; };
 
 	TextPlane::Shared model;
@@ -107,7 +110,7 @@ public:
 	virtual void setWrappingMin(const int& min);
 
 	void clear() override;
-	void parseText(const std::string& str);
+	void setText(const std::string& str, std::optional<SSS::TR::Format> fmt = std::nullopt);
 	void setMaxStrSize(const int maxSize);
 	void setTextColor(const SSS::RGBA_f& col);
 	void setBackgroundColor(const SSS::RGBA_f& bgCol);

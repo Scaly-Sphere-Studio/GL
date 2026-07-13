@@ -506,7 +506,17 @@ private:
 
     // Sets the window's main monitor
     void _setMainMonitor(int id);
-    static void _register();
+    
+    static void _register()
+    {
+    REGISTER_EVENT("SSS_WINDOW_RESIZE");
+    REGISTER_EVENT("SSS_WINDOW_ICONIFY");
+    REGISTER_EVENT("SSS_WINDOW_KEY_INPUT");
+    REGISTER_EVENT("SSS_WINDOW_MOUSE_INPUT");
+    REGISTER_EVENT("SSS_WINDOW_MOUSE_POSITION");
+    REGISTER_EVENT("SSS_WINDOW_POSITION_CHANGED");
+    REGISTER_EVENT("SSS_WINDOW_SCREENSHOT_TAKEN");
+    };
 };
 
 #pragma warning(pop)

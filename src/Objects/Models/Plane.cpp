@@ -41,7 +41,8 @@ void PlaneBase::setTexture(Texture::Shared texture)
 {
     _set(_texture, texture);
     _updateTexScaling();
-    _observe(*texture);
+    if (texture)
+        _observe(*texture);
 }
 
 void PlaneBase::setAlpha(float alpha) noexcept

@@ -9,7 +9,7 @@ SSS_GL_BEGIN;
 
 UIRenderer::UIRenderer()
 {
-    addMaterial("default", Material(SSS::GL::Shaders::create("glsl/ui.vert", "glsl/ui.frag")));
+    addMaterial("default", Material(SSS::GL::Window::getPresetShaders(static_cast<uint32_t>(Shaders::Preset::UIShape))));
 
     _proj = glm::ortho(
         0.0f, 1440.f,      // left, right
