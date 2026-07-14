@@ -104,8 +104,8 @@ public:
 	static void setCurrentRenderer(SSS::GL::PlaneRenderer::Shared pRenderer) { get()._currentRenderer = pRenderer; };
 	static SSS::GL::PlaneRenderer::Shared getCurrentRenderer() { return get()._currentRenderer; };
 	// UI renderer, used for UI elements on specific render pass
-	static void setUIRenderer(std::shared_ptr<SSS::GL::RendererBase> pUIRenderer) { get()._uiRenderer = pUIRenderer; };
-	static std::shared_ptr<SSS::GL::RendererBase> getUIRenderer() { return get()._uiRenderer; };
+	static void setUIRenderer(SSS::GL::UIRenderer::Shared pUIRenderer) { get()._uiRenderer = pUIRenderer; };
+	static SSS::GL::UIRenderer::Shared getUIRenderer() { return get()._uiRenderer; };
 	
 	
 	//to_string
@@ -121,7 +121,7 @@ protected:
 	std::queue<int> _deleteNode;
 
 	SSS::GL::PlaneRenderer::Shared _currentRenderer;
-	std::shared_ptr<SSS::GL::RendererBase> _uiRenderer;
+	SSS::GL::UIRenderer::Shared _uiRenderer;
 
 	//std::unordered_map<std::string, SSS::GL::PlaneRenderer::Shared> _rdList;
 
