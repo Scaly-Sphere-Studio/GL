@@ -100,7 +100,7 @@ public:
 
 	Node_Text() = default;
 	~Node_Text();
-	Node_Text(const std::string& s, const SSS::TR::Format& fmt = defaultFmt);
+	Node_Text(const std::string& s, const SSS::TR::Format& fmt = defaultFmt, SSS::GL::UIRenderer::Shared renderer = nullptr);
 	std::string name() const { return "Text"; };
 
 	TextPlane::Shared model;
@@ -121,6 +121,7 @@ private:
 	void translateElem() { model->translate(_pos); };
 	int _maxStrSize = 600;
 	void _size_update();
+	std::weak_ptr<SSS::GL::UIRenderer> _renderer;
 };
 
 class  SSS_GL_API Node_Slider : public Node_UI

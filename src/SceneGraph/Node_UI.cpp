@@ -128,7 +128,7 @@ void Node_Text::_register()
 	REGISTER_EVENT("NODE_TEXT_CONTENT_UPDATE");
 }
 
-Node_Text::Node_Text(const std::string& s, const SSS::TR::Format& fmt_in)
+Node_Text::Node_Text(const std::string& s, const SSS::TR::Format& fmt_in, SSS::GL::UIRenderer::Shared renderer)
 	:Node_UI()
 {
 	SSS::TR::Format fmt = fmt_in;
@@ -152,7 +152,11 @@ Node_Text::Node_Text(const std::string& s, const SSS::TR::Format& fmt_in)
 
 	_size_update();
 
-	//SceneGraph::getCurrentRenderer()->addPlane(plane);
+	auto uiRd = renderer ? renderer : SceneGraph::getUIRenderer();
+	if (uiRd) {
+		uiRd->addPlane(plane);
+		_renderer = uiRd;
+	}
 	SceneGraph::emplace(this);
 }
 
@@ -194,7 +198,8 @@ Node_Text::~Node_Text()
 
 void Node_Text::clear()
 {
-	SceneGraph::getCurrentRenderer()->removePlane(model);
+	if (auto uiRd = _renderer.lock())
+		uiRd->removePlane(model);
 	model.reset();
 	EMIT_EVENT("NODE_TEXT_CONTENT_UPDATE");
 }

@@ -89,8 +89,17 @@ void Node::_register()
 
 SceneGraph::SceneGraph()
 {
+}
 
+SceneGraph::~SceneGraph()
+{
+	clearRenderers();
+}
 
+void SceneGraph::clearRenderers()
+{
+	get()._currentRenderer.reset();
+	get()._uiRenderer.reset();
 }
 
 void SceneGraph::init(){}

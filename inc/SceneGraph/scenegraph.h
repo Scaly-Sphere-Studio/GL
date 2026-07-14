@@ -83,7 +83,7 @@ public:
 
 private:
 	SceneGraph();
-	~SceneGraph() {};
+	~SceneGraph();
 public:
 
 	static void init();
@@ -106,6 +106,8 @@ public:
 	// UI renderer, used for UI elements on specific render pass
 	static void setUIRenderer(SSS::GL::UIRenderer::Shared pUIRenderer) { get()._uiRenderer = pUIRenderer; };
 	static SSS::GL::UIRenderer::Shared getUIRenderer() { return get()._uiRenderer; };
+
+	static void clearRenderers();
 	
 	
 	//to_string
