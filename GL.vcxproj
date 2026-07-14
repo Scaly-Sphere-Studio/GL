@@ -56,6 +56,7 @@
     <ClInclude Include="inc\GL\Objects\Shaders.hpp" />
     <ClInclude Include="inc\GL\Objects\Models\Plane.hpp" />
     <ClInclude Include="inc\GL\Objects\Texture.hpp" />
+    <ClInclude Include="inc\GL\Objects\Noise.hpp" />
     <ClInclude Include="inc\GL\Window.hpp" />
     <ClInclude Include="inc\GL\Objects\Models\PlaneRenderer.hpp" />
     <ClInclude Include="inc\GL\Objects\Basic.hpp" />
@@ -73,6 +74,7 @@
     <ClCompile Include="src\Objects\Shaders.cpp" />
     <ClCompile Include="src\Objects\Texture.cpp" />
     <ClCompile Include="src\Objects\Texture_APNG.cpp" />
+    <ClCompile Include="src\Objects\Noise.cpp" />
     <ClCompile Include="src\Objects\Camera.cpp" />
     <ClCompile Include="src\Objects\Model.cpp" />
     <ClCompile Include="src\Objects\Models\Plane.cpp" />

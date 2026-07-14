@@ -48,7 +48,7 @@ class SSS_GL_API Texture : public Observer, public Subject, public InstancedClas
     friend SharedClass;
     friend _EventRegistry<Texture>;
 
-private:
+protected:
     Texture();
 
 public:
