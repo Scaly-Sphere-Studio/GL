@@ -13,11 +13,27 @@ glm::mat4 TextPlane::_getTranslationMat4() const {
 	return glm::translate(ModelBase::_getTranslationMat4(), offset);
 }
 
+glm::vec3 Node_Block::getAnchorOffset() const
+{
+	switch (anchorMode) 
+	{
+		case AnchorMode::Center:       return { -_size.x / 2.f, -_size.y / 2.f, 0.f };
+		case AnchorMode::CenterLeft:   return {  0.f,            -_size.y / 2.f, 0.f };
+		case AnchorMode::CenterRight:  return { -_size.x,        -_size.y / 2.f, 0.f };
+		case AnchorMode::CenterTop:    return { -_size.x / 2.f,  0.f,            0.f };
+		case AnchorMode::CenterBottom: return { -_size.x / 2.f, -_size.y,        0.f };
+		case AnchorMode::TopRight:     return { -_size.x,         0.f,            0.f };
+		case AnchorMode::BottomLeft:   return {  0.f,            -_size.y,        0.f };
+		case AnchorMode::BottomRight:  return { -_size.x,        -_size.y,        0.f };
+		default:  
+			return {  0.f,             0.f,            0.f }; // TopLeft
+	}
+}
+
 glm::mat4 Node_Block::getLocalTransform() const
 {
-	//Rotation along the z axis with _pos translation
 	glm::mat4 mat = glm::mat4(1.0);
-	mat = glm::translate(mat, _pos);
+	mat = glm::translate(mat, _pos + getAnchorOffset());
 	mat *= glm::rotate(rotation, glm::vec3(0, 0, 1));
 	return mat;
 }

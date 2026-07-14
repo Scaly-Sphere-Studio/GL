@@ -149,6 +149,7 @@ Node_Text::Node_Text(const std::string& s, const SSS::TR::Format& fmt_in, SSS::G
 
 	plane->setHitbox(SSS::GL::Plane::Hitbox::Full);
 	model = plane;
+	_updateAnchorFromFormat();
 
 	_size_update();
 
@@ -167,10 +168,8 @@ void Node_Text::_subjectUpdate(SSS::Subject const& subject, SSS::Event const& ev
 		return;
 
 	if (event_id == EVENT_ID("SSS_TEXTURE_CONTENT")) {
-		auto [w, h] = model->getTexture()->getCurrentDimensions();
-		model->setScaling(glm::vec3(static_cast<float>(std::min(w, h))));
-
-
+		_size_update();
+		update();
 		EMIT_EVENT("NODE_TEXT_RESIZE");
 		return;
 	}
@@ -186,6 +185,7 @@ void Node_Text::_subjectUpdate(SSS::Subject const& subject, SSS::Event const& ev
 			return;
 
 		_size_update();
+		update();
 		EMIT_EVENT("NODE_TEXT_RESIZE");
 	}
 }
@@ -269,14 +269,49 @@ void Node_Text::update()
 	glm::decompose(transform, scale, rotation, translation, skew, perspective);
 	glm::vec3 rot = glm::eulerAngles(rotation);
 
+	// getAnchorOffset() uses Y-down convention; TextPlane centers using Y-up (-h/2).
+	// Negate the Y anchor contribution so both don't subtract in the same direction.
+	translation.y -= 2.f * getAnchorOffset().y;
+
 	model->setTranslation(translation);
 	model->setRotation(glm::degrees(rot));
 }
 
+void Node_Text::setAnchorMode(AnchorMode mode)
+{
+	anchorMode = mode;
+	_manualAnchor = true;
+}
+
+void Node_Text::_updateAnchorFromFormat()
+{
+	if (_manualAnchor)
+		return;
+	if (auto area = model->getTextArea(); area) {
+		auto const& fmt = area->getFormat();
+		if (fmt.alignment == SSS::TR::Alignment::Right || fmt.lng_direction == "rtl")
+			anchorMode = AnchorMode::TopRight;
+		else if (fmt.alignment == SSS::TR::Alignment::Center)
+			anchorMode = AnchorMode::CenterTop;
+		else
+			anchorMode = AnchorMode::TopLeft;
+	}
+}
+
+glm::vec3 Node_Text::getAnchorPosition() const
+{
+	if (_parent == -1)
+		return _pos;
+	Node_Block* p = (Node_Block*)SceneGraph::at(_parent);
+	return glm::vec3(p->getGlobalTransform() * glm::vec4(_pos, 1.0f));
+}
+
 void Node_Text::setText(const std::string& str, std::optional<SSS::TR::Format> fmt)
 {
-	if (fmt)
+	if (fmt) {
 		model->getTextArea()->setFormat(*fmt);
+		_updateAnchorFromFormat();
+	}
 	model->getTextArea()->parseString(str);
 	update();
 }

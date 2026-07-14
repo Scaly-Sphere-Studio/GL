@@ -10,6 +10,12 @@
 SSS_BEGIN
 class SceneGraph;
 
+enum class PositionMode
+{
+	Absolute,
+	Relative
+};
+
 // Utility for Text Nodes
 
 class SSS_GL_API Node_UI : public Node_Block, public SSS::_EventRegistry<Node_UI>
@@ -53,7 +59,7 @@ public:
 	void observe(SSS::Subject* wPtr) { _observe(*wPtr); };
 	std::vector<SSS::UIPrimitive> prims;
 
-
+	PositionMode posMode = PositionMode::Absolute;
 
 	std::string _label;
 protected:
@@ -114,13 +120,17 @@ public:
 	void setMaxStrSize(const int maxSize);
 	void setTextColor(const SSS::RGBA_f& col);
 	void setBackgroundColor(const SSS::RGBA_f& bgCol);
+	glm::vec3 getAnchorPosition() const;
 	void rotate(const float &rot) { model->rotate(glm::vec3(0, 0,rot)); };
+	virtual void setAnchorMode(AnchorMode mode) override;
 	virtual void update();
 private:
 	static void _register();
 	void translateElem() { model->translate(_pos); };
 	int _maxStrSize = 600;
+	bool _manualAnchor = false;
 	void _size_update();
+	void _updateAnchorFromFormat();
 	std::weak_ptr<SSS::GL::UIRenderer> _renderer;
 };
 

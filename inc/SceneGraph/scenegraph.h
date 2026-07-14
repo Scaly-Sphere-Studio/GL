@@ -58,10 +58,9 @@ public:
 
 
 	virtual std::vector<SSS::UIPrimitive> renderUI() const { return _UIprims; };
-	//static std::once_flag _RegistryDone;
 protected:
 	std::vector<SSS::UIPrimitive>	_UIprims;
-	std::string					_label;
+	std::string						_label;
 
 private:
 	static void _register();
@@ -122,11 +121,8 @@ protected:
 	std::unordered_map<int, Node*> _nodeList;
 	std::queue<int> _deleteNode;
 
-	SSS::GL::PlaneRenderer::Shared _currentRenderer;
-	SSS::GL::UIRenderer::Shared _uiRenderer;
-
-	//std::unordered_map<std::string, SSS::GL::PlaneRenderer::Shared> _rdList;
-
+	SSS::GL::PlaneRenderer::Shared 	_currentRenderer;
+	SSS::GL::UIRenderer::Shared 	_uiRenderer;
 };
 
 SSS_END;

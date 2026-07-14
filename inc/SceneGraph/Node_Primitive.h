@@ -9,6 +9,19 @@
 class SceneGraph;
 SSS_BEGIN
 
+enum class AnchorMode
+{
+	Center,
+	CenterLeft,
+	CenterRight,
+	CenterTop,
+	CenterBottom,
+	TopLeft,
+	TopRight,
+	BottomLeft,
+	BottomRight
+};
+
 // Utility for Text Nodes
 // TODO AFTER INTEGRATION
 class TextPlane : public SSS::GL::PlaneTemplate<TextPlane> {
@@ -38,6 +51,10 @@ public:
 	int _type = 1;
 
 	float rotation = 0.f;
+	AnchorMode anchorMode = AnchorMode::TopLeft;
+
+	virtual void setAnchorMode(AnchorMode mode) { anchorMode = mode; }
+	glm::vec3 getAnchorOffset() const;
 
 	//transforms
 	virtual void _subjectUpdate(SSS::Subject const& subject, SSS::Event const& event) override {};
