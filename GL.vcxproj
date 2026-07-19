@@ -67,8 +67,11 @@
     <ClInclude Include="inc\SceneGraph\Node_UI.h" />
     <ClInclude Include="inc\SceneGraph\scenegraph.h" />
     <ClInclude Include="inc\Settings\Theme.h" />
+    <ClInclude Include="inc\GL\Animations\Animation.hpp" />
+    <ClInclude Include="inc\GL\Animations\Shake_Generator.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Animations\Animation.cpp" />
     <ClCompile Include="src\Objects\Basic.cpp" />
     <ClCompile Include="src\Objects\Materials.cpp" />
     <ClCompile Include="src\Objects\Shaders.cpp" />

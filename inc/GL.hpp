@@ -1,6 +1,8 @@
 #ifndef SSS_GL_HPP
 #define SSS_GL_HPP
 
+#include "GL/Animations/Animation.hpp"
+#include "GL/Animations/Shake_Generator.hpp"
 #include "GL/Window.hpp"
 #include "GL/Objects/Models/PlaneRenderer.hpp"
 #include "GL/Objects/Models/LineRenderer.hpp"

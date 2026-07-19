@@ -54,6 +54,9 @@
     <Filter Include="Settings">
       <UniqueIdentifier>{46af3035-27f4-40da-9ac6-15de654b407c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Animations">
+      <UniqueIdentifier>{a1d5f3c9-8e2b-4f71-b3a6-7c9d0e1f2a3b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="DownloadVcpkgScripts.ps1" />
@@ -142,6 +145,9 @@
     <ClCompile Include="src\Objects\Materials.cpp">
       <Filter>Objects\src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Animations\Animation.cpp">
+      <Filter>Animations</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\GL.hpp">
@@ -206,6 +212,12 @@
     </ClInclude>
     <ClInclude Include="inc\GL\Objects\Materials.hpp">
       <Filter>Objects\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\GL\Animations\Animation.hpp">
+      <Filter>Animations</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\GL\Animations\Shake_Generator.hpp">
+      <Filter>Animations</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
