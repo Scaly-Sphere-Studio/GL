@@ -179,6 +179,7 @@ void UIRenderer::_renderPlanes()
     uint32_t count = 0;
     std::vector<GLint> uv_modes;
     std::vector<glm::vec2> uv_offsets;
+    std::vector<GLint> grayscales;
     for (auto const& plane : _planes) {
         if (!plane || plane->isHidden() || plane->sdf_mode != PlaneBase::SDFMode::None) continue;
         if (count == 128) break;
@@ -189,10 +190,12 @@ void UIRenderer::_renderPlanes()
             texture->bind();
             uv_modes.push_back(static_cast<GLint>(texture->getUVMode()));
             uv_offsets.push_back(texture->getUVOffset());
+            grayscales.push_back(texture->getGrayscale() ? 1 : 0);
         }
         else {
             uv_modes.push_back(0);
             uv_offsets.push_back(glm::vec2(0.f));
+            grayscales.push_back(0);
         }
         ++count;
     }
@@ -201,6 +204,7 @@ void UIRenderer::_renderPlanes()
         plane_shader->setUniform1iv("u_Textures", count, texture_IDs.data());
         plane_shader->setUniform1iv("u_UVModes", count, uv_modes.data());
         plane_shader->setUniform2fv("u_UVOffsets", count, &uv_offsets.data()[0].x);
+        plane_shader->setUniform1iv("u_Grayscales", count, grayscales.data());
         glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr, count);
     }
 
@@ -249,6 +253,7 @@ void UIRenderer::_renderPlaneSDF()
             sdf_shader->setUniform("u_TexOffset", static_cast<int>(plane->getTexOffset()));
             sdf_shader->setUniform("u_UVMode", static_cast<int>(plane->getTexture()->getUVMode()));
             sdf_shader->setUniform("u_UVOffset", plane->getTexture()->getUVOffset());
+            sdf_shader->setUniform("u_Grayscale", plane->getTexture()->getGrayscale() ? 1 : 0);
         }
 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);

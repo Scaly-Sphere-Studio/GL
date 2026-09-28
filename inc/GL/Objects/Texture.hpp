@@ -117,6 +117,7 @@ private:
     Type _type{ Type::Raw };        // Texture type
     UVMode _uv_mode{ UVMode::Cartesian }; // UV coordinate mapping mode
     glm::vec2 _uv_offset{ 0.f, 0.f };  // Offset applied to UV coordinates before sampling (meaning depends on _uv_mode)
+    bool _grayscale{ false };             // Whether the texture is sampled in grayscale
     bool _repeat{ false };                // Whether the texture wraps (GL_REPEAT) or clamps (GL_CLAMP_TO_EDGE)
     Frame::Vector _frames;     // Vector of frames (is used for images AND animations). Default constructed to avoid MSVC ambiguity with int -> Frame::Vector conversion
     TR::Area::Shared _area;         // TR::Area
@@ -158,6 +159,16 @@ public:
      *  @sa setUVOffset()
      */
     inline glm::vec2 getUVOffset() const noexcept { return _uv_offset; };
+
+    /** Draws this Texture in grayscale (luminance, alpha kept). Default: disabled.
+     *  Applies wherever the Texture is drawn: Plane shader and SDF Mask mode.
+     *  @sa getGrayscale()
+     */
+    inline void setGrayscale(bool grayscale) noexcept { _grayscale = grayscale; };
+    /** Returns whether this Texture is drawn in grayscale.
+     *  @sa setGrayscale()
+     */
+    inline bool getGrayscale() const noexcept { return _grayscale; };
 
     /** Enables or disables texture wrapping (GL_REPEAT) instead of clamping
      *  (GL_CLAMP_TO_EDGE) when sampling outside of the [0, 1] UV range.
