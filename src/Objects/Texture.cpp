@@ -1,8 +1,11 @@
 #include "GL/Objects/Texture.hpp"
 #include "GL/Objects/Models/Plane.hpp"
+#include "GL/Objects/Shaders.hpp"
+#include "GL/Window.hpp"
 
 #include <FastNoise/FastNoise.h>
 #include <algorithm>
+#include <glm/gtc/matrix_transform.hpp>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #pragma warning(suppress : 4996)
@@ -98,6 +101,13 @@ Texture::Shared Texture::createCellularNoise(int width, int height, float freque
     return ret;
 }
 
+Texture::Shared Texture::createSDF(std::vector<UIPrimitive> prims, int width, int height)
+{
+    Shared ret = create();
+    ret->setSDF(std::move(prims), width, height);
+    return ret;
+}
+
 void Texture::setType(Type type) noexcept
 {
     if (_type != type)
@@ -174,6 +184,106 @@ void Texture::setColor(RGBA32 color)
     editRawPixels(&color, 1, 1);
 }
 
+void Texture::setSDF(std::vector<UIPrimitive> prims, int width, int height) try
+{
+    _sdf_prims = std::move(prims);
+    _frames.resize(1);
+    _frames[0].pixels.clear();
+    _frames.total_time = std::chrono::nanoseconds(0);
+    _frames.w = width;
+    _frames.h = height;
+    _internalEdit(Type::SDF);
+}
+CATCH_AND_RETHROW_METHOD_EXC;
+
+void Texture::_renderSDF()
+{
+    int const w = _frames.w, h = _frames.h;
+    if (w <= 0 || h <= 0 || _sdf_prims.empty())
+        return;
+    auto shader = Window::getPresetShaders(static_cast<uint32_t>(Shaders::Preset::PlaneSDF));
+    if (!shader)
+        return;
+
+    // Save the state changed below
+    GLint prev_fbo = 0, prev_viewport[4]{};
+    GLfloat prev_clear[4]{};
+    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &prev_fbo);
+    glGetIntegerv(GL_VIEWPORT, prev_viewport);
+    glGetFloatv(GL_COLOR_CLEAR_VALUE, prev_clear);
+    GLboolean const blend = glIsEnabled(GL_BLEND);
+    GLboolean const depth = glIsEnabled(GL_DEPTH_TEST);
+
+    // Render target: layer 0 of the texture array
+    GLuint fbo = 0;
+    glGenFramebuffers(1, &fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _raw_texture.id, 0, 0);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE) {
+        // Unit quad, same layout as the planes' (pos xyz, uv)
+        constexpr float vertices[] = {
+            -0.5f,  0.5f, 0.0f,   0.f, 1.f,
+            -0.5f, -0.5f, 0.0f,   0.f, 0.f,
+             0.5f, -0.5f, 0.0f,   1.f, 0.f,
+             0.5f,  0.5f, 0.0f,   1.f, 1.f,
+        };
+        constexpr unsigned indices[] = { 0, 1, 2, 2, 3, 0 };
+        GLuint vao = 0, buffers[3]{};
+        glGenVertexArrays(1, &vao);
+        glGenBuffers(3, buffers);
+        glBindVertexArray(vao);
+        glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[1]);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffers[2]);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, _sdf_prims.size() * sizeof(UIPrimitive),
+            _sdf_prims.data(), GL_STATIC_DRAW);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, buffers[2]);
+
+        // The shader composites every primitive itself and outputs straight
+        // alpha: store it as is, without blending with the cleared target.
+        glViewport(0, 0, w, h);
+        glDisable(GL_BLEND);
+        glDisable(GL_DEPTH_TEST);
+        glClearColor(0.f, 0.f, 0.f, 0.f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        // Quad y = -0.5 lands on texel row 0, which planes sample as their
+        // top edge: scaling local coordinates by the pixel size gives Y-down
+        // pixel coordinates centered on the texture.
+        shader->use();
+        shader->setUniform("u_VP", glm::scale(glm::mat4(1.f), glm::vec3(2.f, 2.f, 1.f)));
+        shader->setUniform("u_Model", glm::mat4(1.f));
+        shader->setUniform("u_LocalScale", glm::vec2(w, h));
+        shader->setUniform("u_SDFMode", 1);
+        shader->setUniform("u_PrimSize", static_cast<int>(_sdf_prims.size()));
+        shader->setUniform("u_Alpha", 1.f);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+
+        glBindVertexArray(0);
+        glDeleteVertexArrays(1, &vao);
+        glDeleteBuffers(3, buffers);
+    }
+    else {
+        LOG_GL_MSG("Texture -> SDF render target is incomplete");
+    }
+
+    // Restore state
+    glBindFramebuffer(GL_FRAMEBUFFER, static_cast<GLuint>(prev_fbo));
+    glDeleteFramebuffers(1, &fbo);
+    glViewport(prev_viewport[0], prev_viewport[1], prev_viewport[2], prev_viewport[3]);
+    glClearColor(prev_clear[0], prev_clear[1], prev_clear[2], prev_clear[3]);
+    if (blend) glEnable(GL_BLEND);
+    if (depth) glEnable(GL_DEPTH_TEST);
+}
+
 void Texture::setTextArea(TR::Area::Shared area)
 {
     _set(_area, area);
@@ -182,7 +292,7 @@ void Texture::setTextArea(TR::Area::Shared area)
 
 void Texture::getCurrentDimensions(int& w, int& h) const noexcept
 {
-    if (_type == Type::Raw) {
+    if (_type == Type::Raw || _type == Type::SDF) {
         w = _frames.w;
         h = _frames.h;
     }
@@ -329,6 +439,13 @@ void Texture::_internalEdit(Type type)
         }
         if (_area)
             _raw_texture.editPixels(_area->pixelsGet());
+    }
+    else if (_type == Type::SDF) {
+        if (_raw_texture.editSettings(_frames.w, _frames.h))
+        {
+            EMIT_EVENT("SSS_TEXTURE_RESIZE");
+        }
+        _renderSDF();
     }
 
     if (_callback_f)

@@ -104,6 +104,7 @@ uniform sampler2DArray u_Texture;  // Mask mode only
 uniform int   u_UVMode;            // Texture::UVMode, Mask mode only: 0 = Cartesian, 1 = Polar
 uniform vec2  u_UVOffset;          // Mask mode only. Cartesian: added directly to UV (pan). Polar: x = angle offset (turns), y = radius offset
 uniform int   u_Grayscale;         // Texture::getGrayscale, Mask mode only: 1 = draw luminance only
+uniform vec2  u_LocalScale = vec2(1.0); // Scales plane-local coordinates before the SDF is evaluated (Texture::setSDF: pixel size)
 
 in vec2 v_LocalXY;
 in vec2 v_UV;
@@ -523,14 +524,16 @@ void main()
 {
     float u_blur = 2.0;
 
-    vec2 p = v_LocalXY;
+    vec2 p = v_LocalXY * u_LocalScale;
 
     // Background color
     vec4 col = vec4(0.0);
 
     int loop = 0;
 
-    float d  = 1;
+    // "Empty" distance: 1 plane-local unit, i.e. the whole plane (scaled with u_LocalScale)
+    float d_empty = max(u_LocalScale.x, u_LocalScale.y);
+    float d  = d_empty;
     float t = 0;
 
     for(int i = 0; i < u_PrimSize; i++)
@@ -598,7 +601,7 @@ void main()
             col = mix( vec4(e.border.xyz, 1.0), col, d);
         }
 
-        d  = 1;
+        d  = d_empty;
     }
 
     if (u_SDFMode == 2) {

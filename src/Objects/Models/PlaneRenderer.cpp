@@ -253,6 +253,7 @@ void PlaneRenderer::render() try
             sdf_shader->setUniform("u_Model",    plane->getModelMat4());
             sdf_shader->setUniform("u_Alpha",    plane->getAlpha());
             sdf_shader->setUniform("u_SDFMode",  static_cast<int>(plane->sdf_mode));
+            sdf_shader->setUniform("u_LocalScale", glm::vec2(1.f));
             sdf_shader->setUniform("u_PrimSize", static_cast<int>(plane->sdf_prims.size()));
 
             if (plane->sdf_mode == PlaneBase::SDFMode::Mask && plane->getTexture()) {

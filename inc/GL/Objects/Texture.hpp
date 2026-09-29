@@ -5,6 +5,7 @@
 #include <SSS/Commons/eventList.hpp>
 #include "Basic.hpp"
 #include "glm/glm.hpp"
+#include "Models/Shapes.hpp"
 
 
 /** @file
@@ -40,7 +41,7 @@ INTERNAL_END;
 #pragma warning(disable: 4251)
 #pragma warning(disable: 4275)
 
-/** Handles raw edits, image loading, and text rendering in an
+/** Handles raw edits, image loading, text rendering and SDF rendering in an
  *  internal Basic::Texture.
  *  @sa Window::createTexture()
  */
@@ -65,6 +66,10 @@ public:
      *  @param seed Seed used for cell point placement.
      */
     static Shared createCellularNoise(int width, int height, float frequency = 0.02f, int seed = 1337);
+    /** Creates a Texture of given pixel dimensions and renders the given SDF
+     *  primitives in it (see setSDF()).
+     */
+    static Shared createSDF(std::vector<UIPrimitive> prims, int width, int height);
 
     /** The Texture type, mainly to know which pixels to use (internal or TR).
      *  @sa setType(), getType()
@@ -73,7 +78,9 @@ public:
         /** Image loading and raw edits are used*/
         Raw,
         /** SSS::TR::Area is used*/
-        Text
+        Text,
+        /** SDF primitives are rendered in the texture (see setSDF())*/
+        SDF
     };
 
     /** UV coordinate mapping mode used when sampling this Texture.
@@ -121,6 +128,7 @@ private:
     bool _repeat{ false };                // Whether the texture wraps (GL_REPEAT) or clamps (GL_CLAMP_TO_EDGE)
     Frame::Vector _frames;     // Vector of frames (is used for images AND animations). Default constructed to avoid MSVC ambiguity with int -> Frame::Vector conversion
     TR::Area::Shared _area;         // TR::Area
+    std::vector<UIPrimitive> _sdf_prims;  // SDF primitives, rendered in the texture when type is Type::SDF
     std::string _filepath;          // Image filepath
     std::function<void(Texture&)> _callback_f;
 
@@ -195,6 +203,24 @@ public:
 
     void setColor(RGBA32 color);
 
+    /** Renders the given SDF primitives in this Texture, which becomes a
+     *  regular image of given pixel dimensions (Type::SDF).
+     *
+     *  Unlike PlaneBase::sdf_mode, which draws the SDF directly in a separate
+     *  pass after every textured plane, the result is used like any image:
+     *  a plane holding it keeps its draw order (e.g. a panel under text).
+     *
+     *  Primitive coordinates are in texture pixels, with the origin at the
+     *  texture's center and Y pointing down (same as the UIRenderer).
+     *  The shapes are rasterized once: call setSDF() again to change them,
+     *  or to render them at another resolution.
+     *  Requires an OpenGL context (as does editRawPixels()).
+     *  @sa getSDFPrimitives(), createSDF()
+     */
+    void setSDF(std::vector<UIPrimitive> prims, int width, int height);
+    /** Returns the SDF primitives given to setSDF().*/
+    inline auto const& getSDFPrimitives() const noexcept { return _sdf_prims; };
+
     inline auto const& getRawPixels(size_t id = 0) const noexcept { return _frames.at(id).pixels; };
 
     inline auto const& getFrames() const noexcept { return _frames; };
@@ -247,6 +273,8 @@ private:
     // radius axis (T), which must always clamp -- a single _repeat flag
     // driving both axes can't express that.
     void _updateWrapParams() noexcept;
+    // Renders _sdf_prims in the internal Basic::Texture (Type::SDF).
+    void _renderSDF();
 
     static void _register();
 };
