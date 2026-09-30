@@ -176,13 +176,31 @@ void UIRenderer::_renderPlanes()
         112, 113, 114, 115, 116, 117, 118, 119, 110, 121, 122, 123, 124, 125, 126, 127
     };
 
-    uint32_t count = 0;
+    // One texture unit per instance: draw in batches of at most
+    // maxGLSLTextureUnits() planes (the size of the shader's arrays).
+    // gl_InstanceID restarts at 0 in each batch, while the per-instance
+    // attributes start at `offset` (the base instance).
+    uint32_t const max_units = std::min<uint32_t>(Window::maxGLSLTextureUnits(), 128);
+    uint32_t count = 0, offset = 0;
     std::vector<GLint> uv_modes;
     std::vector<glm::vec2> uv_offsets;
     std::vector<GLint> grayscales;
+    auto const drawBatch = [&]() {
+        if (count == 0) return;
+        plane_shader->setUniform1iv("u_Textures", count, texture_IDs.data());
+        plane_shader->setUniform1iv("u_UVModes", count, uv_modes.data());
+        plane_shader->setUniform2fv("u_UVOffsets", count, &uv_offsets.data()[0].x);
+        plane_shader->setUniform1iv("u_Grayscales", count, grayscales.data());
+        glDrawElementsInstancedBaseInstance(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr, count, offset);
+        offset += count;
+        count = 0;
+        uv_modes.clear();
+        uv_offsets.clear();
+        grayscales.clear();
+    };
     for (auto const& plane : _planes) {
         if (!plane || plane->isHidden() || plane->sdf_mode != PlaneBase::SDFMode::None) continue;
-        if (count == 128) break;
+        if (count == max_units) drawBatch();
 
         glActiveTexture(GL_TEXTURE0 + count);
         auto texture = plane->getTexture();
@@ -199,14 +217,7 @@ void UIRenderer::_renderPlanes()
         }
         ++count;
     }
-
-    if (count > 0) {
-        plane_shader->setUniform1iv("u_Textures", count, texture_IDs.data());
-        plane_shader->setUniform1iv("u_UVModes", count, uv_modes.data());
-        plane_shader->setUniform2fv("u_UVOffsets", count, &uv_offsets.data()[0].x);
-        plane_shader->setUniform1iv("u_Grayscales", count, grayscales.data());
-        glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr, count);
-    }
+    drawBatch();
 
     _plane_vao.unbind();
 }
