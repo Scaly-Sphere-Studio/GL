@@ -89,7 +89,17 @@ int main() try
 
     // Lines
     using Line = GL::Polyline;
-    Line::Shared line;
+    Line::Shared line = Line::Bezier(
+        glm::vec3(0, 0, 0), glm::vec3(-100, 0, 0), glm::vec3(-100, -200, 0), glm::vec3(-300, -200, 0),
+        20.f, glm::vec4(1, 1, 1, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);
+    GL::LineRenderer::Shared line_renderer;
+    for (auto const& r : window.getRenderers()) {
+        line_renderer = std::dynamic_pointer_cast<GL::LineRenderer>(r);
+        if (line_renderer)
+            break;
+    }
+    if (line_renderer)
+        line_renderer->addLine(line);
     //Line::Shared line[4];
     //line[0] = Line::Segment(glm::vec3(-200,  200, 0), glm::vec3( 200,  200, 0), 10.f, glm::vec4(0, 0, 1, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);
     //line[1] = Line::Segment(glm::vec3( 200,  200, 0), glm::vec3( 200, -200, 0), 10.f, glm::vec4(0, 1, 0, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);
@@ -111,7 +121,8 @@ int main() try
         if (window.keyIsPressed(GLFW_KEY_SPACE)) {
             LOG_MSG("SPACE")
         }
-        line = Line::Bezier(a, b, c, d, 20.f, glm::vec4(1, 1, 1, 1), Line::JointType::BEVEL, Line::TermType::SQUARE);
+        // The mesh is built once; following the cursor only changes the transform
+        line->setTranslation(d);
         // Script
         lua.safe_script_file("Loop.lua");
         // Draw renderers

@@ -637,13 +637,14 @@ layout(location = 1) in vec4 model_colors;
 //Color output for the fragment shader
 out vec4 fragmentColor;
 
-// Projection matrix
-uniform mat4 u_MVP;
+// View-projection matrix and per-line model matrix
+uniform mat4 u_VP;
+uniform mat4 u_Model;
 
 
 void main(){
-    //Transform the vertex position using the ortho projection matrix
-    gl_Position =  u_MVP * vec4(vertexPosition_modelspace, 1);
+    //Transform the vertex position using the line transform then the camera
+    gl_Position =  u_VP * u_Model * vec4(vertexPosition_modelspace, 1);
 
     //Color output for the fragment shader
     fragmentColor = model_colors;

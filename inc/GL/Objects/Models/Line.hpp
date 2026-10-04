@@ -3,6 +3,7 @@
 
 #include <SSS/Math.hpp>
 #include "../Basic.hpp"
+#include "../Model.hpp"
 #include <unordered_map>
 
 SSS_GL_BEGIN;
@@ -12,7 +13,7 @@ SSS_GL_BEGIN;
 #pragma warning(disable: 4251)
 #pragma warning(disable: 4275)
 
-class SSS_GL_API Polyline {
+class SSS_GL_API Polyline : public ModelBase {
     friend class LineRenderer;
 
 public:
@@ -95,21 +96,14 @@ public:
 
     uint32_t update(Math::Gradient<float> gradient_thickness, Math::Gradient<glm::vec4> gradient_color);
 
-    static bool sort(std::weak_ptr<Polyline>& f, std::weak_ptr<Polyline>& s)
-    {
-        if (f.lock() && s.lock()) {
-            return f.lock()->mesh[0].v_pos.z > s.lock()->mesh[0].v_pos.z;
-        }
-        return false;
-    };
+    /** Incremented each time the mesh is regenerated, so that renderers know
+     *  when their GPU buffers are outdated.*/
+    inline uint32_t getMeshVersion() const noexcept { return _mesh_version; };
 
 private:
 
-    static std::vector<std::weak_ptr<Polyline>> _batch;
-    // State of the batch, information about when the buffer has been
-    // modified and should be regenerated
-    static bool modified;
     static uint32_t max_depth;
+    uint32_t _mesh_version{ 0 };
 
     struct Mesh_info {
         Mesh_info();

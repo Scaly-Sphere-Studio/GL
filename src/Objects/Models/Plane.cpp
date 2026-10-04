@@ -96,6 +96,9 @@ void PlaneBase::_updateTextureOffset()
 void PlaneBase::_updateTexScaling()
 {
     if (!_texture) {
+        // Forget the dimensions too, or re-attaching a texture of the same size would skip the ratio update
+        _tex_w = 0;
+        _tex_h = 0;
         _tex_scaling = glm::vec3(1);
         _computeModelMat4();
         return;

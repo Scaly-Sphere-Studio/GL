@@ -7,8 +7,6 @@ static constexpr double MINIMUM_FAN_ANGLE = M_PI / 18;
 static constexpr double MAX_MITER_ANGLE = M_PI * 0.75;
 static constexpr double MINIMUM_BEVEL_ANGLE = M_PI / 18;
 
-std::vector<std::weak_ptr<Polyline>> Polyline::_batch{};
-bool Polyline::modified = true;
 uint32_t Polyline::max_depth = 2;
 
 
@@ -25,15 +23,11 @@ Polyline::Polyline(Vertex::Vec _path,
     //Select the largest element in the gradient to define the antialliasing/feathering width
     _aa_thickness = define_aa_thickness(gradient_thickness.max());
     path_meshing(gradient_thickness, gradient_color, jopt, topt);
-
-    modified = true;
 }
 
 
 Polyline::~Polyline()
 {
-    modified = true;
-
     mesh.clear();
     path.clear();
     indices.clear();
@@ -42,9 +36,13 @@ Polyline::~Polyline()
 
 uint32_t Polyline::update(Math::Gradient<float> gradient_thickness, Math::Gradient<glm::vec4> gradient_color)
 {
-    path_meshing(gradient_thickness, gradient_color, _jopt, _topt);
+    g_thick = gradient_thickness;
+    g_col = gradient_color;
+    _aa_thickness = define_aa_thickness(gradient_thickness.max());
+    mesh.clear();
+    indices.clear();
 
-    return 0;
+    return path_meshing(gradient_thickness, gradient_color, _jopt, _topt);
 }
 
 
@@ -54,7 +52,6 @@ Polyline::Shared Polyline::Line(Vertex::Vec path,
     JointType jopt, TermType topt)
 {
     Shared line(new Polyline(path, g_thickness, g_color, jopt, topt));
-    _batch.emplace_back(line);
 
 
     return line;
@@ -71,7 +68,6 @@ Polyline::Shared Polyline::Line(Vertex::Vec path,
     g_thickness.push(std::make_pair(0.0f, thickness));
 
     Shared line(new Polyline(path, g_thickness, g_color, jopt, topt));
-    _batch.emplace_back(line);
 
     return line;
 }
@@ -86,7 +82,6 @@ Polyline::Shared Polyline::Segment(glm::vec3 a, glm::vec3 b,
     
 
     Shared line(new Polyline(path, thickness, color, jopt, topt));
-    _batch.emplace_back(line);
     path.clear();
 
     return line;
@@ -109,7 +104,6 @@ Polyline::Shared Polyline::Segment(glm::vec3 a, glm::vec3 b,
 
 
     Shared line(new Polyline(path, g_thickness, g_color, jopt, topt));
-    _batch.emplace_back(line);
     path.clear();
 
     return line;
@@ -136,7 +130,6 @@ Polyline::Shared Polyline::Bezier(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::ve
     }
 
     Shared line(new Polyline(path, thickness, color, jopt, topt));
-    _batch.emplace_back(line);
     path.clear();
 
     return line;
@@ -152,7 +145,7 @@ Polyline::Shared Polyline::Bezier(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::ve
     Math::Gradient<glm::vec4> g_color;
     g_color.push(std::make_pair(0.0f, color));
 
-    return Bezier(a, b, c, d, g_thickness, g_color);
+    return Bezier(a, b, c, d, g_thickness, g_color, jopt, topt);
 }
 
 Polyline::Mesh_info::Mesh_info() :
@@ -260,12 +253,12 @@ uint8_t Polyline::path_meshing(Math::Gradient<float> gradient_thickness, Math::G
         }
     }
 
-    // TODO: Fix la 3D quand on aura le temps et que ça sera nécessaire
-    // Normalize Z
-    float const z = path.at(0).v_pos.z;
+    // Lines are 2D: the mesh lives in the Z=0 plane, depth is given by the
+    // model matrix (see ModelBase).
     for (Vertex& v : mesh) {
-        v.v_pos.z = z;
+        v.v_pos.z = 0.f;
     }
+    ++_mesh_version;
     return 0;
 }
 

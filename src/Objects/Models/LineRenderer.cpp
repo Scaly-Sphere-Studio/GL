@@ -7,10 +7,14 @@ LineRenderer::LineRenderer()
 {
     auto shader = Window::getPresetShaders(static_cast<uint32_t>(Shaders::Preset::Line));
     addMaterial("default", Material(shader));
+}
 
-    _vao.setup([this]() {
-        _vbo.bind();
-        _ibo.bind();
+LineRenderer::Entry::Entry(Polyline::Shared line)
+    : line(std::move(line))
+{
+    vao.setup([this]() {
+        vbo.bind();
+        ibo.bind();
         //Coordinates
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3,
@@ -23,102 +27,64 @@ LineRenderer::LineRenderer()
             sizeof(Polyline::Vertex),
             (void*)(sizeof(glm::vec3)));
     });
-
-    _vao.unbind();
+    vao.unbind();
 }
 
-void LineRenderer::gen_batch(Polyline::Vertex::Vec& mesh, Polyline::Indices::Vec& indices)
+void LineRenderer::addLine(Polyline::Shared line)
 {
-    size_t indice_size = 0, mesh_size = 0, offset = 0;
-
-    //std::sort(Polyline::_batch.begin(), Polyline::_batch.end(), Polyline::sort);
-
-    //Check if the lines pointer are expired and set the necessary reserve size for the batch
-    for (std::weak_ptr<Polyline> arrow_weak : Polyline::_batch) {
-
-        Polyline::Shared const arrow = arrow_weak.lock();
-        if (!arrow) {
-            continue;
-        }
-
-        indice_size += arrow->indices.size();
-        mesh_size += arrow->mesh.size();
+    if (!line)
+        return;
+    for (auto const& e : _lines) {
+        if (e->line == line)
+            return;
     }
+    _lines.emplace_back(std::make_unique<Entry>(std::move(line)));
+}
 
-    indices.reserve(indice_size);
-    mesh.reserve(mesh_size);
-
-
-    Polyline::Indices tmp;
-
-    //Add the vertices and indices in the batch    
-    for (std::weak_ptr<Polyline> const& arrow_weak : Polyline::_batch) {
-        
-        Polyline::Shared const arrow = arrow_weak.lock();
-        if (!arrow) {
-            continue;
-        }
-
-        //Create the batch indices
-        for (Polyline::Indices const& t : arrow->indices) {
-            tmp = t;
-            tmp._bc += static_cast<uint32_t>(offset);
-            tmp._sc += static_cast<uint32_t>(offset);
-            tmp._uc += static_cast<uint32_t>(offset);
-
-            indices.emplace_back(tmp);
-        }
-
-        offset += arrow->mesh.size();
-
-        //batch the vertices
-        mesh.insert(mesh.end(), arrow->mesh.begin(), arrow->mesh.end());
-    }
-
+void LineRenderer::removeLine(Polyline::Shared const& line)
+{
+    _lines.erase(
+        std::remove_if(_lines.begin(), _lines.end(),
+            [&](std::unique_ptr<Entry> const& e) { return e->line == line; }),
+        _lines.end());
 }
 
 void LineRenderer::render()
 {
-    if (!isActive()) {
+    if (!isActive() || _lines.empty()) {
         return;
     }
 
-    static size_t size;
+    Material& mat = swapMaterial("default");
+    mat.set("u_VP", camera ? camera->getVP() : glm::mat4(1));
 
-    _vao.bind();
+    for (auto const& e : _lines) {
+        Polyline& line = *e->line;
+        if (line.indices.empty())
+            continue;
 
-    if (Polyline::modified) {
+        e->vao.bind();
 
-        Polyline::Vertex::Vec tmp_v;
-        Polyline::Indices::Vec tmp_i;
+        // Upload only if the mesh has been regenerated
+        if (!e->uploaded || e->uploaded_version != line.getMeshVersion()) {
+            e->vbo.edit(
+                line.mesh.size() * sizeof(Polyline::Vertex),
+                line.mesh.data(),
+                GL_DYNAMIC_DRAW);
+            e->ibo.edit(
+                line.indices.size() * sizeof(Polyline::Indices),
+                line.indices.data(),
+                GL_DYNAMIC_DRAW);
+            e->uploaded_version = line.getMeshVersion();
+            e->uploaded = true;
+        }
 
-        gen_batch(tmp_v, tmp_i);
-
-        _vbo.edit(
-            tmp_v.size() * sizeof(Polyline::Vertex),
-            tmp_v.data(),
-            GL_STATIC_DRAW
-        );
-
-        _ibo.edit(
-            tmp_i.size() * sizeof(Polyline::Indices),
-            tmp_i.data(),
-            GL_STATIC_DRAW);
-
-        size = tmp_i.size();
-
-        tmp_v.clear();
-        tmp_i.clear();
-
-        Polyline::modified = false;
+        mat.set("u_Model", line.getModelMat4());
+        glDrawElements(GL_TRIANGLES, 3 * static_cast<GLsizei>(line.indices.size()),
+            GL_UNSIGNED_INT, (void*)0);
     }
 
-    Material mat = swapMaterial("default"); 
-    mat.set("u_MVP", camera ? camera->getVP() : glm::mat4(1));
-
-    glDrawElements(GL_TRIANGLES, 3 * static_cast<GLsizei>(size), GL_UNSIGNED_INT, (void*)0);
-
-    _vao.unbind();
+    glBindVertexArray(0);
 }
 
 SSS_GL_END;
